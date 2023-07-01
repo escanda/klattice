@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package klattice.plan;
+
+import "substrait/plan.proto";
+
+service PlanService {
+    rpc Materialize (PlanRel) returns (PlanRel);
+}

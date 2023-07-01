@@ -1,0 +1,19 @@
+[package]
+name = "klattice-api"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.70"
+
+[dependencies]
+termcolor = "1.2"
+anyhow = { version = "1.0", default-features = true }
+tokio = { version = "1.29.1", features = ["full"] }
+tonic = "0.9.2"
+tonic-health = "0.9.2"
+tonic-types = "0.9.2"
+arrow-flight = "42.0.0"
+
+[build-dependencies]
+tonic-build = { version = "0.9.2", features = ["prost"] }
+pbjson-build = { version = "=0.5.1" }  #pinned
+prost-build = { version = "=0.11.9" } #pinned
