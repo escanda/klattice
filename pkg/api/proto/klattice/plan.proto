@@ -4,6 +4,6 @@ package klattice.plan;
 
 import "substrait/plan.proto";
 
-service PlanService {
+service Optimizer {
     rpc Materialize (PlanRel) returns (PlanRel);
 }
