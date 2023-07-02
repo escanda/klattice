@@ -1,12 +1,9 @@
-use prost_build::Config;
 use std::{
     env,
     error::Error,
-    fs::{self, File},
-    io::Write,
+    fs::{self},
     path::{Path, PathBuf},
 };
-use walkdir::{DirEntry, WalkDir};
 
 const PROTO_ROOT: &str = "pkg/api/proto";
 
@@ -103,7 +100,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     std::env::set_var("PROTOC", protobuf_src::protoc());
 
-    let protos = ["proto/klattice/plan.proto"]
+    let protos = ["proto/klattice/api.proto", "proto/klattice/plan.proto", "proto/klattice/status.proto"]
         .into_iter()
         .inspect(|entry| {
             println!("cargo:rerun-if-changed={}", entry);

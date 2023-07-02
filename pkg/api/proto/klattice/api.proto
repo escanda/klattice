@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package klattice.plan;
+
+import "substrait/plan.proto";
+
+service Query {
+    rpc Prepare (QueryContext) returns (substrait.Plan);
+}
+
+message QueryContext {
+    
+}
