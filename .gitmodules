@@ -1,0 +1,3 @@
+[submodule "substrait"]
+	path = substrait
+	url = git@github.com:escanda/substrait.git
