@@ -103,14 +103,16 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     std::env::set_var("PROTOC", protobuf_src::protoc());
 
-    let protos = WalkDir::new(PROTO_ROOT)
+    let protos = ["proto/klattice/plan.proto"]
         .into_iter()
-        .flatten()
         .inspect(|entry| {
-            println!("cargo:rerun-if-changed={}", entry.path().display());
+            println!("cargo:rerun-if-changed={}", entry);
         })
         .collect::<Vec<_>>();
-    panic!("{:?}", &protos);
+
+    tonic_build::configure()
+        .build_server(false)
+        .compile(&protos, &["proto/"])?;
 
     Ok(())
 }

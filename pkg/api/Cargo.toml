@@ -15,9 +15,10 @@ tonic-types = "0.9.2"
 arrow-flight = "42.0.0"
 
 [build-dependencies]
+tonic-build = "0.9.2"
 git2 = { version = "0.17.1", default-features = false }
 heck = "0.4"
-pbjson-build = { version = "0.5", optional = true }
+pbjson-build = { version = "0.5", optional = false }
 prettyplease = "0.2.4"
 prost-build = { version = "0.11", default-features = false }
 prost-types = "0.11"

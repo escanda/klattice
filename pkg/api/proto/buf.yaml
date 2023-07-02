@@ -1,9 +1,0 @@
-version: v1
-name: buf.build/escandasys/klattice
-breaking:
-  use:
-    - FILE
-lint:
-  use:
-    - DEFAULT
-deps: [buf.build/substrait/substrait]
