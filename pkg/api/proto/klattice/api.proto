@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package klattice.plan;
+package klattice.api;
 
 import "substrait/plan.proto";
 
@@ -9,5 +9,12 @@ service Query {
 }
 
 message QueryContext {
-    
+    repeated SchemaSource schema_sources = 1;
+    string query = 2;
+}
+
+message SchemaSource {
+    string host = 1;
+    uint32 port = 2;
+    uint64 schema_id = 3;
 }
