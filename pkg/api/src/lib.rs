@@ -1,6 +1,12 @@
 use tonic;
 
-tonic::include_proto!("substrait");
+pub mod substrait {
+    tonic::include_proto!("substrait");
+
+    pub mod extensions {
+        tonic::include_proto!("substrait.extensions");
+    }
+}
 
 pub mod klattice {
     pub mod api {

@@ -5,9 +5,9 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use walkdir::{DirEntry, WalkDir};
+use glob::Paths;
 
-const PROTO_ROOT: &str = "pkg/api/proto";
+const PROTO_ROOT: &str = "proto";
 
 /// Add Substrait version information to the build
 fn klattice_version() -> Result<(), Box<dyn Error>> {
@@ -102,12 +102,14 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     std::env::set_var("PROTOC", protobuf_src::protoc());
 
-    let protos: Vec<DirEntry> = WalkDir::new("proto")
+    let protos: Vec<PathBuf> = glob::glob("proto/**/*.proto")
         .into_iter()
         .flatten()
-        .filter(|e| e.path().ends_with("proto"))
-        .inspect(|e| println!("cargo:rerun-if-changed={}", e.path().display()))
+        .flatten()
+        .inspect(|e| println!("cargo:rerun-if-changed={}", e.display()))
         .collect();
-
+    println!("cargo:warning=Compiling {:?}", protos);
+    tonic_build::configure()
+        .compile(&protos, &[PROTO_ROOT])?;
     Ok(())
 }
