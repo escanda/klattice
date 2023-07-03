@@ -1,11 +1,15 @@
 syntax = "proto3";
 
+option java_multiple_files = true;
+option java_package = "klattice.api";
+option java_outer_classname = "KLatticeApiProto";
+
 package klattice.api;
 
 import "substrait/plan.proto";
 
 service Query {
-    rpc Prepare (QueryContext) returns (substrait.Plan);
+    rpc Prepare (QueryContext) returns (substrait.Plan) {};
 }
 
 message QueryContext {
