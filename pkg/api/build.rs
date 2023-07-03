@@ -5,6 +5,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use walkdir::{DirEntry, WalkDir};
+
 const PROTO_ROOT: &str = "pkg/api/proto";
 
 /// Add Substrait version information to the build
@@ -100,16 +102,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     std::env::set_var("PROTOC", protobuf_src::protoc());
 
-    let protos = ["proto/klattice/api.proto", "proto/klattice/plan.proto", "proto/klattice/status.proto"]
+    let protos: Vec<DirEntry> = WalkDir::new("proto")
         .into_iter()
-        .inspect(|entry| {
-            println!("cargo:rerun-if-changed={}", entry);
-        })
-        .collect::<Vec<_>>();
-
-    tonic_build::configure()
-        .build_server(false)
-        .compile(&protos, &["proto/"])?;
+        .flatten()
+        .filter(|e| e.path().ends_with("proto"))
+        .inspect(|e| println!("cargo:rerun-if-changed={}", e.path().display()))
+        .collect();
 
     Ok(())
 }
