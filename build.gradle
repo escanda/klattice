@@ -23,14 +23,10 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
-test {
-    systemProperty "java.util.logging.manager", "org.jboss.logmanager.LogManager"
-}
-compileJava {
-    options.encoding = 'UTF-8'
-    options.compilerArgs << '-parameters'
-}
-
-compileTestJava {
-    options.encoding = 'UTF-8'
+sourceSets {
+    main {
+        java {
+            srcDirs layout.buildDirectory.dir("classes/java/quarkus-generated-sources/grpc")
+        }
+    }
 }

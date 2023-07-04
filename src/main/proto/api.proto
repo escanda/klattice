@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "klattice.api";
+option java_outer_classname = "KLApiProto";
+
+package klattice.api;
+
+import "substrait/plan.proto";
+import "substrait/type.proto";
+
+service Query {
+    rpc Prepare (QueryContext) returns (substrait.Plan) {};
+}
+
+service Schema {
+    rpc Query(SchemaQuery) returns (Schemata) {};
+}
+
+message QueryContext {
+    repeated SchemaSource bound_schema_sources = 1;
+    string query = 2;
+}
+
+message SchemaSource {
+    string host = 1;
+    uint32 port = 2;
+    uint64 schema_id = 3;
+}
+
+message SchemaQuery {
+    uint64 schema_id = 1;
+}
+
+message Schemata {
+    repeated Projection projections = 1;
+}
+
+message Projection {
+    string name = 1;
+    substrait.Type typing = 2;
+}
