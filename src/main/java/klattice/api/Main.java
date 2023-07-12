@@ -36,17 +36,17 @@ public class Main implements Runnable, QuarkusApplication {
 
     @Override
     public void run() {
-        var projection = Projection.newBuilder().addColumnName("public").addTyping(Type.newBuilder().setI64(Type.I64.newBuilder().setNullability(Type.Nullability.NULLABILITY_REQUIRED).build()).build());
-        var queryContext = QueryContext.newBuilder();
-        queryContext = queryContext.addSources(SchemaSourceDetails.newBuilder()
+        var projection = RelDescriptor.newBuilder().addColumnName("public").addTyping(Type.newBuilder().setI64(Type.I64.newBuilder().setNullability(Type.Nullability.NULLABILITY_REQUIRED).build()).build());
+        var schema = QueryDescriptor.newBuilder();
+        schema = schema.addSources(SchemaDescriptor.newBuilder()
                 .setSchemaId(1L)
                 .addProjections(projection)
                 .build()
         );
         sql = "SELECT * FROM public";
-        queryContext = queryContext.setQuery(sql);
+        schema = schema.setQuery(sql);
         try {
-            var qc = queryContext.build();
+            var qc = schema.build();
             var enhancer = new Enhancer();
             var parser = new Parser();
             var sqlNode = parser.parse(qc);

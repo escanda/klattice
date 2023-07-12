@@ -12,8 +12,8 @@ import io.substrait.proto.Plan;
 import io.substrait.proto.PlanRel;
 import io.substrait.relation.RelProtoConverter;
 import jakarta.enterprise.context.Dependent;
-import klattice.api.Projection;
-import klattice.api.SchemaSourceDetails;
+import klattice.api.RelDescriptor;
+import klattice.api.SchemaDescriptor;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
@@ -74,11 +74,11 @@ public class Enhancer {
 
     JavaTypeFactory typeFactory = new JavaTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
 
-    public Object inflate(SqlNode query, List<SchemaSourceDetails> schemaSourcesList) throws SqlParseException {
+    public Object inflate(SqlNode query, List<SchemaDescriptor> schemaSourcesList) throws SqlParseException {
         var rootSchema = LookupCalciteSchema.createRootSchema(false);
-        for (SchemaSourceDetails schemaSourceDetails : schemaSourcesList) {
+        for (SchemaDescriptor schemaSourceDetails : schemaSourcesList) {
             CalciteSchema schemaPlus = CalciteSchema.createRootSchema(false);
-            for (Projection projection : schemaSourceDetails.getProjectionsList()) {
+            for (RelDescriptor projection : schemaSourceDetails.getProjectionsList()) {
                 List<RelDataTypeField> typeList = new ArrayList<>();
                 int i = 0;
                 for (String columnName : projection.getColumnNameList()) {

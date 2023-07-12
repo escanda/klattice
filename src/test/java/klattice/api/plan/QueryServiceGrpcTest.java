@@ -1,14 +1,11 @@
 package klattice.api.plan;
 
-import com.google.protobuf.Syntax;
 import io.quarkus.test.junit.QuarkusTest;
-import io.substrait.proto.Plan;
 import io.substrait.proto.Type;
 import jakarta.inject.Inject;
-import klattice.api.Projection;
-import klattice.api.QueryContext;
-import klattice.api.SchemaSourceDetails;
-import org.apache.calcite.sql.SqlNode;
+import klattice.api.RelDescriptor;
+import klattice.api.QueryDescriptor;
+import klattice.api.SchemaDescriptor;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.junit.jupiter.api.Test;
 
@@ -26,15 +23,15 @@ public class QueryServiceGrpcTest {
 
     @Test
     public void smokeTest() throws SqlParseException {
-        var projection = Projection.newBuilder()
+        var projection = RelDescriptor.newBuilder()
                 .setSchemaId(1)
                 .setRelName("PUBLIC")
                 .addTyping(Type.newBuilder().setI64(Type.I64.newBuilder().setNullability(Type.Nullability.NULLABILITY_REQUIRED).build()))
                 .build();
-        var schemaSources = List.of(SchemaSourceDetails.newBuilder().setSchemaId(1).setRelName("PUBLIC").addProjections(projection).build());
+        var schemaSources = List.of(SchemaDescriptor.newBuilder().setSchemaId(1).setRelName("PUBLIC").addProjections(projection).build());
 
         var q = "SELECT * FROM PUBLIC.PUBLIC";
-        var sqlNode = parser.parse(QueryContext.newBuilder()
+        var sqlNode = parser.parse(QueryDescriptor.newBuilder()
                 .setQuery(q)
                         .addAllSources(schemaSources)
                 .build());

@@ -10,29 +10,21 @@ import "substrait/plan.proto";
 import "substrait/type.proto";
 
 service Query {
-    rpc Prepare (QueryContext) returns (substrait.Plan) {};
+    rpc Prepare (QueryDescriptor) returns (substrait.Plan) {};
 }
 
-service Schema {
-    rpc Query(SchemaQuery) returns (SchemaSourceDetails) {};
-}
-
-message QueryContext {
-    repeated SchemaSourceDetails sources = 1;
+message QueryDescriptor {
+    repeated SchemaDescriptor sources = 1;
     string query = 2;
 }
 
-message SchemaQuery {
-    uint64 schema_id = 1;
-}
-
-message SchemaSourceDetails {
+message SchemaDescriptor {
     uint64 schema_id = 1;
     string relName = 2;
-    repeated Projection projections = 3;
+    repeated RelDescriptor projections = 3;
 }
 
-message Projection {
+message RelDescriptor {
     uint64 schema_id = 1;
     string relName = 2;
     repeated string columnName = 3;

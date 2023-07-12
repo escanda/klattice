@@ -25,14 +25,14 @@ public class QueryServiceGrpc implements Query {
     Logger logger;
 
     @Override
-    public Uni<Plan> prepare(QueryContext request) {
+    public Uni<Plan> prepare(QueryDescriptor request) {
         try {
             var sql = parser.parse(request);
-            var projectionBuilder = Projection.newBuilder().addColumnName("public").addTyping(Type.newBuilder().setI64(Type.I64.newBuilder().setNullability(Type.Nullability.NULLABILITY_NULLABLE).build()).build());
-            var schemaSourceDetails1Builder = SchemaSourceDetails.newBuilder().addProjections(projectionBuilder.build());
+            var projectionBuilder = RelDescriptor.newBuilder().addColumnName("public").addTyping(Type.newBuilder().setI64(Type.I64.newBuilder().setNullability(Type.Nullability.NULLABILITY_NULLABLE).build()).build());
+            var schemaSourceDetails1Builder = SchemaDescriptor.newBuilder().addProjections(projectionBuilder.build());
             var schemaSourcesList = List.of(schemaSourceDetails1Builder.build());
             var plan = enhancer.inflate(sql, schemaSourcesList);
-            System.out.println(plan);
+            logger.info(plan);
             return Uni.createFrom().item(Plan.newBuilder().build());
         } catch (SqlParseException e) {
             logger.error(e);
