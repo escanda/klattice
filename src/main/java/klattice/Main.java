@@ -1,4 +1,4 @@
-package klattice.api;
+package klattice;
 
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.runtime.Quarkus;

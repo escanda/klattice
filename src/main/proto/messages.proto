@@ -1,17 +1,13 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "klattice.api";
+option java_package = "klattice.msg";
 option java_outer_classname = "KLApiProto";
 
-package klattice.api;
+package klattice.msg;
 
 import "substrait/plan.proto";
 import "substrait/type.proto";
-
-service Query {
-    rpc Prepare (QueryDescriptor) returns (PreparedQuery) {};
-}
 
 message QueryDescriptor {
     repeated SchemaDescriptor sources = 1;
@@ -20,8 +16,13 @@ message QueryDescriptor {
 
 message SchemaDescriptor {
     uint64 schema_id = 1;
-    string relName = 2;
-    repeated RelDescriptor projections = 3;
+    DatabaseDescriptor database = 2;
+    string relName = 3;
+    repeated RelDescriptor projections = 4;
+}
+
+message DatabaseDescriptor {
+
 }
 
 message RelDescriptor {
@@ -41,4 +42,15 @@ message PreparedQuery {
 
 message QueryDiagnostics {
     string error_message = 1;
+}
+
+message Node {
+    string host = 1;
+    uint32 port = 2;
+}
+
+message Scope {
+    uint64 nodeId = 1;
+    repeated uint64 schemas = 2;
+    repeated string relNames = 3;
 }

@@ -1,4 +1,4 @@
-package klattice.api.plan;
+package klattice.query;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.substrait.extension.ExtensionCollector;
@@ -11,8 +11,8 @@ import io.substrait.proto.Plan;
 import io.substrait.proto.PlanRel;
 import io.substrait.relation.RelProtoConverter;
 import jakarta.enterprise.context.Dependent;
-import klattice.api.RelDescriptor;
-import klattice.api.SchemaDescriptor;
+import klattice.msg.RelDescriptor;
+import klattice.msg.SchemaDescriptor;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.jdbc.CalciteSchema;
@@ -47,7 +47,7 @@ import static org.apache.calcite.sql.validate.SqlConformance.PRAGMATIC_2003;
 
 @Dependent
 public class Prepare {
-    protected static final SimpleExtension.ExtensionCollection EXTENSION_COLLECTION;
+    public static final SimpleExtension.ExtensionCollection EXTENSION_COLLECTION;
 
     static {
         SimpleExtension.ExtensionCollection defaults;
@@ -60,78 +60,7 @@ public class Prepare {
         EXTENSION_COLLECTION = defaults;
     }
 
-    private FeatureBoard featureBoard = ImmutableFeatureBoard.builder()
-            .sqlConformanceMode(PRAGMATIC_2003)
-            .crossJoinPolicy(SubstraitRelVisitor.CrossJoinPolicy.CONVERT_TO_INNER_JOIN)
-            .build();
-
-    JavaTypeFactory typeFactory = new JavaTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
-
-    public Plan inflate(SqlNode query, List<SchemaDescriptor> schemaSourcesList) {
-        var rootSchema = LookupCalciteSchema.createRootSchema(false);
-        for (SchemaDescriptor schemaSourceDetails : schemaSourcesList) {
-            CalciteSchema schemaPlus = CalciteSchema.createRootSchema(false);
-            for (RelDescriptor projection : schemaSourceDetails.getProjectionsList()) {
-                List<RelDataTypeField> typeList = new ArrayList<>();
-                int i = 0;
-                for (String columnName : projection.getColumnNameList()) {
-                    typeList.add(new RelDataTypeFieldImpl(columnName, i, asType(projection.getTyping(i))));
-                    i++;
-                }
-                var table = new ListTransientTable(projection.getRelName(), new RelRecordType(StructKind.FULLY_QUALIFIED, typeList));
-                schemaPlus.add(projection.getRelName(), table);
-            }
-            rootSchema.add(schemaSourceDetails.getRelName(), schemaPlus.plus());
-        }
-
-        var program = HepProgram.builder().build();
-        var planner = new HepPlanner(program);
-        RelOptCluster relOptCluster = RelOptCluster.create(planner, new RexBuilder(typeFactory));
-        relOptCluster.setMetadataQuerySupplier(
-                () -> {
-                    ProxyingMetadataHandlerProvider handler =
-                            new ProxyingMetadataHandlerProvider(DefaultRelMetadataProvider.INSTANCE);
-                    return new RelMetadataQuery(handler);
-                });
-
-        var props = new Properties();
-        props.put("caseSensitive", Boolean.FALSE);
-
-        CalciteCatalogReader catalogReader = new CalciteCatalogReader(
-                rootSchema,
-                schemaSourcesList.stream()
-                        .findFirst()
-                        .map(schemaDescriptor -> List.of(schemaDescriptor.getRelName())).orElse(Collections.emptyList()),
-                typeFactory,
-                new CalciteConnectionConfigImpl(props)
-        );
-
-        var operatorTable = new SqlStdOperatorTable();
-        var calciteSqlValidator = new CalciteSqlValidator(operatorTable, catalogReader, typeFactory, SqlValidator.Config.DEFAULT);
-        var plan = Plan.newBuilder();
-        ExtensionCollector functionCollector = new ExtensionCollector();
-        var relProtoConverter = new RelProtoConverter(functionCollector);
-        var sqlToRelConverter = createSqlToRelConverter(calciteSqlValidator, relOptCluster, catalogReader, SqlToRelConverter.config());
-        var relRoot = sqlToRelConverter.convertQuery(query, true, true);
-        planner.setRoot(relRoot.rel);
-        relRoot = relRoot.withRel(planner.findBestExp());
-        plan.addRelations(
-                PlanRel.newBuilder()
-                        .setRoot(
-                                io.substrait.proto.RelRoot.newBuilder()
-                                        .setInput(
-                                                SubstraitRelVisitor.convert(
-                                                                relRoot, EXTENSION_COLLECTION, featureBoard)
-                                                        .accept(relProtoConverter))
-                                        .addAllNames(
-                                                TypeConverter.DEFAULT
-                                                        .toNamedStruct(relRoot.validatedRowType)
-                                                        .names())));
-        functionCollector.addExtensionsToPlan(plan);
-        return plan.build();
-    }
-
-    private RelDataType asType(io.substrait.proto.Type typing) {
+    public static RelDataType asType(io.substrait.proto.Type typing) {
         final RelDataType[] types = new RelDataType[]{null};
         var typeSystem = RelDataTypeSystem.DEFAULT;
         switch (typing.getKindCase()) {
@@ -211,19 +140,5 @@ public class Prepare {
             }
         }
         return types[0];
-    }
-
-    @VisibleForTesting
-    SqlToRelConverter createSqlToRelConverter(
-            SqlValidator validator, RelOptCluster relOptCluster, CalciteCatalogReader catalogReader, SqlToRelConverter.Config converterConfig) {
-        SqlToRelConverter converter =
-                new SqlToRelConverter(
-                        null,
-                        validator,
-                        catalogReader,
-                        relOptCluster,
-                        StandardConvertletTable.INSTANCE,
-                        converterConfig);
-        return converter;
     }
 }

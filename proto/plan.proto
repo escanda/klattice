@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package klattice.plan;
-
-import "substrait/plan.proto";
-
-service Planner {
-    rpc Enhance (substrait.PlanRel) returns (substrait.PlanRel);
-}
