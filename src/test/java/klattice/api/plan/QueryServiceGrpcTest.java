@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @QuarkusTest
 public class QueryServiceGrpcTest {
     @Inject
-    Enhancer enhancer;
+    Prepare prepare;
 
     @Inject
     Parser parser;
@@ -36,7 +36,7 @@ public class QueryServiceGrpcTest {
                         .addAllSources(schemaSources)
                 .build());
         assertNotNull(sqlNode);
-        var inflated = enhancer.inflate(sqlNode, schemaSources);
+        var inflated = prepare.inflate(sqlNode, schemaSources);
         System.out.println(inflated);
     }
 }

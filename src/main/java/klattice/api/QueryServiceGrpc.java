@@ -5,8 +5,8 @@ import io.quarkus.grpc.GrpcService;
 import io.smallrye.mutiny.Uni;
 import io.substrait.proto.Plan;
 import jakarta.inject.Inject;
-import klattice.api.plan.Enhancer;
 import klattice.api.plan.Parser;
+import klattice.api.plan.Prepare;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.jboss.logging.Logger;
 
@@ -16,21 +16,22 @@ public class QueryServiceGrpc implements Query {
     Parser parser;
 
     @Inject
-    Enhancer enhancer;
+    Prepare enhancer;
 
     @LoggerName("QueryServiceGrpc")
     Logger logger;
 
     @Override
-    public Uni<Plan> prepare(QueryDescriptor request) {
+    public Uni<PreparedQuery> prepare(QueryDescriptor request) {
         try {
             var sql = parser.parse(request);
             var plan = enhancer.inflate(sql, request.getSourcesList());
             logger.info(plan);
-            return Uni.createFrom().item(Plan.newBuilder().build());
+            return Uni.createFrom().item(PreparedQuery.newBuilder().setPlan(plan).build());
         } catch (SqlParseException e) {
             logger.error(e);
-            throw new RuntimeException(e);
+            var pq = PreparedQuery.newBuilder().setDiagnostics(QueryDiagnostics.newBuilder().setErrorMessage(e.getMessage()).build());
+            return Uni.createFrom().item(pq.build());
         }
     }
 }

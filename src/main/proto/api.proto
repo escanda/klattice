@@ -10,7 +10,7 @@ import "substrait/plan.proto";
 import "substrait/type.proto";
 
 service Query {
-    rpc Prepare (QueryDescriptor) returns (substrait.Plan) {};
+    rpc Prepare (QueryDescriptor) returns (PreparedQuery) {};
 }
 
 message QueryDescriptor {
@@ -29,4 +29,16 @@ message RelDescriptor {
     string relName = 2;
     repeated string columnName = 3;
     repeated substrait.Type typing = 4;
+}
+
+message PreparedQuery {
+    bool errored = 1;
+    oneof result {
+        substrait.Plan plan = 2;
+        QueryDiagnostics diagnostics = 3;
+    }
+}
+
+message QueryDiagnostics {
+    string error_message = 1;
 }

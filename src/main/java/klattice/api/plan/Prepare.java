@@ -31,7 +31,6 @@ import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.schema.impl.ListTransientTable;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
-import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.type.BasicSqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.validate.SqlValidator;
@@ -47,7 +46,7 @@ import java.util.Properties;
 import static org.apache.calcite.sql.validate.SqlConformance.PRAGMATIC_2003;
 
 @Dependent
-public class Enhancer {
+public class Prepare {
     protected static final SimpleExtension.ExtensionCollection EXTENSION_COLLECTION;
 
     static {
@@ -68,7 +67,7 @@ public class Enhancer {
 
     JavaTypeFactory typeFactory = new JavaTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
 
-    public Object inflate(SqlNode query, List<SchemaDescriptor> schemaSourcesList) throws SqlParseException {
+    public Plan inflate(SqlNode query, List<SchemaDescriptor> schemaSourcesList) {
         var rootSchema = LookupCalciteSchema.createRootSchema(false);
         for (SchemaDescriptor schemaSourceDetails : schemaSourcesList) {
             CalciteSchema schemaPlus = CalciteSchema.createRootSchema(false);
