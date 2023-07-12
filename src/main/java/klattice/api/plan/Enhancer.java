@@ -1,7 +1,6 @@
 package klattice.api.plan;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Maps;
 import io.substrait.extension.ExtensionCollector;
 import io.substrait.extension.SimpleExtension;
 import io.substrait.isthmus.FeatureBoard;
@@ -15,27 +14,20 @@ import jakarta.enterprise.context.Dependent;
 import klattice.api.RelDescriptor;
 import klattice.api.SchemaDescriptor;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
-import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.jdbc.CalciteSchema;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.jdbc.LookupCalciteSchema;
-import org.apache.calcite.plan.Contexts;
 import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.plan.RelOptCostImpl;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgram;
-import org.apache.calcite.plan.volcano.VolcanoPlanner;
 import org.apache.calcite.prepare.CalciteCatalogReader;
 import org.apache.calcite.prepare.CalciteSqlValidator;
-import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.rel.metadata.DefaultRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ProxyingMetadataHandlerProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.*;
 import org.apache.calcite.rex.RexBuilder;
-import org.apache.calcite.schema.SchemaPlus;
-import org.apache.calcite.schema.Table;
 import org.apache.calcite.schema.impl.ListTransientTable;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
@@ -47,8 +39,10 @@ import org.apache.calcite.sql2rel.SqlToRelConverter;
 import org.apache.calcite.sql2rel.StandardConvertletTable;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 import static org.apache.calcite.sql.validate.SqlConformance.PRAGMATIC_2003;
 
@@ -104,7 +98,14 @@ public class Enhancer {
         var props = new Properties();
         props.put("caseSensitive", Boolean.FALSE);
 
-        CalciteCatalogReader catalogReader = new CalciteCatalogReader(rootSchema, List.of(), typeFactory, new CalciteConnectionConfigImpl(props));
+        CalciteCatalogReader catalogReader = new CalciteCatalogReader(
+                rootSchema,
+                schemaSourcesList.stream()
+                        .findFirst()
+                        .map(schemaDescriptor -> List.of(schemaDescriptor.getRelName())).orElse(Collections.emptyList()),
+                typeFactory,
+                new CalciteConnectionConfigImpl(props)
+        );
 
         var operatorTable = new SqlStdOperatorTable();
         var calciteSqlValidator = new CalciteSqlValidator(operatorTable, catalogReader, typeFactory, SqlValidator.Config.DEFAULT);
