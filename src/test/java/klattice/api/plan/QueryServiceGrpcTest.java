@@ -37,6 +37,6 @@ public class QueryServiceGrpcTest {
                 .build());
         assertNotNull(sqlNode);
         var inflated = prepare.inflate(sqlNode, schemaSources);
-        System.out.println(inflated);
+        assertNotNull(inflated);
     }
 }
