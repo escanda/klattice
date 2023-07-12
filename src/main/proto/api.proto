@@ -14,29 +14,27 @@ service Query {
 }
 
 service Schema {
-    rpc Query(SchemaQuery) returns (Schemata) {};
+    rpc Query(SchemaQuery) returns (SchemaSourceDetails) {};
 }
 
 message QueryContext {
-    repeated SchemaSource bound_schema_sources = 1;
+    repeated SchemaSourceDetails sources = 1;
     string query = 2;
-}
-
-message SchemaSource {
-    string host = 1;
-    uint32 port = 2;
-    uint64 schema_id = 3;
 }
 
 message SchemaQuery {
     uint64 schema_id = 1;
 }
 
-message Schemata {
-    repeated Projection projections = 1;
+message SchemaSourceDetails {
+    uint64 schema_id = 1;
+    string relName = 2;
+    repeated Projection projections = 3;
 }
 
 message Projection {
-    string name = 1;
-    substrait.Type typing = 2;
+    uint64 schema_id = 1;
+    string relName = 2;
+    repeated string columnName = 3;
+    repeated substrait.Type typing = 4;
 }

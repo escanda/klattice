@@ -6,7 +6,7 @@ import io.smallrye.mutiny.Uni;
 @GrpcService
 public class SchemaServiceGrpc implements Schema {
     @Override
-    public Uni<Schemata> query(SchemaQuery request) {
-        return Uni.createFrom().item(Schemata.newBuilder().build());
+    public Uni<SchemaSourceDetails> query(SchemaQuery request) {
+        return Uni.createFrom().item(SchemaSourceDetails.newBuilder().build());
     }
 }
