@@ -1,12 +1,13 @@
 package klattice.query;
 
 import io.quarkus.arc.log.LoggerName;
-import io.quarkus.grpc.GrpcClient;
-import io.quarkus.test.junit.QuarkusIntegrationTest;
+import io.quarkus.test.junit.QuarkusTest;
 import io.substrait.proto.Type;
+import jakarta.inject.Inject;
 import klattice.msg.QueryDescriptor;
 import klattice.msg.RelDescriptor;
 import klattice.msg.SchemaDescriptor;
+import klattice.plan.Enhance;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
@@ -15,13 +16,13 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@QuarkusIntegrationTest
-public class QueryServiceGrpcTest {
-    @GrpcClient
-    Query query;
-
+@QuarkusTest
+public class PrepareTest {
     @LoggerName("QueryServiceGrpcTest")
     Logger logger;
+
+    @Inject
+    Prepare prepare;
 
     @Test
     public void smokeTest() throws SqlParseException {
@@ -37,7 +38,7 @@ public class QueryServiceGrpcTest {
                 .setQuery(q)
                 .addAllSources(schemaSources)
                 .build();
-        var preparedQuery = query.prepare(qc).await().indefinitely();
+        var preparedQuery = prepare.compile(qc.getQuery(), qc.getSourcesList());
         logger.info(preparedQuery);
         assertNotNull(preparedQuery);
     }

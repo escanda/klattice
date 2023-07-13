@@ -1,9 +1,7 @@
 package klattice.query;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.substrait.extension.ExtensionCollector;
 import io.substrait.extension.SimpleExtension;
-import io.substrait.isthmus.FeatureBoard;
 import io.substrait.isthmus.ImmutableFeatureBoard;
 import io.substrait.isthmus.SubstraitRelVisitor;
 import io.substrait.isthmus.TypeConverter;
@@ -11,6 +9,8 @@ import io.substrait.proto.Plan;
 import io.substrait.proto.PlanRel;
 import io.substrait.relation.RelProtoConverter;
 import jakarta.enterprise.context.Dependent;
+import klattice.msg.PreparedQuery;
+import klattice.msg.QueryDiagnostics;
 import klattice.msg.RelDescriptor;
 import klattice.msg.SchemaDescriptor;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
@@ -29,8 +29,9 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.*;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.schema.impl.ListTransientTable;
-import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.parser.SqlParseException;
+import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.type.BasicSqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.validate.SqlValidator;
@@ -42,8 +43,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
-import static org.apache.calcite.sql.validate.SqlConformance.PRAGMATIC_2003;
 
 @Dependent
 public class Prepare {
@@ -58,6 +57,81 @@ public class Prepare {
         }
 
         EXTENSION_COLLECTION = defaults;
+    }
+
+    public PreparedQuery compile(String query, List<SchemaDescriptor> sources) throws SqlParseException {
+        var parser = SqlParser.create(query);
+        var sql = parser.parseQuery();
+        var rootSchema = LookupCalciteSchema.createRootSchema(false);
+        for (SchemaDescriptor schemaSourceDetails : sources) {
+            CalciteSchema schemaPlus = CalciteSchema.createRootSchema(false);
+            for (RelDescriptor projection : schemaSourceDetails.getProjectionsList()) {
+                List<RelDataTypeField> typeList = new ArrayList<>();
+                int i = 0;
+                for (String columnName : projection.getColumnNameList()) {
+                    typeList.add(new RelDataTypeFieldImpl(columnName, i, asType(projection.getTyping(i))));
+                    i++;
+                }
+                var table = new ListTransientTable(projection.getRelName(), new RelRecordType(StructKind.FULLY_QUALIFIED, typeList));
+                schemaPlus.add(projection.getRelName(), table);
+            }
+            rootSchema.add(schemaSourceDetails.getRelName(), schemaPlus.plus());
+        }
+
+        JavaTypeFactory typeFactory = new JavaTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
+
+        var program = HepProgram.builder().build();
+        var planner = new HepPlanner(program);
+        RelOptCluster relOptCluster = RelOptCluster.create(planner, new RexBuilder(typeFactory));
+        relOptCluster.setMetadataQuerySupplier(
+                () -> {
+                    ProxyingMetadataHandlerProvider handler =
+                            new ProxyingMetadataHandlerProvider(DefaultRelMetadataProvider.INSTANCE);
+                    return new RelMetadataQuery(handler);
+                });
+
+        var props = new Properties();
+        props.put("caseSensitive", Boolean.FALSE);
+
+        CalciteCatalogReader catalogReader = new CalciteCatalogReader(
+                rootSchema,
+                sources.stream()
+                        .findFirst()
+                        .map(schemaDescriptor -> List.of(schemaDescriptor.getRelName())).orElse(Collections.emptyList()),
+                typeFactory,
+                new CalciteConnectionConfigImpl(props)
+        );
+
+        var operatorTable = new SqlStdOperatorTable();
+        var calciteSqlValidator = new CalciteSqlValidator(operatorTable, catalogReader, typeFactory, SqlValidator.Config.DEFAULT);
+        var plan = Plan.newBuilder();
+        ExtensionCollector functionCollector = new ExtensionCollector();
+        var relProtoConverter = new RelProtoConverter(functionCollector);
+        SqlToRelConverter converter =
+                new SqlToRelConverter(
+                        null,
+                        calciteSqlValidator,
+                        catalogReader,
+                        relOptCluster,
+                        StandardConvertletTable.INSTANCE,
+                        SqlToRelConverter.config());
+        var relRoot = converter.convertQuery(sql, false, true);
+        planner.setRoot(relRoot.rel);
+        relRoot = relRoot.withRel(planner.findBestExp());
+        plan.addRelations(
+                PlanRel.newBuilder()
+                        .setRoot(
+                                io.substrait.proto.RelRoot.newBuilder()
+                                        .setInput(
+                                                SubstraitRelVisitor.convert(
+                                                                relRoot, EXTENSION_COLLECTION, ImmutableFeatureBoard.builder().build())
+                                                        .accept(relProtoConverter))
+                                        .addAllNames(
+                                                TypeConverter.DEFAULT
+                                                        .toNamedStruct(relRoot.validatedRowType)
+                                                        .names())));
+        functionCollector.addExtensionsToPlan(plan);
+        return PreparedQuery.newBuilder().setPlan(plan).build();
     }
 
     public static RelDataType asType(io.substrait.proto.Type typing) {
