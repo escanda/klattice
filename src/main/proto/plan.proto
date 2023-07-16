@@ -6,8 +6,8 @@ option java_outer_classname = "KLPlanProto";
 
 package klattice.plan;
 
-import "substrait/plan.proto";
+import "messages.proto";
 
 service Planner {
-    rpc Enhance (substrait.Plan) returns (substrait.Plan);
+    rpc Enhance (klattice.msg.PlanDescriptor) returns (klattice.msg.PlanDescriptor);
 }

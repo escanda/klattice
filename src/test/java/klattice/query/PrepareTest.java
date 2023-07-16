@@ -30,10 +30,11 @@ public class PrepareTest {
                 .setSchemaId(1)
                 .setRelName("PUBLIC")
                 .addTyping(Type.newBuilder().setI64(Type.I64.newBuilder().setNullability(Type.Nullability.NULLABILITY_REQUIRED).build()))
+                .addColumnName("public")
                 .build();
         var schemaSources = List.of(SchemaDescriptor.newBuilder().setSchemaId(1).setRelName("PUBLIC").addProjections(projection).build());
 
-        var q = "SELECT public FROM PUBLIC.PUBLIC";
+        var q = "SELECT 'public' FROM PUBLIC";
         var qc = QueryDescriptor.newBuilder()
                 .setQuery(q)
                 .addAllSources(schemaSources)

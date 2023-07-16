@@ -4,8 +4,11 @@ import io.quarkus.arc.log.LoggerName;
 import io.quarkus.grpc.GrpcClient;
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 import io.quarkus.test.junit.QuarkusTest;
+import io.substrait.proto.Plan;
+import io.substrait.proto.Type;
 import jakarta.inject.Inject;
 import klattice.msg.QueryDescriptor;
+import klattice.msg.RelDescriptor;
 import klattice.msg.SchemaDescriptor;
 import klattice.query.Prepare;
 import klattice.query.Query;
@@ -13,6 +16,7 @@ import org.apache.calcite.sql.parser.SqlParseException;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.List;
 
 import static io.smallrye.common.constraint.Assert.assertNotNull;
@@ -30,11 +34,20 @@ public class EnhanceTest {
     Enhance enhance;
 
     @Test
-    public void smokeTest() throws SqlParseException {
-        var preparedQuery = prepare.compile("SELECT * FROM PUBLIC.PUBLIC", List.of(SchemaDescriptor.newBuilder().build()));
+    public void smokeTest() throws SqlParseException, IOException {
+        var projection = RelDescriptor.newBuilder()
+                .setSchemaId(1)
+                .setRelName("PUBLIC")
+                .addTyping(Type.newBuilder().setI64(Type.I64.newBuilder().setNullability(Type.Nullability.NULLABILITY_REQUIRED).build()))
+                .addColumnName("public")
+                .build();
+        var schemaSources = List.of(SchemaDescriptor.newBuilder().setSchemaId(1).setRelName("PUBLIC").addProjections(projection).build());
+
+        var preparedQuery = prepare.compile("SELECT 'public' FROM PUBLIC", schemaSources);
         assertNotNull(preparedQuery);
         logger.infov("Prepared query plan is:\n{0}", new Object[]{preparedQuery});
-        var enhancedPlan = enhance.improve(preparedQuery.getPlan());
+        var plan = preparedQuery.getPlan().getPlan();
+        var enhancedPlan = enhance.improve(plan, schemaSources);
         assertNotNull(enhancedPlan);
         assertEquals(1, enhancedPlan.getRelationsCount());
         logger.infov("Planner became enhanced thus is now:\n{0}", new Object[]{enhancedPlan});

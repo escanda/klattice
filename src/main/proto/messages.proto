@@ -16,13 +16,13 @@ message QueryDescriptor {
 
 message SchemaDescriptor {
     uint64 schema_id = 1;
-    DatabaseDescriptor database = 2;
     string relName = 3;
     repeated RelDescriptor projections = 4;
 }
 
-message DatabaseDescriptor {
-
+message PlanDescriptor {
+    repeated SchemaDescriptor sources = 1;
+    substrait.Plan plan = 2;
 }
 
 message RelDescriptor {
@@ -35,7 +35,7 @@ message RelDescriptor {
 message PreparedQuery {
     bool errored = 1;
     oneof result {
-        substrait.Plan plan = 2;
+        PlanDescriptor plan = 2;
         QueryDiagnostics diagnostics = 3;
     }
 }
