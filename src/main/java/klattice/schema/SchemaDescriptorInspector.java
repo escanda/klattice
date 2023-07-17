@@ -33,7 +33,7 @@ public class SchemaDescriptorInspector {
     private final CalciteCatalogReader catalog;
     private final RelOptCluster relOptCluster;
     private final JavaTypeFactory typeFactory;
-    private SqlStdOperatorTable operatorTable;
+    private final SqlStdOperatorTable operatorTable;
 
     public SchemaDescriptorInspector(List<SchemaDescriptor> sources) {
         operatorTable = new SqlStdOperatorTable();

@@ -17,7 +17,7 @@ public class QueryServiceGrpc implements Query {
     @Override
     public Uni<PreparedQuery> prepare(QueryDescriptor request) {
         var prepare = new Prepare();
-        PreparedQuery preparedQuery = null;
+        PreparedQuery preparedQuery;
         try {
             preparedQuery = prepare.compile(request.getQuery(), request.getSourcesList());
         } catch (SqlParseException e) {
