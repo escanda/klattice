@@ -8,17 +8,11 @@ import io.substrait.isthmus.TypeConverter;
 import io.substrait.proto.Plan;
 import io.substrait.proto.PlanRel;
 import io.substrait.relation.RelProtoConverter;
-import org.apache.calcite.plan.RelOptCluster;
-import org.apache.calcite.prepare.CalciteCatalogReader;
-import org.apache.calcite.prepare.CalciteSqlValidator;
 import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
-import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.type.BasicSqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
-import org.apache.calcite.sql2rel.SqlToRelConverter;
-import org.apache.calcite.sql2rel.StandardConvertletTable;
 
 import java.io.IOException;
 

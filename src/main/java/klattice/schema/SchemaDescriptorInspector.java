@@ -12,7 +12,6 @@ import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgram;
 import org.apache.calcite.prepare.CalciteCatalogReader;
 import org.apache.calcite.prepare.CalciteSqlValidator;
-import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.rel.metadata.DefaultRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ProxyingMetadataHandlerProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;

@@ -6,11 +6,8 @@ import klattice.msg.PreparedQuery;
 import klattice.msg.SchemaDescriptor;
 import klattice.plan.Converter;
 import klattice.schema.SchemaDescriptorInspector;
-import org.apache.calcite.prepare.CalciteSqlValidator;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.parser.SqlParser;
-import org.apache.calcite.sql.validate.SqlValidator;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
 import org.apache.calcite.sql2rel.StandardConvertletTable;
 
