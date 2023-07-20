@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 public class PrepareTest {
@@ -42,5 +42,6 @@ public class PrepareTest {
         var preparedQuery = prepare.compile(qc.getQuery(), qc.getSourcesList());
         logger.info(preparedQuery);
         assertNotNull(preparedQuery);
+        assertFalse(preparedQuery.getErrored());
     }
 }
