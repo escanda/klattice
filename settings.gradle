@@ -8,4 +8,6 @@ pluginManagement {
         id "${quarkusPluginId}" version "${quarkusPluginVersion}"
     }
 }
-rootProject.name='klattice-api'
+rootProject.name='klattice'
+include 'cli'
+
