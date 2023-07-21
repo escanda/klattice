@@ -18,6 +18,9 @@ public class Main implements Runnable, QuarkusApplication {
     @LoggerName("Main")
     Logger logger;
 
+    @ConfigProperty(name = "quarkus.grpc.server.host")
+    String host;
+
     @ConfigProperty(name = "quarkus.grpc.server.port")
     String port;
 
@@ -28,7 +31,7 @@ public class Main implements Runnable, QuarkusApplication {
 
     @Override
     public void run() {
-        logger.infov("App up and running in port {0}", port);
+        logger.infov("App up and running in port {0}:{1}", port, host);
     }
 
     public static void main(String[] args) {

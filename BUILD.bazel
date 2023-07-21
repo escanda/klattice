@@ -1,0 +1,89 @@
+filegroup(
+    name = "gradle-build-metadata",
+    srcs = glob([
+        "build.gradle",
+        "settings.gradle",
+        "gradle.properties",
+    ]),
+)
+
+java_library(
+    name = "klattice_lib",
+    srcs = [":gradle-build-metadata"] + glob([
+        "src/main/java/**",
+    ]) + glob([
+        "src/main/resources/**",
+    ]),
+    deps = [
+        "@maven//:io_quarkus_quarkus_picocli",
+        "@maven//:io_quarkus_quarkus_grpc",
+        "@maven//:io_quarkus_quarkus_arc",
+        "@maven//:org_apache_calcite_calcite_core",
+        "@maven//:io_substrait_core",
+        "@maven//:io_substrait_isthmus",
+        "@maven//:org_antlr_antlr4_runtime",
+    ],
+)
+
+load("@bazel_tools//tools/build_defs/pkg:pkg.bzl", "pkg_tar")
+
+pkg_tar(
+    name = "klattice_tar",
+    srcs = [":klattice_dir"],
+    package_dir = "/deployments",
+)
+
+load(
+    "@io_bazel_rules_docker//container:container.bzl",
+    "container_image",
+)
+
+container_image(
+    name = "klattice_img",
+    base = "@openjdk-19//image",
+    env = {
+        "LANG": "en_US.UTF-8",
+        "LANGUAGE": "en_US:en",
+        "AB_JOLOKIA_OFF": "",
+        "JAVA_OPTS": "-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager",
+        "JAVA_APP_JAR": "/deployments/quarkus-run.jar",
+    },
+    tars = [":klattice_tar"],
+)
+
+genrule(
+    name = "klattice_from_dockerfile",
+    # Do not include .dockerignore file here otherwise weird errors occur
+    srcs = [
+        ":project",
+        "src/main/docker/Dockerfile.jvm",
+    ],
+    outs = ["dockerimage.tar"],
+    cmd = """
+    mkdir build
+    cp -L -R bazel-out/darwin-fastbuild/bin/external-gradle-build-dir-project/* build
+    export DOCKER_BUILDKIT=0
+    export COMPOSE_DOCKER_CLI_BUILD=0
+    export DOCKER_DEFAULT_PLATFORM=linux/amd64
+    docker build -f src/main/docker/Dockerfile.jvm -t bazel:quarkus_app_image_from_dockerfile .
+    docker save -o $(location dockerimage.tar) bazel:quarkus_app_image_from_dockerfile
+    """,
+)
+
+load(
+    "@bazel_tools//tools/jdk:default_java_toolchain.bzl",
+    "BASE_JDK9_JVM_OPTS",
+    "DEFAULT_JAVACOPTS",
+    "DEFAULT_TOOLCHAIN_CONFIGURATION",
+    "default_java_toolchain",
+)
+
+default_java_toolchain(
+    name = "jdk_20_def_toolchain",
+    configuration = DEFAULT_TOOLCHAIN_CONFIGURATION,  # One of predefined configurations
+    # Other parameters are from java_toolchain rule:
+    java_runtime = "jdk20-linux-x64",  # JDK to use for compilation and toolchain's tools execution
+    javacopts = DEFAULT_JAVACOPTS + ["--enable_preview"],  # Additional javac options
+    jvm_opts = BASE_JDK9_JVM_OPTS + ["--enable_preview"],  # Additional JDK options
+    source_version = "20",
+)
