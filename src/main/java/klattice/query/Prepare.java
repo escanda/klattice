@@ -5,7 +5,7 @@ import klattice.msg.PlanDescriptor;
 import klattice.msg.PreparedQuery;
 import klattice.msg.SchemaDescriptor;
 import klattice.plan.Converter;
-import klattice.schema.SchemaDescriptorInspector;
+import klattice.schema.SchemaDescriptorFactory;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
@@ -18,7 +18,7 @@ public class Prepare {
     public PreparedQuery compile(String query, List<SchemaDescriptor> sources) throws SqlParseException {
         var parser = SqlParser.create(query);
         var sql = parser.parseQuery();
-        var inspector = new SchemaDescriptorInspector(sources);
+        var inspector = new SchemaDescriptorFactory(sources);
         var validator = inspector.getSqlValidator();
         var sqlToRelConverter = new SqlToRelConverter(
                 null,
@@ -29,6 +29,6 @@ public class Prepare {
                 SqlToRelConverter.config());
         var relNode = sqlToRelConverter.convertQuery(sql, true, true);
         var plan = Converter.getPlan(relNode);
-        return PreparedQuery.newBuilder().setPlan(PlanDescriptor.newBuilder().addAllSources(sources).setPlan(plan).build()).build();
+        return PreparedQuery.newBuilder().setPlan(PlanDescriptor.newBuilder().addAllAvailableSchemas(sources).setPlan(plan).build()).build();
     }
 }

@@ -16,20 +16,53 @@ message QueryDescriptor {
 
 message SchemaDescriptor {
     uint64 schema_id = 1;
-    string relName = 3;
-    repeated RelDescriptor projections = 4;
+    string relName = 2;
+    repeated RelDescriptor projections = 3;
+    oneof next {
+        SchemaDescriptor next_schema = 4;
+        EndpointDescriptor endpoint = 5;
+    }
 }
 
 message PlanDescriptor {
-    repeated SchemaDescriptor sources = 1;
+    repeated SchemaDescriptor available_schemas = 1;
     substrait.Plan plan = 2;
+    oneof next {
+        PlanDescriptor next_plan = 3;
+        EndpointDescriptor next_endpoint = 4;
+    }
 }
 
 message RelDescriptor {
     uint64 schema_id = 1;
     string relName = 2;
-    repeated string columnName = 3;
-    repeated substrait.Type typing = 4;
+    repeated ColumnDescriptor columns = 3;
+    uint64 estimated_rows = 4;
+    oneof next {
+        RelDescriptor next_rel = 5;
+        EndpointDescriptor next_endpoint = 6;
+    }
+}
+
+message ColumnDescriptor {
+    string columnName = 1;
+    substrait.Type type = 2;
+}
+
+message EndpointDescriptor {
+    HostAndPort host_port = 1;
+    bytes query_payload = 2;
+    ResponseAdaptorKind response_adaptor = 3;
+}
+
+message HostAndPort {
+    string host = 1;
+    uint32 port = 2;
+}
+
+enum ResponseAdaptorKind {
+    ARROW = 0;
+    AVRO = 1;
 }
 
 message PreparedQuery {
@@ -42,15 +75,4 @@ message PreparedQuery {
 
 message QueryDiagnostics {
     string error_message = 1;
-}
-
-message Node {
-    string host = 1;
-    uint32 port = 2;
-}
-
-message Scope {
-    uint64 nodeId = 1;
-    repeated uint64 schemas = 2;
-    repeated string relNames = 3;
 }

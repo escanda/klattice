@@ -1,5 +1,6 @@
 package klattice.schema;
 
+import klattice.msg.ColumnDescriptor;
 import klattice.msg.RelDescriptor;
 import klattice.msg.SchemaDescriptor;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
@@ -28,13 +29,13 @@ import java.util.Properties;
 
 import static klattice.plan.Converter.asType;
 
-public class SchemaDescriptorInspector {
+public class SchemaDescriptorFactory {
     private final CalciteCatalogReader catalog;
     private final RelOptCluster relOptCluster;
     private final JavaTypeFactory typeFactory;
     private final SqlStdOperatorTable operatorTable;
 
-    public SchemaDescriptorInspector(List<SchemaDescriptor> sources) {
+    public SchemaDescriptorFactory(List<SchemaDescriptor> sources) {
         operatorTable = new SqlStdOperatorTable();
         var rootSchema = LookupCalciteSchema.createRootSchema(false);
         for (SchemaDescriptor schemaSourceDetails : sources) {
@@ -42,8 +43,8 @@ public class SchemaDescriptorInspector {
             for (RelDescriptor projection : schemaSourceDetails.getProjectionsList()) {
                 List<RelDataTypeField> typeList = new ArrayList<>();
                 int i = 0;
-                for (String columnName : projection.getColumnNameList()) {
-                    typeList.add(new RelDataTypeFieldImpl(columnName, i, asType(projection.getTyping(i))));
+                for (ColumnDescriptor col : projection.getColumnsList()) {
+                    typeList.add(new RelDataTypeFieldImpl(col.getColumnName(), i, asType(col.getType())));
                     i++;
                 }
                 var table = new ListTransientTable(projection.getRelName(), new RelRecordType(StructKind.FULLY_QUALIFIED, typeList));

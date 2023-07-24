@@ -7,6 +7,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.substrait.proto.Plan;
 import io.substrait.proto.Type;
 import jakarta.inject.Inject;
+import klattice.msg.ColumnDescriptor;
 import klattice.msg.QueryDescriptor;
 import klattice.msg.RelDescriptor;
 import klattice.msg.SchemaDescriptor;
@@ -35,11 +36,12 @@ public class EnhanceTest {
 
     @Test
     public void smokeTest() throws SqlParseException, IOException {
+        var type = Type.newBuilder().setBool(Type.Boolean.newBuilder().setNullability(Type.Nullability.NULLABILITY_NULLABLE).build());
+        var col = ColumnDescriptor.newBuilder().setColumnName("public").setType(type.build()).build();
         var projection = RelDescriptor.newBuilder()
                 .setSchemaId(1)
                 .setRelName("PUBLIC")
-                .addTyping(Type.newBuilder().setI64(Type.I64.newBuilder().setNullability(Type.Nullability.NULLABILITY_REQUIRED).build()))
-                .addColumnName("public")
+                .addAllColumns(List.of(col))
                 .build();
         var schemaSources = List.of(SchemaDescriptor.newBuilder().setSchemaId(1).setRelName("PUBLIC").addProjections(projection).build());
 
