@@ -1,6 +1,5 @@
 package klattice.plan;
 
-import io.quarkus.arc.impl.Sets;
 import io.quarkus.arc.log.LoggerName;
 import io.substrait.extension.ExtensionCollector;
 import io.substrait.isthmus.SubstraitToCalcite;
@@ -11,23 +10,16 @@ import jakarta.inject.Inject;
 import klattice.dialect.DucksDbDialect;
 import klattice.msg.SchemaDescriptor;
 import klattice.schema.SchemaDescriptorFactory;
-import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptUtil;
-import org.apache.calcite.prepare.CalciteCatalogReader;
-import org.apache.calcite.prepare.CalciteSqlValidator;
 import org.apache.calcite.rel.RelCollations;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.rel.RelShuttleImpl;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
-import org.apache.calcite.rel.rel2sql.SqlImplementor;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.rex.*;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.SqlNode;
-import org.apache.calcite.sql.SqlSelect;
-import org.apache.calcite.sql.SqlSetOperator;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.calcite.sql2rel.SqlRexContext;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
@@ -37,7 +29,10 @@ import org.apache.calcite.util.mapping.Mappings;
 import org.jboss.logging.Logger;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 @Dependent
 public class Enhance {
