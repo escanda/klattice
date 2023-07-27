@@ -19,7 +19,7 @@ public class QueryServiceGrpc implements Query {
         var prepare = new Prepare();
         PreparedQuery preparedQuery;
         try {
-            preparedQuery = prepare.compile(request.getQuery(), request.getSourcesList());
+            preparedQuery = prepare.compile(request.getQuery(), request.getEnvironList());
         } catch (SqlParseException e) {
             logger.warnv("Error parsing statement {0} with error", new Object[]{request.getQuery()}, e);
             preparedQuery = PreparedQuery.newBuilder().setDiagnostics(QueryDiagnostics.newBuilder().setErrorMessage(e.getMessage()).build()).build();

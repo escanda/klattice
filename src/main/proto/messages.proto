@@ -10,27 +10,21 @@ import "substrait/plan.proto";
 import "substrait/type.proto";
 
 message QueryDescriptor {
-    repeated SchemaDescriptor sources = 1;
+    repeated Environment environ = 1;
     string query = 2;
 }
 
-message SchemaDescriptor {
+message Environment {
     uint64 schema_id = 1;
     string relName = 2;
-    repeated RelDescriptor projections = 3;
-    oneof next {
-        SchemaDescriptor next_schema = 4;
-        EndpointDescriptor endpoint = 5;
-    }
+    repeated RelDescriptor rels = 3;
+    optional Environment parent = 4;
 }
 
 message PlanDescriptor {
-    repeated SchemaDescriptor available_schemas = 1;
+    repeated Environment environ = 1;
     substrait.Plan plan = 2;
-    oneof next {
-        PlanDescriptor next_plan = 3;
-        EndpointDescriptor next_endpoint = 4;
-    }
+    optional PlanDescriptor next = 3;
 }
 
 message RelDescriptor {

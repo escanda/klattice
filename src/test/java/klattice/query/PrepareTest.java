@@ -4,10 +4,7 @@ import io.quarkus.arc.log.LoggerName;
 import io.quarkus.test.junit.QuarkusTest;
 import io.substrait.proto.Type;
 import jakarta.inject.Inject;
-import klattice.msg.ColumnDescriptor;
-import klattice.msg.QueryDescriptor;
-import klattice.msg.RelDescriptor;
-import klattice.msg.SchemaDescriptor;
+import klattice.msg.*;
 import klattice.plan.Enhance;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.jboss.logging.Logger;
@@ -34,14 +31,13 @@ public class PrepareTest {
                 .setRelName("PUBLIC")
                 .addAllColumns(List.of(col.build()))
                 .build();
-        var schemaSources = List.of(SchemaDescriptor.newBuilder().setSchemaId(1).setRelName("PUBLIC").addProjections(projection).build());
-
+        var environments = List.of(Environment.newBuilder().setSchemaId(1).setRelName("PUBLIC").addRels(projection).build());
         var q = "SELECT 'public' FROM PUBLIC";
         var qc = QueryDescriptor.newBuilder()
                 .setQuery(q)
-                .addAllSources(schemaSources)
+                .addAllEnviron(environments)
                 .build();
-        var preparedQuery = prepare.compile(qc.getQuery(), qc.getSourcesList());
+        var preparedQuery = prepare.compile(qc.getQuery(), environments);
         logger.info(preparedQuery);
         assertNotNull(preparedQuery);
         assertFalse(preparedQuery.getErrored());

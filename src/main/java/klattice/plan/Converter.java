@@ -8,6 +8,9 @@ import io.substrait.isthmus.TypeConverter;
 import io.substrait.proto.Plan;
 import io.substrait.proto.PlanRel;
 import io.substrait.relation.RelProtoConverter;
+import klattice.msg.Environment;
+import klattice.schema.SchemaDescriptorFactory;
+import org.apache.calcite.jdbc.CalciteSchema;
 import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
@@ -15,8 +18,9 @@ import org.apache.calcite.sql.type.BasicSqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
 
 import java.io.IOException;
+import java.util.Collection;
 
-public class Converter {
+public final class Converter {
     public static final SimpleExtension.ExtensionCollection EXTENSION_COLLECTION;
 
     static {
@@ -132,5 +136,9 @@ public class Converter {
             }
         }
         return types[0];
+    }
+
+    public static CalciteSchema getSchema(Collection<Environment> environments) {
+        return new SchemaDescriptorFactory(environments.stream().toList()).getCatalog().getRootSchema();
     }
 }

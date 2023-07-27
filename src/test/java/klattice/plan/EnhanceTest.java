@@ -7,10 +7,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.substrait.proto.Plan;
 import io.substrait.proto.Type;
 import jakarta.inject.Inject;
-import klattice.msg.ColumnDescriptor;
-import klattice.msg.QueryDescriptor;
-import klattice.msg.RelDescriptor;
-import klattice.msg.SchemaDescriptor;
+import klattice.msg.*;
 import klattice.query.Prepare;
 import klattice.query.Query;
 import org.apache.calcite.sql.parser.SqlParseException;
@@ -43,9 +40,8 @@ public class EnhanceTest {
                 .setRelName("PUBLIC")
                 .addAllColumns(List.of(col))
                 .build();
-        var schemaSources = List.of(SchemaDescriptor.newBuilder().setSchemaId(1).setRelName("PUBLIC").addProjections(projection).build());
-
-        var preparedQuery = prepare.compile("SELECT 'public' FROM PUBLIC", schemaSources);
+        var schemaSources = List.of(Environment.newBuilder().setSchemaId(1).setRelName("PUBLIC").addRels(projection).build());
+        var preparedQuery = prepare.compile("SELECT * FROM PUBLIC", schemaSources);
         assertNotNull(preparedQuery);
         logger.infov("Prepared query plan is:\n{0}", new Object[]{preparedQuery});
         var plan = preparedQuery.getPlan().getPlan();

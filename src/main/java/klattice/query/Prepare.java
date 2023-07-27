@@ -1,9 +1,9 @@
 package klattice.query;
 
 import jakarta.enterprise.context.Dependent;
+import klattice.msg.Environment;
 import klattice.msg.PlanDescriptor;
 import klattice.msg.PreparedQuery;
-import klattice.msg.SchemaDescriptor;
 import klattice.plan.Converter;
 import klattice.schema.SchemaDescriptorFactory;
 import org.apache.calcite.sql.parser.SqlParseException;
@@ -15,10 +15,10 @@ import java.util.List;
 
 @Dependent
 public class Prepare {
-    public PreparedQuery compile(String query, List<SchemaDescriptor> sources) throws SqlParseException {
+    public PreparedQuery compile(String query, List<Environment> environments) throws SqlParseException {
         var parser = SqlParser.create(query);
         var sql = parser.parseQuery();
-        var inspector = new SchemaDescriptorFactory(sources);
+        var inspector = new SchemaDescriptorFactory(environments);
         var validator = inspector.getSqlValidator();
         var sqlToRelConverter = new SqlToRelConverter(
                 null,
@@ -29,6 +29,6 @@ public class Prepare {
                 SqlToRelConverter.config());
         var relNode = sqlToRelConverter.convertQuery(sql, true, true);
         var plan = Converter.getPlan(relNode);
-        return PreparedQuery.newBuilder().setPlan(PlanDescriptor.newBuilder().addAllAvailableSchemas(sources).setPlan(plan).build()).build();
+        return PreparedQuery.newBuilder().setPlan(PlanDescriptor.newBuilder().addAllEnviron(environments).setPlan(plan).build()).build();
     }
 }

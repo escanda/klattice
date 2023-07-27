@@ -1,8 +1,8 @@
 package klattice.schema;
 
 import klattice.msg.ColumnDescriptor;
+import klattice.msg.Environment;
 import klattice.msg.RelDescriptor;
-import klattice.msg.SchemaDescriptor;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.jdbc.CalciteSchema;
@@ -22,10 +22,7 @@ import org.apache.calcite.schema.impl.ListTransientTable;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.validate.SqlValidator;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import static klattice.plan.Converter.asType;
 
@@ -35,12 +32,12 @@ public class SchemaDescriptorFactory {
     private final JavaTypeFactory typeFactory;
     private final SqlStdOperatorTable operatorTable;
 
-    public SchemaDescriptorFactory(List<SchemaDescriptor> sources) {
+    public SchemaDescriptorFactory(Collection<Environment> environments) {
         operatorTable = new SqlStdOperatorTable();
         var rootSchema = LookupCalciteSchema.createRootSchema(false);
-        for (SchemaDescriptor schemaSourceDetails : sources) {
+        for (Environment environment : environments) {
             CalciteSchema schemaPlus = CalciteSchema.createRootSchema(false);
-            for (RelDescriptor projection : schemaSourceDetails.getProjectionsList()) {
+            for (RelDescriptor projection : environment.getRelsList()) {
                 List<RelDataTypeField> typeList = new ArrayList<>();
                 int i = 0;
                 for (ColumnDescriptor col : projection.getColumnsList()) {
@@ -50,7 +47,7 @@ public class SchemaDescriptorFactory {
                 var table = new ListTransientTable(projection.getRelName(), new RelRecordType(StructKind.FULLY_QUALIFIED, typeList));
                 schemaPlus.add(projection.getRelName(), table);
             }
-            rootSchema.add(schemaSourceDetails.getRelName(), schemaPlus.plus());
+            rootSchema.add(environment.getRelName(), schemaPlus.plus());
         }
 
         typeFactory = new JavaTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
@@ -65,7 +62,7 @@ public class SchemaDescriptorFactory {
 
         var props = new Properties();
         props.put("caseSensitive", Boolean.FALSE);
-        this.catalog = new CalciteCatalogReader(rootSchema, sources.stream().findFirst().map(schemaDescriptor -> List.of(schemaDescriptor.getRelName())).orElse(Collections.emptyList()), typeFactory, new CalciteConnectionConfigImpl(props));
+        this.catalog = new CalciteCatalogReader(rootSchema, environments.stream().findFirst().map(schemaDescriptor -> List.of(schemaDescriptor.getRelName())).orElse(Collections.emptyList()), typeFactory, new CalciteConnectionConfigImpl(props));
     }
 
     public CalciteCatalogReader getCatalog() {
