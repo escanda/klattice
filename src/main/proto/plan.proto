@@ -9,6 +9,5 @@ package klattice.plan;
 import "messages.proto";
 
 service Planner {
-    rpc Enhance (klattice.msg.PlanDescriptor) returns (klattice.msg.PlanDescriptor);
-    rpc Estimate (klattice.msg.PlanDescriptor) returns (klattice.msg.PlanDescriptor);
+    rpc Enhance (klattice.msg.Plan) returns (klattice.msg.Plan);
 }

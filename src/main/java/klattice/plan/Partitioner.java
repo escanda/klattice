@@ -1,6 +1,5 @@
 package klattice.plan;
 
-import io.quarkus.grpc.GrpcClient;
 import jakarta.enterprise.context.Dependent;
 import org.apache.calcite.jdbc.CalciteSchema;
 import org.apache.calcite.rel.RelNode;
@@ -13,15 +12,10 @@ import java.util.List;
 
 @Dependent
 public class Partitioner {
-    @GrpcClient
-    Planner planner;
-
     public Collection<RelNode> partition(CalciteSchema rootSchema, SqlToRelConverter relConverter, RexNode rexNode, SqlNode sqlNode) {
-        var relNode = relConverter.convertQuery(sqlNode, false, true);
-        var calculator = new CostEstimator(planner);
-        var estimate = rexNode.accept(calculator);
-        if (estimate.rate() > 0.1) {
-        }
-        return List.of(relNode.rel);
+        var relRoot = relConverter.convertQuery(sqlNode, false, true);
+        var calculator = new InvocationExtractor();
+        var stats = rexNode.accept(calculator);
+        return List.of(relRoot.rel);
     }
 }

@@ -34,14 +34,14 @@ public class EnhanceTest {
     @Test
     public void smokeTest() throws SqlParseException, IOException {
         var type = Type.newBuilder().setBool(Type.Boolean.newBuilder().setNullability(Type.Nullability.NULLABILITY_NULLABLE).build());
-        var col = ColumnDescriptor.newBuilder().setColumnName("public").setType(type.build()).build();
-        var projection = RelDescriptor.newBuilder()
+        var col = Column.newBuilder().setColumnName("public").setType(type.build()).build();
+        var projection = Rel.newBuilder()
                 .setSchemaId(1)
                 .setRelName("PUBLIC")
                 .addAllColumns(List.of(col))
                 .build();
         var schemaSources = List.of(Environment.newBuilder().setSchemaId(1).setRelName("PUBLIC").addRels(projection).build());
-        var preparedQuery = prepare.compile("SELECT * FROM PUBLIC", schemaSources);
+        var preparedQuery = prepare.compile("SELECT * FROM PUBLIC.PUBLIC", schemaSources);
         assertNotNull(preparedQuery);
         logger.infov("Prepared query plan is:\n{0}", new Object[]{preparedQuery});
         var plan = preparedQuery.getPlan().getPlan();

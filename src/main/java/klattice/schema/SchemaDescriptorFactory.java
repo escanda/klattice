@@ -1,8 +1,8 @@
 package klattice.schema;
 
-import klattice.msg.ColumnDescriptor;
+import klattice.msg.Column;
 import klattice.msg.Environment;
-import klattice.msg.RelDescriptor;
+import klattice.msg.Rel;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.jdbc.CalciteSchema;
@@ -31,16 +31,17 @@ public class SchemaDescriptorFactory {
     private final RelOptCluster relOptCluster;
     private final JavaTypeFactory typeFactory;
     private final SqlStdOperatorTable operatorTable;
+    private final CalciteSqlValidator calciteSqlValidator;
 
     public SchemaDescriptorFactory(Collection<Environment> environments) {
         operatorTable = new SqlStdOperatorTable();
         var rootSchema = LookupCalciteSchema.createRootSchema(false);
         for (Environment environment : environments) {
             CalciteSchema schemaPlus = CalciteSchema.createRootSchema(false);
-            for (RelDescriptor projection : environment.getRelsList()) {
+            for (Rel projection : environment.getRelsList()) {
                 List<RelDataTypeField> typeList = new ArrayList<>();
                 int i = 0;
-                for (ColumnDescriptor col : projection.getColumnsList()) {
+                for (Column col : projection.getColumnsList()) {
                     typeList.add(new RelDataTypeFieldImpl(col.getColumnName(), i, asType(col.getType())));
                     i++;
                 }
@@ -63,6 +64,7 @@ public class SchemaDescriptorFactory {
         var props = new Properties();
         props.put("caseSensitive", Boolean.FALSE);
         this.catalog = new CalciteCatalogReader(rootSchema, environments.stream().findFirst().map(schemaDescriptor -> List.of(schemaDescriptor.getRelName())).orElse(Collections.emptyList()), typeFactory, new CalciteConnectionConfigImpl(props));
+        this.calciteSqlValidator = new CalciteSqlValidator(operatorTable, getCatalog(), getTypeFactory(), SqlValidator.Config.DEFAULT);
     }
 
     public CalciteCatalogReader getCatalog() {
@@ -78,6 +80,6 @@ public class SchemaDescriptorFactory {
     }
 
     public CalciteSqlValidator getSqlValidator() {
-        return new CalciteSqlValidator(operatorTable, getCatalog(), getTypeFactory(), SqlValidator.Config.DEFAULT);
+        return calciteSqlValidator;
     }
 }

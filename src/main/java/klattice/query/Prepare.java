@@ -2,7 +2,7 @@ package klattice.query;
 
 import jakarta.enterprise.context.Dependent;
 import klattice.msg.Environment;
-import klattice.msg.PlanDescriptor;
+import klattice.msg.Plan;
 import klattice.msg.PreparedQuery;
 import klattice.plan.Converter;
 import klattice.schema.SchemaDescriptorFactory;
@@ -29,6 +29,6 @@ public class Prepare {
                 SqlToRelConverter.config());
         var relNode = sqlToRelConverter.convertQuery(sql, true, true);
         var plan = Converter.getPlan(relNode);
-        return PreparedQuery.newBuilder().setPlan(PlanDescriptor.newBuilder().addAllEnviron(environments).setPlan(plan).build()).build();
+        return PreparedQuery.newBuilder().setPlan(Plan.newBuilder().addAllEnviron(environments).setPlan(plan).build()).build();
     }
 }

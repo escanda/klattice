@@ -17,33 +17,31 @@ message QueryDescriptor {
 message Environment {
     uint64 schema_id = 1;
     string relName = 2;
-    repeated RelDescriptor rels = 3;
-    optional Environment parent = 4;
+    repeated Rel rels = 3;
 }
 
-message PlanDescriptor {
+message Plan {
     repeated Environment environ = 1;
     substrait.Plan plan = 2;
-    optional PlanDescriptor next = 3;
 }
 
-message RelDescriptor {
+message Rel {
     uint64 schema_id = 1;
     string relName = 2;
-    repeated ColumnDescriptor columns = 3;
+    repeated Column columns = 3;
     uint64 estimated_rows = 4;
     oneof next {
-        RelDescriptor next_rel = 5;
-        EndpointDescriptor next_endpoint = 6;
+        Rel next_rel = 5;
+        Endpoint next_endpoint = 6;
     }
 }
 
-message ColumnDescriptor {
+message Column {
     string columnName = 1;
     substrait.Type type = 2;
 }
 
-message EndpointDescriptor {
+message Endpoint {
     HostAndPort host_port = 1;
     bytes query_payload = 2;
     ResponseAdaptorKind response_adaptor = 3;
@@ -62,7 +60,7 @@ enum ResponseAdaptorKind {
 message PreparedQuery {
     bool errored = 1;
     oneof result {
-        PlanDescriptor plan = 2;
+        Plan plan = 2;
         QueryDiagnostics diagnostics = 3;
     }
 }
