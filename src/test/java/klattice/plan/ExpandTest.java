@@ -4,7 +4,9 @@ import io.quarkus.arc.log.LoggerName;
 import io.quarkus.test.junit.QuarkusTest;
 import io.substrait.proto.Type;
 import jakarta.inject.Inject;
-import klattice.msg.*;
+import klattice.msg.Column;
+import klattice.msg.Environment;
+import klattice.msg.Rel;
 import klattice.query.Prepare;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.tools.RelConversionException;
@@ -14,7 +16,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
 
 import static io.smallrye.common.constraint.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;

@@ -33,7 +33,7 @@ public class PrepareTest {
                 .addAllColumns(List.of(col.build()))
                 .build();
         var environments = List.of(Environment.newBuilder().setSchemaId(1).setRelName("PUBLIC").addRels(projection).build());
-        var q = "SELECT 'public' FROM PUBLIC";
+        var q = "SELECT 'public' FROM PUBLIC.PUBLIC";
         var qc = QueryDescriptor.newBuilder()
                 .setQuery(q)
                 .addAllEnviron(environments)
