@@ -17,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusTest
 public class PrepareTest {
-    @LoggerName("QueryServiceGrpcTest")
+    @LoggerName("PrepareTest")
     Logger logger;
 
     @Inject

@@ -15,6 +15,9 @@ public class PlannerServiceGrpc implements Planner {
     @Inject
     Expand expand;
 
+    @Inject
+    Unify unify;
+
     @LoggerName("PlannerServiceGrpc")
     Logger logger;
 
@@ -23,7 +26,7 @@ public class PlannerServiceGrpc implements Planner {
         try {
             var environList = request.getEnvironList();
             var pair  = expand.expand(request.getPlan(), environList);
-            var plan = unifyPlans(pair.getValue(), pair.getKey());
+            var plan = unify.unification(pair.getKey());
             logger.infov("Original plan was:\n{0}\nNew plan is:\n{1}", new Object[]{request, pair.getValue()});
             return Uni.createFrom().item(klattice.msg.Plan.newBuilder().addAllEnviron(environList).setPlan(pair.getValue()).build());
         } catch (IOException e) {
