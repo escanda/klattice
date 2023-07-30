@@ -7,6 +7,8 @@ import klattice.msg.PreparedQuery;
 import klattice.msg.QueryDescriptor;
 import klattice.msg.QueryDiagnostics;
 import org.apache.calcite.sql.parser.SqlParseException;
+import org.apache.calcite.tools.RelConversionException;
+import org.apache.calcite.tools.ValidationException;
 import org.jboss.logging.Logger;
 
 @GrpcService
@@ -20,8 +22,8 @@ public class QueryServiceGrpc implements Query {
         PreparedQuery preparedQuery;
         try {
             preparedQuery = prepare.compile(request.getQuery(), request.getEnvironList());
-        } catch (SqlParseException e) {
-            logger.warnv("Error parsing statement {0} with error", new Object[]{request.getQuery()}, e);
+        } catch (SqlParseException | RelConversionException | ValidationException e) {
+            logger.warnv("Error preparing statement {0} with error {1}", new Object[]{request.getQuery()}, e);
             preparedQuery = PreparedQuery.newBuilder().setDiagnostics(QueryDiagnostics.newBuilder().setErrorMessage(e.getMessage()).build()).build();
         }
         logger.infov("Query {0} became {1} prepared query", request, preparedQuery);

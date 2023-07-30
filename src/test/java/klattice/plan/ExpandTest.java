@@ -1,27 +1,26 @@
 package klattice.plan;
 
 import io.quarkus.arc.log.LoggerName;
-import io.quarkus.grpc.GrpcClient;
-import io.quarkus.test.junit.QuarkusIntegrationTest;
 import io.quarkus.test.junit.QuarkusTest;
-import io.substrait.proto.Plan;
 import io.substrait.proto.Type;
 import jakarta.inject.Inject;
 import klattice.msg.*;
 import klattice.query.Prepare;
-import klattice.query.Query;
 import org.apache.calcite.sql.parser.SqlParseException;
+import org.apache.calcite.tools.RelConversionException;
+import org.apache.calcite.tools.ValidationException;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 import static io.smallrye.common.constraint.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @QuarkusTest
-public class EnhanceTest {
+public class ExpandTest {
     @LoggerName("PlannerServiceGrpcTest")
     Logger logger;
 
@@ -29,10 +28,10 @@ public class EnhanceTest {
     Prepare prepare;
 
     @Inject
-    Enhance enhance;
+    Expand expand;
 
     @Test
-    public void smokeTest() throws SqlParseException, IOException {
+    public void smokeTest() throws SqlParseException, IOException, RelConversionException, ValidationException {
         var type = Type.newBuilder().setBool(Type.Boolean.newBuilder().setNullability(Type.Nullability.NULLABILITY_NULLABLE).build());
         var col = Column.newBuilder().setColumnName("public").setType(type.build()).build();
         var projection = Rel.newBuilder()
@@ -44,10 +43,11 @@ public class EnhanceTest {
         var preparedQuery = prepare.compile("SELECT * FROM PUBLIC.PUBLIC", schemaSources);
         assertNotNull(preparedQuery);
         logger.infov("Prepared query plan is:\n{0}", new Object[]{preparedQuery});
-        var plan = preparedQuery.getPlan().getPlan();
-        var enhancedPlan = enhance.improve(plan, schemaSources);
-        assertNotNull(enhancedPlan);
-        assertEquals(1, enhancedPlan.getRelationsCount());
-        logger.infov("Planner became enhanced thus is now:\n{0}", new Object[]{enhancedPlan});
+        var shrunk = preparedQuery.getPlan().getPlan();
+        var expanded = expand.expand(shrunk, schemaSources);
+        assertNotNull(expanded);
+        assertNotNull(expanded.getKey());
+        assertEquals(1, expanded.getKey().size());
+        logger.infov("Planner became expand thus is now:\n{0}", new Object[]{expanded});
     }
 }

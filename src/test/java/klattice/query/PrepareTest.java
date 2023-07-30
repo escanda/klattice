@@ -5,8 +5,9 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.substrait.proto.Type;
 import jakarta.inject.Inject;
 import klattice.msg.*;
-import klattice.plan.Enhance;
 import org.apache.calcite.sql.parser.SqlParseException;
+import org.apache.calcite.tools.RelConversionException;
+import org.apache.calcite.tools.ValidationException;
 import org.jboss.logging.Logger;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +24,7 @@ public class PrepareTest {
     Prepare prepare;
 
     @Test
-    public void smokeTest() throws SqlParseException {
+    public void smokeTest() throws SqlParseException, RelConversionException, ValidationException {
         var type = Type.newBuilder().setBool(Type.Boolean.newBuilder().setNullability(Type.Nullability.NULLABILITY_NULLABLE).build());
         var col = Column.newBuilder().setColumnName("public").setType(type.build());
         var projection = Rel.newBuilder()

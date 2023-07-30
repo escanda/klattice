@@ -26,14 +26,14 @@ import java.util.*;
 
 import static klattice.plan.Converter.asType;
 
-public class SchemaDescriptorFactory {
+public class SchemaFactory {
     private final CalciteCatalogReader catalog;
     private final RelOptCluster relOptCluster;
     private final JavaTypeFactory typeFactory;
     private final SqlStdOperatorTable operatorTable;
     private final CalciteSqlValidator calciteSqlValidator;
 
-    public SchemaDescriptorFactory(Collection<Environment> environments) {
+    public SchemaFactory(Collection<Environment> environments) {
         operatorTable = new SqlStdOperatorTable();
         var rootSchema = LookupCalciteSchema.createRootSchema(false);
         for (Environment environment : environments) {

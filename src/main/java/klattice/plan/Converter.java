@@ -9,7 +9,7 @@ import io.substrait.proto.Plan;
 import io.substrait.proto.PlanRel;
 import io.substrait.relation.RelProtoConverter;
 import klattice.msg.Environment;
-import klattice.schema.SchemaDescriptorFactory;
+import klattice.schema.SchemaFactory;
 import org.apache.calcite.jdbc.CalciteSchema;
 import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.rel.type.RelDataType;
@@ -139,6 +139,6 @@ public final class Converter {
     }
 
     public static CalciteSchema getSchema(Collection<Environment> environments) {
-        return new SchemaDescriptorFactory(environments.stream().toList()).getCatalog().getRootSchema();
+        return new SchemaFactory(environments.stream().toList()).getCatalog().getRootSchema();
     }
 }

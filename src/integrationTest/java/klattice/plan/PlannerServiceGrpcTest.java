@@ -30,8 +30,9 @@ public class PlannerServiceGrpcTest {
                         .build())
                 .build()))
             .build();
-        var enhancedPlan = planner.enhance(Plan.newBuilder().addEnviron(Environment.newBuilder().setSchemaId(1).setRelName("public").addRels(relDescriptor).build()).build());
-        assertNotNull(enhancedPlan);
-        System.err.println(enhancedPlan);
+        var nonExpanded = Plan.newBuilder().addEnviron(Environment.newBuilder().setSchemaId(1).setRelName("public").addRels(relDescriptor).build()).build();
+        var expanded = planner.expand(nonExpanded);
+        assertNotNull(expanded);
+        System.err.println(expanded);
     }
 }
