@@ -34,16 +34,16 @@ public class PlannerServiceGrpc implements Planner {
             pair = expand.expand(request.getPlan(), environList);
         } catch (IOException e) {
             logger.error("Cannot enhance plan", e);
-            return Uni.createFrom().item(ExpandedPlan.newBuilder().setErrored(true).setDiagnostics(PlanDiagnostics.newBuilder().setErrorMessage(String.format("Error expanding plan %s", e.getMessage()))).build());
+            return Uni.createFrom().item(ExpandedPlan.newBuilder().setErrored(true).setDiagnostics(PlanDiagnostics.newBuilder().setErrorMessage(String.format("Error expanding plan '%s'", e.getMessage()))).build());
         }
         var plans = requireNonNull(pair.getKey());
         var unificated = unify.unification(plans);
         var planBuilder = unificated.planBuilder;
         if (planBuilder.isEmpty()) {
             logger.warnv("Error during plan unification {0}", new Object[]{unificated.errorMessage});
-            return Uni.createFrom().item(ExpandedPlan.newBuilder().setErrored(true).setDiagnostics(PlanDiagnostics.newBuilder().setErrorMessage(String.format("Error during plan unification %s", unificated.errorMessage)).build()).build());
+            return Uni.createFrom().item(ExpandedPlan.newBuilder().setErrored(true).setDiagnostics(PlanDiagnostics.newBuilder().setErrorMessage(String.format("Error during plan unification '%s'", unificated.errorMessage)).build()).build());
         } else {
-            logger.infov("Original plan was:\n{0}\nNew plan is:\n{1}", new Object[]{request, pair.getValue()});
+            logger.infov("Original plan was:\n'{0}'\nNew plan is:\n'{1}'", new Object[]{request, pair.getValue()});
             return Uni.createFrom().item(ExpandedPlan.newBuilder().setErrored(false).setPlan(Plan.newBuilder().setPlan(planBuilder.get()).addAllEnviron(request.getEnvironList())).build()); // TODO: add discovered environs
         }
     }
