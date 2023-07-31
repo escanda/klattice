@@ -9,6 +9,9 @@ import org.jboss.logging.Logger;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Objects;
+
+import static java.util.Objects.requireNonNull;
 
 @GrpcService
 public class PlannerServiceGrpc implements Planner {
@@ -26,17 +29,13 @@ public class PlannerServiceGrpc implements Planner {
         try {
             var environList = request.getEnvironList();
             var pair  = expand.expand(request.getPlan(), environList);
-            var plan = unify.unification(pair.getKey());
+            var plans = requireNonNull(pair.getKey());
+            var plan = unify.unification(plans);
             logger.infov("Original plan was:\n{0}\nNew plan is:\n{1}", new Object[]{request, pair.getValue()});
-            return Uni.createFrom().item(klattice.msg.Plan.newBuilder().addAllEnviron(environList).setPlan(pair.getValue()).build());
+            return Uni.createFrom().item(klattice.msg.Plan.newBuilder().addAllEnviron(environList).setPlan(plan).build());
         } catch (IOException e) {
             logger.error("Cannot enhance plan", e);
-            return Uni.createFrom().item(() -> null);
+            return Uni.createFrom().item(() -> request);
         }
-    }
-
-    private Plan unifyPlans(Plan parentPlan, Collection<Plan> plans) {
-        // TODO: merge all plans into a single rel with filters
-        return Plan.newBuilder().mergeFrom(parentPlan).build();
     }
 }
