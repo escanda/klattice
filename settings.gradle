@@ -10,5 +10,7 @@ pluginManagement {
 }
 rootProject.name='klattice'
 include 'cli'
-include 'ingest'
+include 'jvm-api'
+include 'jvm-server'
+include 'jvm-core'
 
