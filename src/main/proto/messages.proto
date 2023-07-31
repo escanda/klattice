@@ -25,6 +25,18 @@ message Plan {
     substrait.Plan plan = 2;
 }
 
+message ExpandedPlan {
+    bool errored = 1;
+    oneof result {
+        Plan plan = 2;
+        PlanDiagnostics diagnostics = 3;
+    }
+}
+
+message PlanDiagnostics {
+    string error_message = 1;
+}
+
 message Rel {
     uint64 schema_id = 1;
     string relName = 2;

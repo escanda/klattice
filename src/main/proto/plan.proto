@@ -9,5 +9,5 @@ package klattice.plan;
 import "messages.proto";
 
 service Planner {
-    rpc Expand (klattice.msg.Plan) returns (klattice.msg.Plan);
+    rpc Expand (klattice.msg.Plan) returns (klattice.msg.ExpandedPlan);
 }
