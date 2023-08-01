@@ -36,14 +36,14 @@ public class PlannerServiceGrpc implements Planner {
             var planBuilder = unified.planBuilder();
             if (planBuilder.isEmpty()) {
                 logger.warnv("Error during plan unification {0}", new Object[]{unified.errorMessage()});
-                return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(true).setDiagnostics(PlanDiagnostics.newBuilder().setErrorMessage(String.format("Error during plan unification '%s'", unified.errorMessage())).build()).build());
+                return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(true).setDiagnostics(PlanDiagnostics.newBuilder().setErrorMessage(String.format(unified.errorMessage())).build()).build());
             } else {
                 logger.infov("Original plan was:\n'{0}'\nNew plan is:\n'{1}'", new Object[]{request, expanded.actualPlan()});
                 return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(false).setPlan(Plan.newBuilder().addAllEnviron(request.getEnvironList()).setPlan(expanded.actualPlan())).build());
             }
         } catch (IOException e) {
             logger.error("Cannot enhance plan", e);
-            return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(true).setDiagnostics(PlanDiagnostics.newBuilder().setErrorMessage(String.format("Error expanding plan '%s'", e.getMessage()))).build());
+            return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(true).setDiagnostics(PlanDiagnostics.newBuilder().setErrorMessage(e.getMessage())).build());
         }
     }
 }
