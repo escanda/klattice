@@ -47,8 +47,8 @@ public class ExpandTest {
         var shrunk = preparedQuery.getPlan().getPlan();
         var expanded = expand.expand(shrunk, schemaSources);
         assertNotNull(expanded);
-        assertNotNull(expanded.a);
-        assertEquals(1, expanded.a.size());
-        logger.infov("Planner became expand thus is now:\n{0}", new Object[]{expanded});
+        assertNotNull(expanded.actualPlan());
+        assertEquals(1, expanded.plans().size());
+        logger.infov("Planner became expand thus is now:\n{0}", new Object[]{expanded.actualPlan()});
     }
 }
