@@ -2,6 +2,7 @@ package klattice.query;
 
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.grpc.GrpcService;
+import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
 import klattice.msg.PreparedQuery;
 import klattice.msg.QueryDescriptor;
@@ -16,6 +17,7 @@ public class QueryServiceGrpc implements Query {
     @LoggerName("QueryServiceGrpc")
     Logger logger;
 
+    @Blocking
     @Override
     public Uni<PreparedQuery> prepare(QueryDescriptor request) {
         var prepare = new Prepare();
