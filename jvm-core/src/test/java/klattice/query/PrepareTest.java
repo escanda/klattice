@@ -41,6 +41,6 @@ public class PrepareTest {
         var preparedQuery = prepare.compile(qc.getQuery(), environments);
         logger.info(preparedQuery);
         assertNotNull(preparedQuery);
-        assertFalse(preparedQuery.getErrored());
+        assertFalse(preparedQuery.getHasError());
     }
 }

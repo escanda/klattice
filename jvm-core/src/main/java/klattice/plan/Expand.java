@@ -11,7 +11,6 @@ import klattice.msg.Environment;
 import klattice.schema.SchemaFactory;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.RelBuilder;
-import org.apache.calcite.util.Pair;
 import org.jboss.logging.Logger;
 
 import java.io.IOException;
@@ -28,11 +27,11 @@ public class Expand {
     @Inject
     Partitioner partitioner;
 
-    public Pair<Collection<Plan>, Plan> expand(Plan source, List<Environment> environments) throws IOException {
+    public Expanded expand(Plan source, List<Environment> environments) throws IOException {
         var plan = Plan.newBuilder();
         plan.mergeFrom(source);
         var newPlans = expandWithEnvironments(plan, environments);
-        return Pair.of(newPlans, plan.build());
+        return new Expanded(newPlans, plan.build());
     }
 
     protected List<Plan> expandWithEnvironments(Plan.Builder plan, List<Environment> environments) throws IOException {
@@ -52,4 +51,6 @@ public class Expand {
             return partitions.stream().map(Converter::getPlan);
         }).map(Plan.Builder::build).toList();
     }
+
+    public record Expanded(Collection<Plan> plans, Plan actualPlan) {}
 }
