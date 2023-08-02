@@ -28,18 +28,11 @@ public class Push implements Operand {
 
     @Override
     public Collection<Operand> children() {
-        return new ArrayList<>(children);
+        return children;
     }
 
     @Override
     public <T> T visit(InstrVisitor<T> visitor) {
         return visitor.noop(this);
-    }
-
-    @Override
-    public Operand extendWith(Iterable<Operand> iterable) {
-        var ins = new Push(this.rel);
-        iterable.forEach(ins.children::add);
-        return ins;
     }
 }

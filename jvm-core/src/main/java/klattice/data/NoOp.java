@@ -8,11 +8,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
-public class Pass implements Operand {
+public class NoOp implements Operand {
     private final Collection<Operand> children;
     private final org.apache.calcite.rel.RelNode subtree;
 
-    public Pass(RelNode relNode) {
+    public NoOp(RelNode relNode) {
         this.subtree = ensureAsProjection(relNode);
         this.children = new ArrayList<>();
     }
@@ -33,18 +33,11 @@ public class Pass implements Operand {
 
     @Override
     public Collection<Operand> children() {
-        return new ArrayList<>(children);
+        return children;
     }
 
     @Override
     public <T> T visit(InstrVisitor<T> visitor) {
         return visitor.pass(this);
-    }
-
-    @Override
-    public Operand extendWith(Iterable<Operand> iterable) {
-        var ins = new Pass(this.subtree);
-        iterable.forEach(ins.children::add);
-        return ins;
     }
 }

@@ -5,8 +5,9 @@ pluginManagement {
         mavenLocal()
     }
 }
+
 rootProject.name='klattice'
+
 include 'jvm-api'
 include 'jvm-core'
-include 'jvm-server'
 

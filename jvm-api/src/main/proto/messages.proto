@@ -55,7 +55,7 @@ message Column {
 
 message Endpoint {
     HostAndPort host_port = 1;
-    bytes query_payload = 2;
+    bytes helo_payload = 2;
     ResponseAdaptorKind response_adaptor = 3;
 }
 

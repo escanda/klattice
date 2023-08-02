@@ -7,7 +7,7 @@ import io.substrait.proto.Type;
 import klattice.msg.Column;
 import klattice.msg.Environment;
 import klattice.msg.Plan;
-import klattice.msg.RelNode;
+import klattice.msg.Rel;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -22,7 +22,7 @@ public class PlannerServiceGrpcTest {
 
     @Test
     public void smokeTest() {
-        var relDescriptor = RelNode.newBuilder()
+        var relDescriptor = Rel.newBuilder()
                 .setRelName("public_table")
                 .addAllColumns(
                         List.of(

@@ -10,6 +10,4 @@ public interface Operand {
     RelNode rel();
     Collection<Operand> children();
     <T> T visit(InstrVisitor<T> visitor);
-
-    Operand extendWith(Iterable<Operand> right);
 }

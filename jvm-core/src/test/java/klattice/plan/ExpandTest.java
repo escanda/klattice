@@ -6,7 +6,7 @@ import io.substrait.proto.Type;
 import jakarta.inject.Inject;
 import klattice.msg.Column;
 import klattice.msg.Environment;
-import klattice.msg.RelNode;
+import klattice.msg.Rel;
 import klattice.query.Prepare;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.tools.RelConversionException;
@@ -35,7 +35,7 @@ public class ExpandTest {
     public void smokeTest() throws SqlParseException, IOException, RelConversionException, ValidationException {
         var type = Type.newBuilder().setBool(Type.Boolean.newBuilder().setNullability(Type.Nullability.NULLABILITY_NULLABLE).build());
         var col = Column.newBuilder().setColumnName("public").setType(type.build()).build();
-        var projection = RelNode.newBuilder()
+        var projection = Rel.newBuilder()
                 .setSchemaId(1)
                 .setRelName("PUBLIC")
                 .addAllColumns(List.of(col))
