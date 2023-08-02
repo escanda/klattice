@@ -22,7 +22,7 @@ public class PartitionerTest {
         var typeFactory = new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
         var environ = Environment.newBuilder()
                 .setRelName("PUBLIC")
-                .addRels(Rel.newBuilder()
+                .addRels(RelNode.newBuilder()
                         .setRelName("PUBLIC")
                         .addColumns(Column.newBuilder()
                                 .setColumnName("PUBLIC")

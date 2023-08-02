@@ -2,7 +2,7 @@ package klattice.schema;
 
 import klattice.msg.Column;
 import klattice.msg.Environment;
-import klattice.msg.Rel;
+import klattice.msg.RelNode;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.jdbc.CalciteSchema;
@@ -38,7 +38,7 @@ public class SchemaFactory {
         var rootSchema = LookupCalciteSchema.createRootSchema(false);
         for (Environment environment : environments) {
             CalciteSchema schemaPlus = CalciteSchema.createRootSchema(false);
-            for (Rel projection : environment.getRelsList()) {
+            for (RelNode projection : environment.getRelsList()) {
                 List<RelDataTypeField> typeList = new ArrayList<>();
                 int i = 0;
                 for (Column col : projection.getColumnsList()) {

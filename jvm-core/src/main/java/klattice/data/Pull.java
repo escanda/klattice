@@ -1,6 +1,5 @@
-package klattice.plan.instr;
+package klattice.data;
 
-import klattice.fetch.RowStream;
 import klattice.msg.Environment;
 import klattice.msg.HostAndPort;
 import org.apache.calcite.rel.RelNode;
@@ -11,29 +10,29 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
-public class FetchInstr implements Instruction {
+public class Pull implements Operand {
     private final Collection<Environment> environ;
-    private final Collection<Instruction> children;
+    private final Collection<Operand> children;
     private final HostAndPort hostPort;
-    private final RelNode subtree;
+    private final org.apache.calcite.rel.RelNode subtree;
 
-    public FetchInstr(Collection<Environment> environments,
-                      HostAndPort hostPort,
-                      RelNode subtree,
-                      Collection<Instruction> children) {
+    public Pull(Collection<Environment> environments,
+                HostAndPort hostPort,
+                RelNode subtree,
+                Collection<Operand> children) {
         this.environ = environments;
         this.hostPort = hostPort;
         this.subtree = ensureAsProjection(subtree);
         this.children = new ArrayList<>(children);
     }
 
-    private RelNode ensureAsProjection(RelNode subtree) {
+    private org.apache.calcite.rel.RelNode ensureAsProjection(org.apache.calcite.rel.RelNode subtree) {
         return RelRoot.of(subtree, SqlKind.SELECT).project(false);
     }
 
     @Override
-    public Optional<RowStream> rowStream() {
-        return Optional.of(new RowStream(hostPort, rel()));
+    public Optional<Transfer> export() {
+        return Optional.empty();
     }
 
     @Override
@@ -42,12 +41,19 @@ public class FetchInstr implements Instruction {
     }
 
     @Override
-    public Collection<Instruction> children() {
+    public Collection<Operand> children() {
         return new ArrayList<>(children);
     }
 
     @Override
     public <T> T visit(InstrVisitor<T> visitor) {
         return visitor.fetch(this);
+    }
+
+    @Override
+    public Operand extendWith(Iterable<Operand> iterable) {
+        var ins = new Pull(this.environ, this.hostPort, this.subtree, this.children);
+        iterable.forEach(ins.children::add);
+        return ins;
     }
 }

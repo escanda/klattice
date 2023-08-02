@@ -1,20 +1,20 @@
-package klattice.plan.instr;
+package klattice.data;
 
 import java.util.Optional;
 
 public class InstrVisitorImpl<C> implements InstrVisitor<Optional<C>> {
     @Override
-    public Optional<C> fetch(FetchInstr fetchInstr) {
+    public Optional<C> fetch(Pull pull) {
         return Optional.empty();
     }
 
     @Override
-    public Optional<C> passthrough(PassthroughInstr passthroughInstr) {
+    public Optional<C> pass(Pass pass) {
         return Optional.empty();
     }
 
     @Override
-    public Optional<C> noop(NoopInstr noopInstr) {
+    public Optional<C> noop(Push push) {
         return Optional.empty();
     }
 }

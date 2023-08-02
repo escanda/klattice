@@ -27,7 +27,7 @@ public class PrepareTest {
     public void smokeTest() throws SqlParseException, RelConversionException, ValidationException {
         var type = Type.newBuilder().setBool(Type.Boolean.newBuilder().setNullability(Type.Nullability.NULLABILITY_NULLABLE).build());
         var col = Column.newBuilder().setColumnName("public").setType(type.build());
-        var projection = Rel.newBuilder()
+        var projection = RelNode.newBuilder()
                 .setSchemaId(1)
                 .setRelName("PUBLIC")
                 .addAllColumns(List.of(col.build()))
