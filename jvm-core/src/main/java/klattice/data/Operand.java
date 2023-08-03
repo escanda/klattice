@@ -10,4 +10,5 @@ public interface Operand {
     RelNode rel();
     Collection<Operand> children();
     <T> T visit(InstrVisitor<T> visitor);
+    OperandType kind();
 }

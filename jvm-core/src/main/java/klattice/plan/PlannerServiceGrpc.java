@@ -28,9 +28,9 @@ public class PlannerServiceGrpc implements Planner {
     @Blocking
     @Override
     public Uni<klattice.msg.ExpandedPlan> expand(klattice.msg.Plan request) {
-        var environList = request.getEnvironList();
+        var environ = request.getEnviron();
         try {
-            var expanded = expand.expand(request.getPlan(), environList);
+            var expanded = expand.expand(request.getPlan(), environ);
             var plans = requireNonNull(expanded.plans());
             var unified = unifier.unify(plans);
             var planBuilder = unified.planBuilder();
@@ -39,7 +39,7 @@ public class PlannerServiceGrpc implements Planner {
                 return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(true).setDiagnostics(PlanDiagnostics.newBuilder().setErrorMessage(String.format(unified.errorMessage())).build()).build());
             } else {
                 logger.infov("Original plan was:\n'{0}'\nNew plan is:\n'{1}'", new Object[]{request, expanded.actualPlan()});
-                return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(false).setPlan(Plan.newBuilder().addAllEnviron(request.getEnvironList()).setPlan(expanded.actualPlan())).build());
+                return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(false).setPlan(Plan.newBuilder().setEnviron(environ).setPlan(expanded.actualPlan())).build());
             }
         } catch (IOException e) {
             logger.error("Cannot enhance plan", e);

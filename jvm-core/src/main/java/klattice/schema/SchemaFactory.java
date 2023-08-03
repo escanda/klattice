@@ -2,6 +2,7 @@ package klattice.schema;
 
 import klattice.msg.Column;
 import klattice.msg.Environment;
+import klattice.msg.Schema;
 import org.apache.calcite.adapter.java.JavaTypeFactory;
 import org.apache.calcite.config.CalciteConnectionConfigImpl;
 import org.apache.calcite.jdbc.CalciteSchema;
@@ -32,12 +33,12 @@ public class SchemaFactory {
     private final SqlStdOperatorTable operatorTable;
     private final CalciteSqlValidator calciteSqlValidator;
 
-    public SchemaFactory(Collection<Environment> environments) {
+    public SchemaFactory(Environment environment) {
         operatorTable = new SqlStdOperatorTable();
         var rootSchema = LookupCalciteSchema.createRootSchema(false);
-        for (Environment environment : environments) {
+        for (Schema schema : environment. getSchemasList()) {
             CalciteSchema schemaPlus = CalciteSchema.createRootSchema(false);
-            for (var projection : environment.getRelsList()) {
+            for (var projection : schema.getRelsList()) {
                 List<RelDataTypeField> typeList = new ArrayList<>();
                 int i = 0;
                 for (Column col : projection.getColumnsList()) {
@@ -47,7 +48,7 @@ public class SchemaFactory {
                 var table = new ListTransientTable(projection.getRelName(), new RelRecordType(StructKind.FULLY_QUALIFIED, typeList));
                 schemaPlus.add(projection.getRelName(), table);
             }
-            rootSchema.add(environment.getRelName(), schemaPlus.plus());
+            rootSchema.add(schema.getRelName(), schemaPlus.plus());
         }
 
         typeFactory = new JavaTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
@@ -62,7 +63,12 @@ public class SchemaFactory {
 
         var props = new Properties();
         props.put("caseSensitive", Boolean.FALSE);
-        this.catalog = new CalciteCatalogReader(rootSchema, environments.stream().findFirst().map(schemaDescriptor -> List.of(schemaDescriptor.getRelName())).orElse(Collections.emptyList()), typeFactory, new CalciteConnectionConfigImpl(props));
+        this.catalog = new CalciteCatalogReader(
+                rootSchema,
+                environment.getSchemasList().stream()
+                        .findFirst()
+                        .map(schemaDescriptor -> List.of(schemaDescriptor.getRelName())).orElse(Collections.emptyList()), typeFactory, new CalciteConnectionConfigImpl(props)
+        );
         this.calciteSqlValidator = new CalciteSqlValidator(operatorTable, getCatalog(), getTypeFactory(), SqlValidator.Config.DEFAULT);
     }
 

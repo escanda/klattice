@@ -10,18 +10,22 @@ import "substrait/plan.proto";
 import "substrait/type.proto";
 
 message QueryDescriptor {
-    repeated Environment environ = 1;
+    Environment environ = 1;
     string query = 2;
 }
 
 message Environment {
+    repeated Schema schemas = 1;
+}
+
+message Schema {
     uint64 schema_id = 1;
     string relName = 2;
     repeated Rel rels = 3;
 }
 
 message Plan {
-    repeated Environment environ = 1;
+    Environment environ = 1;
     substrait.Plan plan = 2;
 }
 
@@ -57,6 +61,15 @@ message Endpoint {
     HostAndPort host_port = 1;
     bytes helo_payload = 2;
     ResponseAdaptorKind response_adaptor = 3;
+}
+
+message Batch {
+    repeated substrait.Type fieldTypes = 1;
+    repeated Row rows = 2;
+}
+
+message Row {
+    repeated bytes fields = 1;
 }
 
 message HostAndPort {

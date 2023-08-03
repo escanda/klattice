@@ -138,7 +138,7 @@ public final class Converter {
         return types[0];
     }
 
-    public static CalciteSchema getSchema(Collection<Environment> environments) {
-        return new SchemaFactory(environments).getCatalog().getRootSchema();
+    public static CalciteSchema getSchema(Environment environ) {
+        return new SchemaFactory(environ).getCatalog().getRootSchema();
     }
 }

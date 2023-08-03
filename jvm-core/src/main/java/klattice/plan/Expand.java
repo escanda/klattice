@@ -27,17 +27,16 @@ public class Expand {
     @Inject
     Partitioner partitioner;
 
-    public Expanded expand(Plan source, List<Environment> environments) throws IOException {
+    public Expanded expand(Plan source, Environment environ) throws IOException {
         var plan = Plan.newBuilder();
         plan.mergeFrom(source);
-        var newPlans = expandWithEnvironments(plan, environments);
+        var newPlans = expandWithEnvironments(plan, environ);
         return new Expanded(newPlans, plan.build());
     }
 
-    protected List<Plan> expandWithEnvironments(Plan.Builder plan, List<Environment> environments) throws IOException {
+    protected List<Plan> expandWithEnvironments(Plan.Builder plan, Environment environ) throws IOException {
         var extensionCollector = new ExtensionCollector();
-        var environmentList = new ArrayList<>(environments);
-        var factory = new SchemaFactory(environmentList);
+        var factory = new SchemaFactory(environ);
         final var protoRelConverter = new ProtoRelConverter(extensionCollector);
         var config = Frameworks.newConfigBuilder().defaultSchema(factory.getCatalog().getRootSchema().plus()).build();
         var typeFactory = factory.getTypeFactory();
@@ -46,8 +45,7 @@ public class Expand {
             var relNodeConverter = new SubstraitRelNodeConverter(Converter.EXTENSION_COLLECTION, typeFactory, RelBuilder.create(config));
             return Stream.of(rel.accept(relNodeConverter));
         }).flatMap(relNode -> {
-            var schema = Converter.getSchema(environments);
-            var partitions = partitioner.differentiate(typeFactory, schema, relNode);
+            var partitions = partitioner.differentiate(typeFactory, new Partitioner.Schemata(environ, Converter.getSchema(environ)), relNode);
             return partitions.stream().map(Converter::getPlan);
         }).map(Plan.Builder::build).toList();
     }

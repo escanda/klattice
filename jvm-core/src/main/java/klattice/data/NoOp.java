@@ -38,6 +38,11 @@ public class NoOp implements Operand {
 
     @Override
     public <T> T visit(InstrVisitor<T> visitor) {
-        return visitor.pass(this);
+        return visitor.ignore(this);
+    }
+
+    @Override
+    public OperandType kind() {
+        return OperandType.NOP;
     }
 }

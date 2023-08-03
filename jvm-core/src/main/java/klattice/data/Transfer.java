@@ -1,14 +1,14 @@
 package klattice.data;
 
-public class Transfer {
-    private final Pull origin;
-    private final Push destination;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
-    public Transfer(Pull origin, Push destination) {
-        this.origin = origin;
-        this.destination = destination;
-    }
-
-    public void perform() {
+public record Transfer(Pull origin, Push destination) {
+    public CompletableFuture<Transfered> perform(KafkaFetcher kafkaFetcher) {
+        var tableQualifiedName = origin.tableName();
+        return CompletableFuture.supplyAsync(() -> {
+            var tableData = kafkaFetcher.sinceBeginning(tableQualifiedName);
+            return new Transfered(this, 10L, tableData);
+        });
     }
 }

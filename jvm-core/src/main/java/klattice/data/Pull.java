@@ -4,17 +4,19 @@ import klattice.msg.Endpoint;
 import klattice.msg.Environment;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
+import org.apache.calcite.rel.logical.LogicalProject;
 import org.apache.calcite.sql.SqlKind;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 public class Pull implements Operand {
     private final Collection<Environment> environ;
     private final Collection<Operand> children;
     private final Endpoint hostPort;
-    private final RelNode subtree;
+    private final LogicalProject subtree;
 
     public Pull(Collection<Environment> environments,
                 Endpoint endpoint,
@@ -26,8 +28,20 @@ public class Pull implements Operand {
         this.children = new ArrayList<>(children);
     }
 
-    private org.apache.calcite.rel.RelNode ensureAsProjection(org.apache.calcite.rel.RelNode subtree) {
-        return RelRoot.of(subtree, SqlKind.SELECT).project(false);
+    private LogicalProject ensureAsProjection(RelNode subtree) {
+        return (LogicalProject) RelRoot.of(subtree, SqlKind.SELECT).project(false);
+    }
+
+    public Collection<Environment> getEnviron() {
+        return environ;
+    }
+
+    public Endpoint getHostPort() {
+        return hostPort;
+    }
+
+    public List<String> tableName() {
+        return subtree.getTable().getQualifiedName();
     }
 
     @Override
@@ -47,6 +61,11 @@ public class Pull implements Operand {
 
     @Override
     public <T> T visit(InstrVisitor<T> visitor) {
-        return visitor.fetch(this);
+        return visitor.pull(this);
+    }
+
+    @Override
+    public OperandType kind() {
+        return OperandType.PULL;
     }
 }

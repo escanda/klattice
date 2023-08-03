@@ -4,15 +4,13 @@ import io.quarkus.grpc.GrpcClient;
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 import io.quarkus.test.junit.QuarkusTest;
 import io.substrait.proto.Type;
-import klattice.msg.Column;
-import klattice.msg.Environment;
-import klattice.msg.Plan;
-import klattice.msg.Rel;
+import klattice.msg.*;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @QuarkusIntegrationTest
 @QuarkusTest
@@ -30,9 +28,11 @@ public class PlannerServiceGrpcTest {
                         .build())
                 .build()))
             .build();
-        var nonExpanded = Plan.newBuilder().addEnviron(Environment.newBuilder().setSchemaId(1).setRelName("public").addRels(relDescriptor).build()).build();
+        var nonExpanded = Plan.newBuilder().setEnviron(Environment.newBuilder().addSchemas(Schema.newBuilder().setSchemaId(1).setRelName("public").addRels(relDescriptor).build()).build()).build();
         var expanded = planner.expand(nonExpanded);
         assertNotNull(expanded);
-        System.err.println(expanded);
+        var expandedPlan = expanded.await().atMost(Duration.ofMinutes(1));
+        assertNotNull(expandedPlan);
+        assertTrue(expandedPlan.hasPlan());
     }
 }

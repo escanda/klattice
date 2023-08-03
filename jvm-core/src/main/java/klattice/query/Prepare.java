@@ -15,8 +15,8 @@ import java.util.List;
 
 @Dependent
 public class Prepare {
-    public PreparedQuery compile(String query, List<Environment> environments) throws SqlParseException, RelConversionException, ValidationException {
-        var inspector = new SchemaFactory(environments);
+    public PreparedQuery compile(String query, Environment environ) throws SqlParseException, RelConversionException, ValidationException {
+        var inspector = new SchemaFactory(environ);
         var planner = Frameworks.getPlanner(Frameworks.newConfigBuilder()
                         .defaultSchema(inspector.getCatalog().getRootSchema().plus())
                 .build());
@@ -24,6 +24,6 @@ public class Prepare {
         var rewrittenSqlNode = planner.validate(sqlNode);
         var relNode = planner.rel(rewrittenSqlNode);
         var plan = Converter.getPlan(relNode);
-        return PreparedQuery.newBuilder().setPlan(Plan.newBuilder().addAllEnviron(environments).setPlan(plan).build()).build();
+        return PreparedQuery.newBuilder().setPlan(Plan.newBuilder().setEnviron(environ).setPlan(plan).build()).build();
     }
 }

@@ -33,6 +33,11 @@ public class Push implements Operand {
 
     @Override
     public <T> T visit(InstrVisitor<T> visitor) {
-        return visitor.noop(this);
+        return visitor.push(this);
+    }
+
+    @Override
+    public OperandType kind() {
+        return OperandType.PUSH;
     }
 }

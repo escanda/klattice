@@ -32,13 +32,9 @@ public class PrepareTest {
                 .setRelName("PUBLIC")
                 .addAllColumns(List.of(col.build()))
                 .build();
-        var environments = List.of(Environment.newBuilder().setSchemaId(1).setRelName("PUBLIC").addRels(projection).build());
+        var environ = Environment.newBuilder().addSchemas(Schema.newBuilder().setSchemaId(1).setRelName("PUBLIC").addRels(projection)).build();
         var q = "SELECT 'public' FROM PUBLIC.PUBLIC";
-        var qc = QueryDescriptor.newBuilder()
-                .setQuery(q)
-                .addAllEnviron(environments)
-                .build();
-        var preparedQuery = prepare.compile(qc.getQuery(), environments);
+        var preparedQuery = prepare.compile(q, environ);
         logger.info(preparedQuery);
         assertNotNull(preparedQuery);
         assertFalse(preparedQuery.getHasError());

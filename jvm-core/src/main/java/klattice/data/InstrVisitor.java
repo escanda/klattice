@@ -1,7 +1,7 @@
 package klattice.data;
 
 public interface InstrVisitor<C> {
-    C fetch(Pull pull);
-    C pass(NoOp noOp);
-    C noop(Push push);
+    C pull(Pull pull);
+    C ignore(NoOp noOp);
+    C push(Push push);
 }

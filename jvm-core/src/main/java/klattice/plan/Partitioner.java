@@ -2,48 +2,49 @@ package klattice.plan;
 
 import com.google.common.collect.Sets;
 import jakarta.enterprise.context.Dependent;
+import klattice.data.*;
+import klattice.msg.Environment;
 import org.apache.calcite.jdbc.CalciteSchema;
-import org.apache.calcite.plan.volcano.VolcanoRelMetadataProvider;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;
-import org.apache.calcite.rel.RelShuttleImpl;
 import org.apache.calcite.rel.core.TableScan;
-import org.apache.calcite.rel.logical.LogicalExchange;
-import org.apache.calcite.rel.logical.LogicalProject;
-import org.apache.calcite.rel.metadata.*;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.tools.Frameworks;
-import org.apache.calcite.tools.RelConversionException;
-import org.apache.calcite.util.Util;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Function;
 
 @Dependent
 public class Partitioner {
-    public Collection<RelRoot> differentiate(RelDataTypeFactory typeFactory, CalciteSchema schema, RelNode relNode) {
-        Set<TableScan> tableScans = Sets.newHashSet();
-        var rewrittenRelNode = relNode.accept(new RelShuttleImpl() {
-            long depth = 0;
-            @Override
-            public RelNode visit(LogicalProject project) {
-                try {
-                    depth++;
-                    return super.visit(project);
-                } finally {
-                    depth--;
-                }
-            }
+    @Dependent
+    KafkaFetcher kafkaFetcher;
 
-            @Override
-            public RelNode visit(TableScan scan) {
-                tableScans.add(scan);
-                return super.visit(scan);
+    public Collection<RelRoot> differentiate(RelDataTypeFactory typeFactory, Schemata schemata, RelNode relNode) {
+        Set<TableScan> tableScans = Sets.newHashSet();
+        var shuttle = new RelToInstrVisitor(schemata.environ());
+        var rewrittenRelNode = relNode.accept(shuttle);
+        var pulls = shuttle.ins
+                .stream()
+                .filter(ins -> ins.kind().equals(OperandType.PULL))
+                .map(ins -> (Pull) ins)
+                .toList();
+        List<Transfer> list = new ArrayList<>();
+        for (Pull pull : pulls) {
+            var export = pull.export();
+            if (export.isPresent()) {
+                var transfer = export.get();
+                list.add(transfer);
             }
-        });
+        }
+        try {
+            var transferMap = KafkaFetcher.fetchAll(kafkaFetcher, list);
+        } catch (IOException e) {
+            throw new RuntimeException("Cannot workaround", e);
+        }
         var relRoot = RelRoot.of(rewrittenRelNode, SqlKind.SELECT);
         return List.of(relRoot);
     }
+
+    public record Schemata(Environment environ, CalciteSchema root) {}
 }

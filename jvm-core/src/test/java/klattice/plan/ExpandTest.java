@@ -7,6 +7,7 @@ import jakarta.inject.Inject;
 import klattice.msg.Column;
 import klattice.msg.Environment;
 import klattice.msg.Rel;
+import klattice.msg.Schema;
 import klattice.query.Prepare;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.tools.RelConversionException;
@@ -40,12 +41,12 @@ public class ExpandTest {
                 .setRelName("PUBLIC")
                 .addAllColumns(List.of(col))
                 .build();
-        var schemaSources = List.of(Environment.newBuilder().setSchemaId(1).setRelName("PUBLIC").addRels(projection).build());
-        var preparedQuery = prepare.compile("SELECT * FROM PUBLIC.PUBLIC", schemaSources);
+        var environ = Environment.newBuilder().addSchemas(Schema.newBuilder().setSchemaId(1).setRelName("PUBLIC").addRels(projection).build()).build();
+        var preparedQuery = prepare.compile("SELECT * FROM PUBLIC.PUBLIC", environ);
         assertNotNull(preparedQuery);
         logger.infov("Prepared query plan is:\n{0}", new Object[]{preparedQuery});
         var shrunk = preparedQuery.getPlan().getPlan();
-        var expanded = expand.expand(shrunk, schemaSources);
+        var expanded = expand.expand(shrunk, environ);
         assertNotNull(expanded);
         assertNotNull(expanded.actualPlan());
         assertEquals(1, expanded.plans().size());
