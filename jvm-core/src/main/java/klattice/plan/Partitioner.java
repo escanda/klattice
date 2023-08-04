@@ -2,7 +2,10 @@ package klattice.plan;
 
 import com.google.common.collect.Sets;
 import jakarta.enterprise.context.Dependent;
-import klattice.data.*;
+import klattice.data.KafkaFetcher;
+import klattice.data.OperandType;
+import klattice.data.Pull;
+import klattice.data.Transfer;
 import klattice.msg.Environment;
 import org.apache.calcite.jdbc.CalciteSchema;
 import org.apache.calcite.rel.RelNode;
@@ -12,8 +15,10 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.sql.SqlKind;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 @Dependent
 public class Partitioner {
@@ -38,7 +43,7 @@ public class Partitioner {
             }
         }
         try {
-            var transferMap = KafkaFetcher.fetchAll(kafkaFetcher, list);
+            var transferMap = KafkaFetcher.fetchAll(schemata.environ(), kafkaFetcher, list);
         } catch (IOException e) {
             throw new RuntimeException("Cannot workaround", e);
         }
