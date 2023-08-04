@@ -13,6 +13,10 @@ import java.util.List;
 import java.util.Optional;
 
 public class Pull implements Operand {
+    private static LogicalProject ensureAsProjection(RelNode subtree) {
+        return (LogicalProject) RelRoot.of(subtree, SqlKind.SELECT).project(false);
+    }
+
     private final Collection<Environment> environ;
     private final Collection<Operand> children;
     private final Endpoint hostPort;
@@ -26,10 +30,6 @@ public class Pull implements Operand {
         this.hostPort = endpoint;
         this.subtree = ensureAsProjection(subtree);
         this.children = new ArrayList<>(children);
-    }
-
-    private LogicalProject ensureAsProjection(RelNode subtree) {
-        return (LogicalProject) RelRoot.of(subtree, SqlKind.SELECT).project(false);
     }
 
     public Collection<Environment> getEnviron() {
