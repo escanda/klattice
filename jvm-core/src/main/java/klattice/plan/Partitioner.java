@@ -18,7 +18,7 @@ import java.util.Set;
 public class Partitioner {
     public Collection<RelRoot> differentiate(RelDataTypeFactory typeFactory, Schemata schemata, RelNode relNode) {
         Set<TableScan> tableScans = Sets.newHashSet();
-        var relRoot = RelRoot.of(rewrittenRelNode, SqlKind.SELECT);
+        var relRoot = RelRoot.of(relNode, SqlKind.SELECT);
         return List.of(relRoot);
     }
 

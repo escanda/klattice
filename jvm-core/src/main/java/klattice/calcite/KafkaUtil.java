@@ -1,14 +1,18 @@
 package klattice.calcite;
 
+import io.confluent.kafka.schemaregistry.avro.AvroSchemaProvider;
+import io.confluent.kafka.schemaregistry.client.SchemaRegistryClientFactory;
+import io.confluent.kafka.schemaregistry.client.rest.exceptions.RestClientException;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.time.Duration;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 class KafkaUtil {
     public static Long countTopic(String bootstrap, String topicName) {
@@ -36,8 +40,16 @@ class KafkaUtil {
         }
     }
 
-    public static Object schemaRegistryForTopic(String schemaRegistryUrl, String topicName) {
-        SchemaRegi
-        return null;
+    public static Optional<Relation> schemaRegistryForTopic(String schemaRegistryUrl, String topicName) {
+        var schemaRegistryClient = SchemaRegistryClientFactory.newClient(
+                List.of(schemaRegistryUrl),
+                1024,
+                List.of(new AvroSchemaProvider()),
+                Map.of(),
+                Map.of()
+        );
+        return Optional.empty();
     }
+
+    public record Relation(List<RelDataType> types, List<String> fields) {}
 }
