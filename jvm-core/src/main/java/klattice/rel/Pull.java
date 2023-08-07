@@ -1,4 +1,4 @@
-package klattice.data;
+package klattice.rel;
 
 import klattice.msg.Endpoint;
 import klattice.msg.Environment;

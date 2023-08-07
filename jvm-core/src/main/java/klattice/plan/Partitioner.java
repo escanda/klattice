@@ -2,10 +2,6 @@ package klattice.plan;
 
 import com.google.common.collect.Sets;
 import jakarta.enterprise.context.Dependent;
-import klattice.data.KafkaFetcher;
-import klattice.data.OperandType;
-import klattice.data.Pull;
-import klattice.data.Transfer;
 import klattice.msg.Environment;
 import org.apache.calcite.jdbc.CalciteSchema;
 import org.apache.calcite.rel.RelNode;
@@ -14,39 +10,14 @@ import org.apache.calcite.rel.core.TableScan;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.sql.SqlKind;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 @Dependent
 public class Partitioner {
-    @Dependent
-    KafkaFetcher kafkaFetcher;
-
     public Collection<RelRoot> differentiate(RelDataTypeFactory typeFactory, Schemata schemata, RelNode relNode) {
         Set<TableScan> tableScans = Sets.newHashSet();
-        var shuttle = new RelToInstrVisitor(schemata.environ());
-        var rewrittenRelNode = relNode.accept(shuttle);
-        var pulls = shuttle.ins
-                .stream()
-                .filter(ins -> ins.kind().equals(OperandType.PULL))
-                .map(ins -> (Pull) ins)
-                .toList();
-        List<Transfer> list = new ArrayList<>();
-        for (Pull pull : pulls) {
-            var export = pull.export();
-            if (export.isPresent()) {
-                var transfer = export.get();
-                list.add(transfer);
-            }
-        }
-        try {
-            var transferMap = KafkaFetcher.fetchAll(schemata.environ(), kafkaFetcher, list);
-        } catch (IOException e) {
-            throw new RuntimeException("Cannot workaround", e);
-        }
         var relRoot = RelRoot.of(rewrittenRelNode, SqlKind.SELECT);
         return List.of(relRoot);
     }

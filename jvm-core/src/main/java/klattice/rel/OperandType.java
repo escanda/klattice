@@ -1,4 +1,4 @@
-package klattice.data;
+package klattice.rel;
 
 public enum OperandType {
     PULL, PUSH, NOP

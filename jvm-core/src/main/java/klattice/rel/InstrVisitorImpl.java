@@ -1,4 +1,4 @@
-package klattice.data;
+package klattice.rel;
 
 import java.util.Optional;
 

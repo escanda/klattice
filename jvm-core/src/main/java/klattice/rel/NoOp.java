@@ -1,4 +1,4 @@
-package klattice.data;
+package klattice.rel;
 
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.RelRoot;

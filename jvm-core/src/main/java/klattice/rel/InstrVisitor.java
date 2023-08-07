@@ -1,4 +1,4 @@
-package klattice.data;
+package klattice.rel;
 
 public interface InstrVisitor<C> {
     C pull(Pull pull);

@@ -1,8 +1,7 @@
-package klattice.data;
+package klattice.rel;
 
 import org.apache.calcite.rel.RelNode;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
