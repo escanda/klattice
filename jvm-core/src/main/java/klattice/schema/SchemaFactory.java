@@ -67,7 +67,9 @@ public class SchemaFactory {
                 rootSchema,
                 environment.getSchemasList().stream()
                         .findFirst()
-                        .map(schemaDescriptor -> List.of(schemaDescriptor.getRelName())).orElse(Collections.emptyList()), typeFactory, new CalciteConnectionConfigImpl(props)
+                        .map(schemaDescriptor -> List.of(schemaDescriptor.getRelName())).orElse(Collections.emptyList()),
+                typeFactory,
+                new CalciteConnectionConfigImpl(props)
         );
         this.calciteSqlValidator = new CalciteSqlValidator(operatorTable, getCatalog(), getTypeFactory(), SqlValidator.Config.DEFAULT);
     }

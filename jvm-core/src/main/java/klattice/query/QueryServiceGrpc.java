@@ -33,9 +33,4 @@ public class QueryServiceGrpc implements Query {
         logger.infov("Query {0} became {1} prepared query", request, preparedQuery);
         return Uni.createFrom().item(preparedQuery);
     }
-
-    @Override
-    public Multi<Batch> execute(PreparedQuery request) {
-        return Multi.createFrom().empty();
-    }
 }

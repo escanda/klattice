@@ -10,5 +10,4 @@ import "messages.proto";
 
 service Query {
   rpc Inflate (klattice.msg.QueryDescriptor) returns (klattice.msg.PreparedQuery) {};
-  rpc Execute (klattice.msg.PreparedQuery) returns (stream klattice.msg.Batch) {};
 }

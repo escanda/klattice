@@ -6,7 +6,5 @@ pluginManagement {
     }
 }
 
-rootProject.name='klattice'
-
 include 'jvm-api'
 include 'jvm-core'
