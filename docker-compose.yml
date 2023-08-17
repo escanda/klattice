@@ -51,6 +51,11 @@ services:
     ports:
       - "8085:8085"
 
+  duckdb:
+    build:
+      context: .
+      dockerfile: Duckdb.Dockerfile
+
   klattice:
     build:
       context: ./jvm-core/
