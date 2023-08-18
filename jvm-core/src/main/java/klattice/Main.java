@@ -31,7 +31,7 @@ public class Main implements Runnable, QuarkusApplication {
 
     @Override
     public void run() {
-        logger.infov("App up and running in port {0}:{1}", host, port);
+        logger.infov("App up and running in {0}:{1}", host, port);
         Quarkus.waitForExit();
     }
 
