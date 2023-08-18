@@ -59,7 +59,7 @@ services:
   klattice:
     build:
       context: ./jvm-core/
-      dockerfile: jvm-core/src/main/docker/Dockerfile.jvm
+      dockerfile: src/main/docker/Dockerfile.jvm
     command: ["java", "-Dquarkus.http.host=0.0.0.0", "-Djava.util.logging.manager=org.jboss.logmanager.LogManager", "-jar", "/deployments/quarkus-run.jar"]
     depends_on:
       - kafka1
