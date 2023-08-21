@@ -29,6 +29,7 @@ dependencies {
     implementation 'io.quarkus:quarkus-arc'
     implementation 'io.quarkus:quarkus-grpc'
     implementation 'io.quarkus:quarkus-picocli'
+    implementation 'io.quarkus:quarkus-rest-client-reactive-jackson'
     testImplementation 'io.quarkus:quarkus-junit5'
     implementation("io.quarkus:quarkus-smallrye-reactive-messaging-kafka")
     implementation group: 'io.confluent', name: 'kafka-schema-registry-client', version: '7.4.0'
@@ -39,6 +40,19 @@ dependencies {
     implementation group: 'org.apache.calcite', name: 'calcite-kafka', version: '1.35.0'
     implementation(group: 'io.substrait', name: 'core', version: '0.14.0')
     implementation(group: 'io.substrait', name: 'isthmus', version: '0.14.0')
+
+    testImplementation 'io.rest-assured:rest-assured'
+
+    def parquetVersion = '1.13.1'
+    implementation group: 'org.apache.parquet', name: 'parquet-avro', version: parquetVersion
+    implementation group: 'org.apache.parquet', name: 'parquet-hadoop', version: parquetVersion
+
+    def hadoopVersion = '3.3.6'
+    implementation group: 'org.apache.hadoop', name: 'hadoop-common', version: hadoopVersion
+    implementation group: 'org.apache.hadoop', name: 'hadoop-client', version: hadoopVersion
+    implementation group: 'org.apache.avro', name: 'avro', version: '1.11.2'
+    implementation group: 'org.apache.thrift', name: 'libthrift', version: '0.18.1'
+    implementation group: 'com.google.guava', name: 'guava', version: '32.1.2-jre'
 }
 
 test {
