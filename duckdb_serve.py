@@ -12,38 +12,58 @@ class Handler(http.server.BaseHTTPRequestHandler):
     def read_input(self):
         len = int(self.headers.get('Content-Length', "0"))
         return self.rfile.read(len)
-        
+
+    def get_session_id(self):
+        query = urlparse(self.path).query
+        query_components = dict(qc.split("=") for qc in query.split("&"))
+        session_id = int(query_components['session_id'])
+        return session_id
+
+    def dump(self, rel: duckdb.DuckDBPyRelation):
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/csv')
+        self.end_headers()
+        if rel is not None:
+            rel.write_csv('out.csv', header=True)
+            with open("out.csv", "r") as f:
+                for line in f.readlines():
+                    self.wfile.write(bytes(line, 'UTF-8'))
+                    self.wfile.write(bytes('\n', 'UTF-8'))
+                os.remove("out.csv")
+            
     def do_POST(self):
         if self.path.startswith("/upsert-session"):
             session_id = int(self.read_input())
             if session_id in self.sessions:
                 self.sessions[session_id].close()
+            print("opening session by id %d" % (session_id,))
             self.sessions[session_id] = duckdb.connect(':memory:')
             self.send_response(200, message='OK')
             self.end_headers()
         elif self.path.startswith("/exec-sql"):
-            query = urlparse(self.path).query
-            query_components = dict(qc.split("=") for qc in query.split("&"))
-            session_id = int(query_components['session_id'])
+            session_id = self.get_session_id()
             statement = self.read_input()
+            print("executing statement in session %d '%s'" % (session_id, statement))
             try:
-                results = duckdb.from_query(statement, connection=self.sessions[session_id])
-                self.send_response(200)
-                self.send_header('Content-Type', 'text/csv')
-                self.end_headers()
-                if results is not None:
-                    results.write_csv('out.csv', header=True)
-                    with open("out.csv", "r") as f:
-                        for line in f.readlines():
-                            self.wfile.write(bytes(line, 'UTF-8'))
-                            self.wfile.write(bytes('\n', 'UTF-8'))
-                    os.remove("out.csv")
+                rel = duckdb.from_query(statement, connection=self.sessions[session_id])
+                self.dump(rel)
             except duckdb.Error as e:
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(bytes(repr(e), 'UTF-8'))
+        elif self.path.startswith("/exec-substrait"):
+            session_id = self.get_session_id()
+            payload = self.read_input()
+            print("executing Substrait payload in session %d" % (session_id,))
+            rel = duckdb.from_substrait(payload, connection=self.sessions[session_id])
+            self.dump(rel)
+        elif self.path.startswith("/exec-arbitrary"):
+            session_id = self.get_session_id()
+            query = self.read_input()
+            print("executing arbitrary statament in session id %d: '%s'" % (session_id, query))
+            self.sessions[session_id].execute(query)
         else:
-            self.send_response(400, message="invalid command: available are /upsert-session and /exec-sql routes")
+            self.send_response(400, message="invalid command: available are /upsert-session or /exec-sql or /exec-substrait routes")
             self.end_headers()
 
 with http.server.HTTPServer(("0.0.0.0", PORT), Handler) as httpd:
