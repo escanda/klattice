@@ -59,6 +59,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
             self.sessions[session_id] = duckdb.connect(':memory:')
             self.send_response(200, message='OK')
             self.end_headers()
+            self.wfile.write(bytes(str(session_id), 'ASCII'))
         elif self.path.startswith("/exec-sql"):
             session_id = self.get_session_id()
             statement = self.read_input()
@@ -81,6 +82,8 @@ class Handler(http.server.BaseHTTPRequestHandler):
             query = self.read_input()
             print("executing arbitrary statament in session id %d: '%s'" % (session_id, query))
             self.sessions[session_id].execute(query)
+            self.send_response(200)
+            self.end_headers()
         else:
             self.send_response(400, message="invalid command: available are /upsert-session or /exec-sql or /exec-substrait routes")
             self.end_headers()
