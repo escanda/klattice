@@ -3,10 +3,12 @@ import os
 from os import environ
 import duckdb
 from urllib.parse import urlparse
+import random
 
 PORT = int(environ['DUCKDB_SERVER_PORT'])
 
 class Handler(http.server.BaseHTTPRequestHandler):
+    MAX_ID_LOOP_TIMES = 4
     sessions: dict[str, duckdb.DuckDBPyConnection] = {}
 
     def read_input(self):
@@ -32,9 +34,26 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 os.remove("out.csv")
             
     def do_POST(self):
-        if self.path.startswith("/upsert-session"):
+        if self.path.startswith("/make-session"):
+            times = 0
+            a_sid = -1
+            while times < self.MAX_ID_LOOP_TIMES:
+                a_sid = random.choice(range(1000))
+                if not a_sid in self.sessions:
+                    break
+                times += 1
+            if a_sid > -1:
+                self.send_response(200)
+                self.end_headers()
+                self.sessions[a_sid] = duckdb.connect(':memory:')
+                print("made available session with id %d" % (a_sid))
+                self.wfile.write(bytes(str(a_sid), 'ASCII'))
+            else:
+                self.send_response(500, message='Cannot figure out random session id')
+        elif self.path.startswith("/upsert-session"):
             session_id = int(self.read_input())
             if session_id in self.sessions:
+                print("there was a previous session by id %d" % (session_id,))
                 self.sessions[session_id].close()
             print("opening session by id %d" % (session_id,))
             self.sessions[session_id] = duckdb.connect(':memory:')
