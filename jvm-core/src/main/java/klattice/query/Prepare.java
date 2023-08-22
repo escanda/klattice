@@ -11,8 +11,6 @@ import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.RelConversionException;
 import org.apache.calcite.tools.ValidationException;
 
-import java.util.List;
-
 @Dependent
 public class Prepare {
     public PreparedQuery compile(String query, Environment environ) throws SqlParseException, RelConversionException, ValidationException {
