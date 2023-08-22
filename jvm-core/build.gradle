@@ -38,8 +38,10 @@ dependencies {
 
     implementation group: 'org.apache.calcite', name: 'calcite-core', version: '1.35.0'
     implementation group: 'org.apache.calcite', name: 'calcite-kafka', version: '1.35.0'
-    implementation(group: 'io.substrait', name: 'core', version: '0.14.0')
-    implementation(group: 'io.substrait', name: 'isthmus', version: '0.14.0')
+
+    def substraitVersion = '0.15.0'
+    implementation(group: 'io.substrait', name: 'core', version: substraitVersion)
+    implementation(group: 'io.substrait', name: 'isthmus', version: substraitVersion)
 
     testImplementation 'io.rest-assured:rest-assured'
 
