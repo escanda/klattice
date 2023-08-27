@@ -4,11 +4,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.quarkus.arc.log.LoggerName;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
-import klattice.msg.Environment;
 import klattice.query.Prepare;
-import org.apache.calcite.sql.parser.SqlParseException;
-import org.apache.calcite.tools.RelConversionException;
-import org.apache.calcite.tools.ValidationException;
 import org.jboss.logging.Logger;
 import pgproto.IPostgresFrontendMessageHandler;
 import pgproto.domain.BackendMessage;
@@ -16,7 +12,6 @@ import pgproto.domain.FrontendMessage;
 import pgproto.domain.PostgresDataFormat;
 
 import java.util.List;
-import java.util.UUID;
 
 @Dependent
 public class PgWireFrontendHandler implements IPostgresFrontendMessageHandler {
