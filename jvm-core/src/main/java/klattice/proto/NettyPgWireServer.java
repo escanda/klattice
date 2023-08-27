@@ -9,6 +9,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.runtime.Startup;
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
@@ -39,7 +40,7 @@ public class NettyPgWireServer {
         this.pgWireFrontendHandlers = pgWireFrontendHandlers;
     }
 
-    @Inject
+    @PostConstruct
     public void start() throws InterruptedException {
         logger.debug("Starting event loop to handle Pgsql proto connections");
         var bossGroup = new NioEventLoopGroup();
