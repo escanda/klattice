@@ -11,6 +11,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'io.quarkus:quarkus-netty'
     implementation 'io.quarkus:quarkus-resteasy-reactive-jackson'
     implementation 'io.quarkus:quarkus-apicurio-registry-avro'
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
