@@ -26,7 +26,12 @@ public class PgWireFrontendHandler implements IPostgresFrontendMessageHandler {
         logger.debugv("Query message seen: {0}", msg);
 
         // Fake "user" rows which have "id" and "email" columns
-        var rd = new BackendMessage.RowDescription(List.of(new BackendMessage.RowDescription.Int4Field("id", 0, 0, PostgresDataFormat.TEXT), new BackendMessage.RowDescription.TextField("email", 0, 1, PostgresDataFormat.TEXT), new BackendMessage.RowDescription.NumericField("some_float", 0, 2, PostgresDataFormat.TEXT), new BackendMessage.RowDescription.BooleanField("some_bool", 0, 3, PostgresDataFormat.TEXT)));
+        var idCol = new BackendMessage.RowDescription.Int4Field("id", 0, 0, PostgresDataFormat.TEXT);
+        var mailCol = new BackendMessage.RowDescription.TextField("email", 0, 1, PostgresDataFormat.TEXT);
+        var someFloatCol = new BackendMessage.RowDescription.NumericField("some_float", 0, 2, PostgresDataFormat.TEXT);
+        var someBoolCol = new BackendMessage.RowDescription.BooleanField("some_bool", 0, 3, PostgresDataFormat.TEXT);
+        var columns = List.of(idCol, mailCol, someFloatCol, someBoolCol);
+        var rd = new BackendMessage.RowDescription(columns);
 
         ctx.write(rd);
 
