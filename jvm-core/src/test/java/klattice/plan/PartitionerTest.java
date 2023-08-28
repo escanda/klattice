@@ -4,13 +4,11 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.substrait.proto.Type;
 import jakarta.inject.Inject;
 import klattice.msg.*;
-import klattice.schema.SchemaFactory;
+import klattice.calcite.SchemaFactory;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.calcite.tools.Frameworks;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 @QuarkusTest
 public class PartitionerTest {

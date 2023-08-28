@@ -8,6 +8,8 @@ import jakarta.inject.Inject;
 import org.apache.calcite.sql.SqlNode;
 import org.jboss.logging.Logger;
 
+import java.util.Optional;
+
 @ApplicationScoped
 public class QueryDispatcher {
     @LoggerName("QueryDispatcher")
@@ -16,14 +18,16 @@ public class QueryDispatcher {
     @Inject
     Instance<QueryDispatchFunction> dispatchers;
 
-    public void dispatch(ChannelHandlerContext context, SqlNode node) {
+    public void dispatch(ChannelHandlerContext context, Optional<SqlNode> nodeOpt) {
         for (QueryDispatchFunction dispatch : dispatchers) {
-            if (dispatch.accepts(node)) {
-                logger.infov("Doing dispatch to function by name '{0}' after being accepted node {1}", new Object[]{dispatch.id(), node});
-                dispatch.apply(context, node);
+            if (dispatch.accepts(nodeOpt)) {
+                logger.infov("Dispatching to function by id {0} after being accepted sql node {1}", new Object[]{dispatch.id(), nodeOpt});
+                dispatch.apply(context, nodeOpt);
+                return;
             } else {
                 logger.debugv("Dispatch function by name '{0}' cannot be applied", new Object[]{dispatch.id()});
             }
         }
+        logger.warn("Cannot apply any dispatch function onto query");
     }
 }

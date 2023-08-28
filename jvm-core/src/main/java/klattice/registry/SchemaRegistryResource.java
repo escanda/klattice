@@ -1,9 +1,11 @@
-package klattice.exec;
+package klattice.registry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
+
+import java.util.Collection;
 
 @RegisterRestClient(configKey = "schema-registry-api")
 public interface SchemaRegistryResource {
@@ -28,4 +30,14 @@ public interface SchemaRegistryResource {
     @Produces({ CONTENT_TYPE })
     @Consumes({ CONTENT_TYPE })
     Response add(@PathParam("subject") String subject, JsonNode node);
+
+    @GET
+    @Path("/subjects")
+    @Consumes({ CONTENT_TYPE })
+    Collection<SchemaSubject> allSubjects();
+
+    @GET
+    @Path("/subjects")
+    @Consumes({ CONTENT_TYPE })
+    Collection<SchemaSubject> allSubjectsByPrefix(@QueryParam("subjectPrefix") String prefix);
 }

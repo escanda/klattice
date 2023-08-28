@@ -8,13 +8,12 @@ import io.substrait.relation.ProtoRelConverter;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 import klattice.msg.Environment;
-import klattice.schema.SchemaFactory;
+import klattice.calcite.SchemaFactory;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.RelBuilder;
 import org.jboss.logging.Logger;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
