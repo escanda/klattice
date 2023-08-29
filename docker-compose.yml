@@ -58,6 +58,17 @@ services:
     ports:
       - "8090:8090"
 
+  pgadmin4:
+    image: dpage/pgadmin4:latest
+    hostname: "pgadmin4"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=klattice@klattice.io
+      - PGADMIN_DEFAULT_PASSWORD=klattice
+    depends_on:
+      - klattice
+    ports:
+      - "8081:80"
+
   klattice:
     build:
       context: ./jvm-core/
