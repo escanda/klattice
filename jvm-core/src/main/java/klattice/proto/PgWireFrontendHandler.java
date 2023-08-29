@@ -5,20 +5,13 @@ import io.quarkus.arc.log.LoggerName;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 import klattice.calcite.DomainFactory;
-import klattice.msg.Environment;
-import klattice.msg.PreparedQuery;
-import klattice.query.Prepare;
 import klattice.query.QueryDispatcher;
-import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.parser.SqlParseException;
-import org.apache.calcite.sql.parser.SqlParser;
 import org.jboss.logging.Logger;
 import pgproto.IPostgresFrontendMessageHandler;
 import pgproto.domain.BackendMessage;
 import pgproto.domain.FrontendMessage;
-import pgproto.domain.PostgresDataFormat;
 
-import java.util.List;
 import java.util.Optional;
 
 @Dependent
@@ -38,7 +31,7 @@ public class PgWireFrontendHandler implements IPostgresFrontendMessageHandler {
 
         var q = msg.getQuery();
         if (q.isBlank()) {
-            queryDispatcher.dispatch(ctx, Optional.empty());
+            ctx.write(new BackendMessage.EmptyQueryResponse());
         } else {
             var sqlParser = domainFactory.createSqlParser(q);
             try {
