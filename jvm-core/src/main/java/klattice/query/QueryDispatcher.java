@@ -16,10 +16,10 @@ public class QueryDispatcher {
     Logger logger;
 
     @Inject
-    Instance<QueryDispatchFunction> dispatchers;
+    Instance<QueryHandler> dispatchers;
 
     public void dispatch(ChannelHandlerContext context, Optional<SqlNode> nodeOpt) {
-        for (QueryDispatchFunction dispatch : dispatchers) {
+        for (QueryHandler dispatch : dispatchers) {
             if (dispatch.accepts(nodeOpt)) {
                 logger.infov("Dispatching to function by id {0} after being accepted sql node {1}", new Object[]{dispatch.id(), nodeOpt});
                 dispatch.apply(context, nodeOpt);
