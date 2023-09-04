@@ -8,6 +8,7 @@ import io.netty.handler.logging.LoggingHandler;
 import io.quarkus.runtime.Startup;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import klattice.wire.hnd.SocketChannelInitializer;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -23,7 +24,7 @@ public class NettyPgWireServer {
     private final int port;
 
     @Inject
-    SocketChannelInitializer initializer;
+    Instance<SocketChannelInitializer> initializer;
 
     @Inject
     public NettyPgWireServer(@ConfigProperty(name = "klattice.netty.host") String host,
@@ -43,7 +44,7 @@ public class NettyPgWireServer {
             b.group(bossGroup, workerGroup)
                     .channel(NioServerSocketChannel.class)
                     .handler(new LoggingHandler(LogLevel.INFO))
-                    .childHandler(initializer);
+                    .childHandler(initializer.get());
             logger.infov("Binding to handle Pgsql proto connections at {0}:{1}", new Object[]{host, port});
             b.bind(host, port).sync().channel().closeFuture().sync();
         } finally {

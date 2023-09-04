@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum PgsqlClientCommandType {
-    Startup(null),
+    Startup('\0'),
     Bind('B'),
     Close('C'),
     CopyData('d'),
