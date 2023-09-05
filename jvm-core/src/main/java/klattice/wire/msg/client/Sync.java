@@ -2,19 +2,20 @@ package klattice.wire.msg.client;
 
 import klattice.wire.msg.Message;
 import klattice.wire.msg.PgsqlClientCommandType;
+import klattice.wire.msg.PgsqlPayload;
 import klattice.wire.msg.PgsqlPayloadProvider;
 
-import java.util.Map;
+import java.util.List;
 
-public record Startup(int protocol, Map<String, String> params) implements Message {
+public record Sync() implements Message {
     @Override
     public char command() {
-        return PgsqlClientCommandType.Startup.id;
+        return PgsqlClientCommandType.Sync.id;
     }
 
     @Override
     public PgsqlPayloadProvider provider() {
-        return emptyProvider();
+        return () -> new PgsqlPayload(command(), List.of());
     }
 
     @Override

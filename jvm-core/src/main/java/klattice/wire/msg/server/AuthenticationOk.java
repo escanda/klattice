@@ -1,16 +1,13 @@
 package klattice.wire.msg.server;
 
-import klattice.wire.msg.Message;
-import klattice.wire.msg.MessageField;
-import klattice.wire.msg.PgsqlPayload;
-import klattice.wire.msg.PgsqlPayloadProvider;
+import klattice.wire.msg.*;
 
 import java.util.List;
 
 public record AuthenticationOk() implements Message {
     @Override
     public char command() {
-        return 'R';
+        return PgsqlServerCommandType.AuthenticationOk.id;
     }
 
     @Override

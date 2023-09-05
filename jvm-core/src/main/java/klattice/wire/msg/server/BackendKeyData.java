@@ -1,9 +1,6 @@
 package klattice.wire.msg.server;
 
-import klattice.wire.msg.Message;
-import klattice.wire.msg.MessageField;
-import klattice.wire.msg.PgsqlPayload;
-import klattice.wire.msg.PgsqlPayloadProvider;
+import klattice.wire.msg.*;
 import klattice.wire.msg.type.Int32V;
 
 import java.util.List;
@@ -11,7 +8,7 @@ import java.util.List;
 public record BackendKeyData(int processId, int secretKey) implements Message {
     @Override
     public char command() {
-        return 'K';
+        return PgsqlServerCommandType.BackendKeyData.id;
     }
 
     @Override

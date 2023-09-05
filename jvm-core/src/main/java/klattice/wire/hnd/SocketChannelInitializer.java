@@ -16,6 +16,8 @@ import java.nio.ByteOrder;
 public class SocketChannelInitializer extends ChannelInitializer<SocketChannel> {
     @Inject
     Instance<ProcessorHandler> processorsHandlers;
+    @Inject
+    Instance<FrontendMessageDecoder> frontendHandlers;
 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
@@ -33,17 +35,17 @@ public class SocketChannelInitializer extends ChannelInitializer<SocketChannel> 
                                 true
                         )
                 )
-                .addLast(HandlerKeys.STARTUP_CODEC, new FrontendMessageDecoder())
+                .addLast(HandlerKeys.STARTUP_CODEC, new StartupMessageDecoder())
                 .addLast(HandlerKeys.STD_FRAME_DECODER, new LengthFieldBasedFrameDecoder(
                         ByteOrder.BIG_ENDIAN,
                         1024 * 1024 * 1024,
                         1,
                         4,
-                        -5,
+                        -4,
                         0,
                         true)
                 )
-                .addLast(HandlerKeys.FRONTEND_MESSAGE_DECODER, new FrontendMessageDecoder())
+                .addLast(HandlerKeys.FRONTEND_MESSAGE_DECODER, frontendHandlers.get())
                 .addLast(HandlerKeys.BACKEND_MESSAGE_ENCODER, new BackendMessageEncoder())
                 .addLast(new LoggingHandler(LogLevel.INFO))
                 .addLast(HandlerKeys.PROCESSOR, processorsHandlers.get());
