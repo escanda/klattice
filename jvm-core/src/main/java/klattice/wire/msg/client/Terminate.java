@@ -4,10 +4,10 @@ import klattice.wire.msg.Message;
 import klattice.wire.msg.PgsqlClientCommandType;
 import klattice.wire.msg.PgsqlPayloadProvider;
 
-public record Sync() implements Message {
+public record Terminate() implements Message {
     @Override
     public char command() {
-        return PgsqlClientCommandType.Sync.id;
+        return PgsqlClientCommandType.Terminate.id;
     }
 
     @Override
