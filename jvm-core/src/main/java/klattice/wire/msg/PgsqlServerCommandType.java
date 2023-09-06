@@ -18,7 +18,7 @@ public enum PgsqlServerCommandType {
     BackendKeyData('K'),
     BindComplete('2'),
     CloseComplete('3'),
-    CommandComplete('4'),
+    CommandComplete('C'),
     CopyData('d'),
     CopyDone('c'),
     CopyInResponse('G'),
