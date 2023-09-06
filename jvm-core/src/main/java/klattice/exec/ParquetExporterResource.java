@@ -47,32 +47,33 @@ public class ParquetExporterResource {
         } else {
             file = topicFileMap.get(topicName);
         }
-        var r = new RandomAccessFile(file, "r");
-        var rangeStr = httpHeaders.getHeaderString("Range");
-        if (!Objects.isNull(rangeStr)) {
-            var matcher = RANGE_PAT.matcher(rangeStr);
-            if (matcher.matches()) {
-                var start = Integer.parseInt(matcher.group(1));
-                var end = Integer.parseInt(matcher.group(2));
-                var len = (end - start) + 1;
-                r.seek(start);
-                var bytesStr = String.format("bytes %s-%s/%d", start, end, r.length());
-                return Response.status(206).entity((StreamingOutput) output -> {
-                            int byteCount = 0;
-                            int byteV;
-                            while ((byteCount < len) && (byteV = r.read()) != -1) {
-                                output.write(byteV);
-                                byteCount++;
-                            }
-                            r.close();
-                        })
-                        .header("Accept-Ranges", "bytes")
-                        .header("Content-Range", bytesStr)
-                        .header("Content-Length", String.format("%d", len)).build();
+        try (var r = new RandomAccessFile(file, "r")) {
+            var rangeStr = httpHeaders.getHeaderString("Range");
+            if (!Objects.isNull(rangeStr)) {
+                var matcher = RANGE_PAT.matcher(rangeStr);
+                if (matcher.matches()) {
+                    var start = Integer.parseInt(matcher.group(1));
+                    var end = Integer.parseInt(matcher.group(2));
+                    var len = (end - start) + 1;
+                    r.seek(start);
+                    var bytesStr = String.format("bytes %s-%s/%d", start, end, r.length());
+                    return Response.status(206).entity((StreamingOutput) output -> {
+                                int byteCount = 0;
+                                int byteV;
+                                while ((byteCount < len) && (byteV = r.read()) != -1) {
+                                    output.write(byteV);
+                                    byteCount++;
+                                }
+                                r.close();
+                            })
+                            .header("Accept-Ranges", "bytes")
+                            .header("Content-Range", bytesStr)
+                            .header("Content-Length", String.format("%d", len)).build();
+                }
+                throw new NotFoundException("No HEAD prior request for topic " + topicName);
+            } else {
+                return Response.status(200).entity(new FileInputStream(file)).build();
             }
-            throw new NotFoundException("No HEAD prior request for topic " + topicName);
-        } else {
-            return Response.status(200).entity(new FileInputStream(file)).build();
         }
     }
 
