@@ -16,6 +16,6 @@ public class Int16V extends PgsqlValueType<Short> {
 
     @Override
     public Short cast(Object value) {
-        return (Short) value;
+        return ((Number) value).shortValue();
     }
 }

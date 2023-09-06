@@ -16,6 +16,6 @@ public class Int32V extends PgsqlValueType<Integer> {
 
     @Override
     public Integer cast(Object value) {
-        return (Integer) value;
+        return ((Number) value).intValue();
     }
 }

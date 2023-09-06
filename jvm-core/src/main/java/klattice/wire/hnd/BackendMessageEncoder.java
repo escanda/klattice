@@ -16,14 +16,11 @@ public class BackendMessageEncoder extends MessageToByteEncoder<Message> {
         out.writeByte(msg.command());
         var payload = msg.provider().payload();
         int size = 0;
-        var valueRecs = Streams.zip(
-                Arrays.stream(msg.values()),
-                payload.fields().stream().map(messageField -> messageField.supplier().get()),
-        ValueRec::new).toList();
+        var valueRecs = Streams.zip(Arrays.stream(msg.values()), payload.fields().stream()
+                .map(messageField -> messageField.supplier().get()), ValueRec::new).toList();
         size += 4;
         Optional<Integer> sizeOpt = valueRecs.stream()
-                .map(valueRec -> valueRec.valueType().byteSize(valueRec.value()))
-                .reduce(Integer::sum);
+                .map(valueRec -> valueRec.valueType().byteSize(valueRec.value())).reduce(Integer::sum);
         out.writeInt(size + sizeOpt.orElse(0));
         for (ValueRec<?> valueRec : valueRecs) {
             valueRec.valueType().serializeInto(valueRec.value(), out);

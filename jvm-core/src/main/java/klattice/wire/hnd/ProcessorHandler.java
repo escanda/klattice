@@ -25,8 +25,10 @@ public class ProcessorHandler extends SimpleChannelInboundHandler<Message> {
             ctx.write(new ReadyForQuery(ReadyForQuery.TransactionStatus.IDLE));
             ctx.flush();
         } else if (msg instanceof Query) {
-            ctx.write(new RowDescription(1, 1, List.of(new RowDescription.Field("version", 0, (short) 0, 0, (short) 4, 0, RowFieldType.TEXT))));
-            ctx.write(new DataRow((short) 0, List.of(new DataRow.Column(1, " ".getBytes(StandardCharsets.UTF_8)))));
+            var query = ((Query) msg).query();
+            System.err.println(query);
+            ctx.write(new RowDescription(1, 1, List.of(new RowDescription.Field("whatever", 0, (short) 0, 0, (short) 4, 0, RowFieldType.TEXT))));
+            ctx.write(new DataRow((short) 1, List.of(new DataRow.Column(1, " ".getBytes(StandardCharsets.UTF_8)))));
             ctx.write(new CommandComplete(1, CommandComplete.Tag.SELECT));
             ctx.write(new ReadyForQuery(ReadyForQuery.TransactionStatus.IDLE));
             ctx.flush();
