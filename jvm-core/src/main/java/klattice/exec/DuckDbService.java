@@ -48,9 +48,9 @@ public class DuckDbService {
             }
             try (var is = response.readEntity(InputStream.class);
                  var bis = new BufferedReader(new InputStreamReader(is))) {
-                return bis.lines()
+                return () -> bis.lines()
                         .map(line -> line.split(DELIMITER))
-                        .toList(); // TODO: zero copy (stream)
+                        .iterator();
             } catch (IOException e) {
                 logger.error("Error during reading IO from substrait response");
                 throw new RuntimeException(e);
