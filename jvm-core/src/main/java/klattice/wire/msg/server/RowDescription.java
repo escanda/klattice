@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public record RowDescription(int rowNo,
-                             int fieldsNo,
+                             short fieldsNo,
                              Collection<Field> fields) implements Message {
     @Override
     public char command() {
@@ -22,7 +22,7 @@ public record RowDescription(int rowNo,
         return () -> {
             Collection<MessageField<?>> messageFields = new ArrayList<>();
             messageFields.add(new MessageField<>("rowNo", Int32V::new));
-            messageFields.add(new MessageField<>("fieldsNo", Int32V::new));
+            messageFields.add(new MessageField<>("fieldsNo", Int16V::new));
             for (int i = 0; i < fieldsNo(); i++) {
                 messageFields.add(new MessageField<>("name" + i, StrV::new));
                 messageFields.add(new MessageField<>("fieldOid" + i, Int32V::new));

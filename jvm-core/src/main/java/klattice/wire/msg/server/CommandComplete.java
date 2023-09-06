@@ -24,13 +24,29 @@ public record CommandComplete(int rows, Tag tag) implements Message {
     }
 
     public enum Tag {
-        INSERT, DELETE, UPDATE, MERGE, SELECT, MOVE, FETCH, COPY;
+        INSERT(true),
+        DELETE(true),
+        UPDATE(true),
+        MERGE(true),
+        SELECT(true),
+        MOVE(true),
+        FETCH(true),
+        COPY(true),
+        SET(false);
+
+        public final boolean hasRowCount;
+
+        Tag(boolean hasRowCount) {
+            this.hasRowCount = hasRowCount;
+        }
 
         public String format(int rows) {
             if (this == INSERT) {
                 return name() + " 0 " + rows;
-            } else {
+            } else if (hasRowCount) {
                 return name() + " " + rows;
+            } else {
+                return name();
             }
         }
     }
