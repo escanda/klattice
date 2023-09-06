@@ -15,6 +15,6 @@ public interface Message {
     }
 
     default Supplier<? extends PgsqlValueType<Integer>> signedInt() {
-        return () -> Int32V.I;
+        return Int32V::new;
     }
 }

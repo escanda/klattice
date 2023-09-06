@@ -7,7 +7,6 @@ import klattice.wire.HandlerKeys;
 import klattice.wire.msg.PgsqlClientCommandType;
 import klattice.wire.msg.client.Startup;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,20 +17,17 @@ public class StartupMessageDecoder extends ChannelInboundHandlerAdapter {
         int protocol = (int) in.readUnsignedInt();
         var commandType = PgsqlClientCommandType.from('\0').orElseThrow();
         if (commandType == PgsqlClientCommandType.Startup) {
-            int offset = 8;
             String key = null, value;
             Map<String, String> params = new HashMap<>();
             for (var i = 0;; i++) {
-                var slice = in.readBytes(in.bytesBefore((byte) 0));
-                var str = slice.toString(StandardCharsets.UTF_8);
+                var str = Util.readCstring(in);
                 if (str.isEmpty()) {
                     break;
                 } else {
-                    offset += 8 * slice.readableBytes();
                     if (i % 2 == 0) {
-                        key = str;
+                        key = str.orElse(null);
                     } else {
-                        value = str;
+                        value = str.orElse(null);
                         params.put(key, value);
                     }
                 }

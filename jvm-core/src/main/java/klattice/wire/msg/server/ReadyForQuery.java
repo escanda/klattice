@@ -14,7 +14,7 @@ public record ReadyForQuery(TransactionStatus transactionStatus) implements Mess
     @Override
     public PgsqlPayloadProvider provider() {
         return () -> new PgsqlPayload(command(), List.of(
-                new MessageField<>("transactionIndicator", () -> SingleByteV.I)
+                new MessageField<>("transactionIndicator", SingleByteV::new)
         ));
     }
 

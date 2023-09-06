@@ -14,8 +14,8 @@ public record BackendKeyData(int processId, int secretKey) implements Message {
     @Override
     public PgsqlPayloadProvider provider() {
         return () -> new PgsqlPayload(command(), List.of(
-                new MessageField<>("processId", () -> Int32V.I),
-                new MessageField<>("secretKey", () -> Int32V.I)
+                new MessageField<>("processId", Int32V::new),
+                new MessageField<>("secretKey", Int32V::new)
         ));
     }
 

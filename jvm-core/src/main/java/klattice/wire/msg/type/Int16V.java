@@ -3,10 +3,10 @@ package klattice.wire.msg.type;
 import io.netty.buffer.ByteBuf;
 import klattice.wire.msg.PgsqlValueType;
 
-public class Int32V extends PgsqlValueType<Integer> {
+public class Int16V extends PgsqlValueType<Short> {
     @Override
     public int byteSize(Object value) {
-        return 4;
+        return 2;
     }
 
     @Override
@@ -15,7 +15,7 @@ public class Int32V extends PgsqlValueType<Integer> {
     }
 
     @Override
-    public Integer cast(Object value) {
-        return (Integer) value;
+    public Short cast(Object value) {
+        return (Short) value;
     }
 }

@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 import klattice.wire.msg.PgsqlValueType;
 
 public class SingleByteV extends PgsqlValueType<Byte> {
-    public static final PgsqlValueType<Byte> I = new SingleByteV();
     @Override
     public int byteSize(Object value) {
         return 1;
