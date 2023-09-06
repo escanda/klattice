@@ -47,9 +47,9 @@ public class ParquetExporterResource {
         } else {
             file = topicFileMap.get(topicName);
         }
-        var r = new RandomAccessFile(file, "r");
         var rangeStr = httpHeaders.getHeaderString("Range");
         if (!Objects.isNull(rangeStr)) {
+            var r = new RandomAccessFile(file, "r");
             var matcher = RANGE_PAT.matcher(rangeStr);
             if (matcher.matches()) {
                 var start = Integer.parseInt(matcher.group(1));
