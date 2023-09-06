@@ -11,7 +11,6 @@ import klattice.wire.msg.client.Terminate;
 import klattice.wire.msg.server.*;
 import klattice.wire.msg.shared.ParameterStatus;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Dependent
@@ -26,11 +25,17 @@ public class ProcessorHandler extends SimpleChannelInboundHandler<Message> {
             ctx.flush();
         } else if (msg instanceof Query) {
             var query = ((Query) msg).query();
-            System.err.println(query);
-            ctx.write(new RowDescription(1, 1, List.of(new RowDescription.Field("whatever", 0, (short) 0, 0, (short) 4, 0, RowFieldType.TEXT))));
-            ctx.write(new DataRow((short) 1, List.of(new DataRow.Column(1, " ".getBytes(StandardCharsets.UTF_8)))));
-            ctx.write(new CommandComplete(1, CommandComplete.Tag.SELECT));
-            ctx.write(new ReadyForQuery(ReadyForQuery.TransactionStatus.IDLE));
+            if (query.isBlank() || !query.contains("version()")) {
+                ctx.write(new EmptyQueryResponse());
+                ctx.write(new ReadyForQuery(ReadyForQuery.TransactionStatus.IDLE));
+            } else if (query.trim().startsWith("SET")) {
+                ctx.write(new CommandComplete(0, CommandComplete.Tag.SET));
+                ctx.write(new ReadyForQuery(ReadyForQuery.TransactionStatus.IDLE));
+            } else {
+                ctx.write(new RowDescription(1, (short) 0, List.of()));
+                ctx.write(new CommandComplete(1, CommandComplete.Tag.SELECT));
+                ctx.write(new ReadyForQuery(ReadyForQuery.TransactionStatus.IDLE));
+            }
             ctx.flush();
         } else if (msg instanceof Sync) {
             ctx.write(new ReadyForQuery(ReadyForQuery.TransactionStatus.IDLE));
