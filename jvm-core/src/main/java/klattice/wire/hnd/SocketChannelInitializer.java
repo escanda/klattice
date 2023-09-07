@@ -9,6 +9,7 @@ import jakarta.enterprise.context.Dependent;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import klattice.wire.HandlerKeys;
+import klattice.wire.PgSession;
 
 import java.nio.ByteOrder;
 
@@ -21,6 +22,7 @@ public class SocketChannelInitializer extends ChannelInitializer<SocketChannel> 
 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
+        var session = PgSession.of(ch); // TODO: move into quarkus scope
         ch.pipeline()
                 .addLast(new LoggingHandler(LogLevel.INFO))
                 .addLast(
