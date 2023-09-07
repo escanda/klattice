@@ -22,7 +22,7 @@ public class Main implements Runnable, QuarkusApplication {
     String host;
 
     @ConfigProperty(name = "quarkus.grpc.server.port")
-    String port;
+    int port;
 
     @Override
     public int run(String... args) {
