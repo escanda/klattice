@@ -35,7 +35,7 @@ public record DataRow(Collection<Column> columns) implements Message {
         var values = new ArrayList<>();
         values.add((short) columns.size());
         for (Column column : columns) {
-            values.add(column.colWidth());
+            values.add(column.value.length);
             values.add(column.value);
         }
         return values.toArray();
