@@ -3,19 +3,21 @@ package klattice.wire.msg.type;
 import io.netty.buffer.ByteBuf;
 import klattice.wire.msg.PgsqlValueType;
 
-public class Int16V extends PgsqlValueType<Short> {
+public class VarByteV extends PgsqlValueType<byte[]> {
     @Override
     public int byteSize(Object value) {
-        return 2;
+        return cast(value).length;
     }
 
     @Override
     public void serializeInto(Object value, ByteBuf buf) {
-        buf.writeShort(cast(value));
+        for (byte b : cast(value)) {
+            buf.writeByte(b);
+        }
     }
 
     @Override
-    public Short cast(Object value) {
-        return ((Number) value).shortValue();
+    public byte[] cast(Object value) {
+        return (byte[]) value;
     }
 }
