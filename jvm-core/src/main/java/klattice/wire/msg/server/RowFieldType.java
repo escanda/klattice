@@ -1,4 +1,4 @@
-package klattice.wire.hnd;
+package klattice.wire.msg.server;
 
 public enum RowFieldType {
     TEXT,

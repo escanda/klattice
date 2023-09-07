@@ -1,6 +1,5 @@
 package klattice.wire.msg.server;
 
-import klattice.wire.hnd.RowFieldType;
 import klattice.wire.msg.*;
 import klattice.wire.msg.type.Int16V;
 import klattice.wire.msg.type.Int32V;
