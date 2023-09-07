@@ -1,4 +1,4 @@
-package klattice.exec;
+package klattice.duckdb;
 
 import io.quarkus.arc.log.LoggerName;
 import jakarta.enterprise.context.ApplicationScoped;

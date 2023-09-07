@@ -1,4 +1,4 @@
-package klattice.exec;
+package klattice.endpoint;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.arc.log.LoggerName;

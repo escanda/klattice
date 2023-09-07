@@ -1,6 +1,7 @@
-package klattice.exec;
+package klattice.endpoint;
 
 import io.quarkus.test.junit.QuarkusTest;
+import klattice.duckdb.DuckDbRestService;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.junit.jupiter.api.Test;
 

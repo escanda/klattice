@@ -1,4 +1,4 @@
-package klattice.exec;
+package klattice.endpoint;
 
 import org.apache.parquet.io.OutputFile;
 import org.apache.parquet.io.PositionOutputStream;

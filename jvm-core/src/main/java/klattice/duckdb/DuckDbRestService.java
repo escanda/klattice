@@ -1,4 +1,4 @@
-package klattice.exec;
+package klattice.duckdb;
 
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.POST;

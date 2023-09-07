@@ -1,4 +1,4 @@
-package klattice.exec;
+package klattice.endpoint;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.arc.log.LoggerName;
@@ -17,12 +17,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Pattern;
+
+import static klattice.endpoint.Regex.RANGE_PAT;
 
 @Resource
-@Path("/{topicName}")
-public class ParquetExporterResource {
-    private final static Pattern RANGE_PAT = Pattern.compile(".*?bytes=(\\d+)-(\\d+)$");
+@Path("/topic-table/{topicName}")
+public class ParquetExportResource {
     @LoggerName("ParquetExporterResource")
     Logger logger;
 
@@ -102,6 +102,6 @@ public class ParquetExporterResource {
     }
 
     private File tmpFileForTopicName(String topicName) throws IOException {
-        return Files.createTempFile(ParquetExporterResource.class.getSimpleName(), topicName + ".parquet").toFile();
+        return Files.createTempFile(ParquetExportResource.class.getSimpleName(), topicName + ".parquet").toFile();
     }
 }
