@@ -37,7 +37,7 @@ public class PlannerServiceGrpc implements Planner {
             if (relRoots.isEmpty()) {
                 var errorMessage = "Empty plans";
                 logger.warn(errorMessage);
-                return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(true).setDiagnostics(PlanDiagnostics.newBuilder().setErrorMessage(String.format(errorMessage)).build()).build());
+                return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(true).setDiagnostics(PlanDiagnostics.newBuilder().setErrorMessage(errorMessage).build()).build());
             } else {
                 logger.infov("Original plan was:\n'{0}'\nNew plans are:\n'{1}'", new Object[]{request.getPlan(), relRoots});
                 var relPlanBuilder = io.substrait.plan.ImmutablePlan.builder();
