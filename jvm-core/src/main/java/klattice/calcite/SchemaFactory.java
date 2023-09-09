@@ -22,19 +22,21 @@ import org.apache.calcite.schema.impl.ListTransientTable;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.validate.SqlValidator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
-import static klattice.plan.Converter.asType;
+import static klattice.substrait.CalciteToSubstraitConverter.asType;
 
 public class SchemaFactory {
     private final CalciteCatalogReader catalog;
     private final RelOptCluster relOptCluster;
     private final JavaTypeFactory typeFactory;
-    private final SqlStdOperatorTable operatorTable;
     private final CalciteSqlValidator calciteSqlValidator;
 
     public SchemaFactory(Environment environment) {
-        operatorTable = new SqlStdOperatorTable();
+        SqlStdOperatorTable operatorTable = new SqlStdOperatorTable();
         var rootSchema = LookupCalciteSchema.createRootSchema(false);
         for (Schema schema : environment. getSchemasList()) {
             CalciteSchema schemaPlus = CalciteSchema.createRootSchema(false);
