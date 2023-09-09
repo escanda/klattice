@@ -30,6 +30,9 @@ dependencies {
     testImplementation 'io.quarkus:quarkus-junit5'
 }
 
-tasks.test {
+test {
     useJUnitPlatform()
 }
+
+sourceCompatibility = JavaVersion.VERSION_20
+targetCompatibility = JavaVersion.VERSION_20
