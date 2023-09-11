@@ -1,27 +1,27 @@
-package klattice.delphos;
+package klattice.facade;
 
 import io.quarkus.grpc.GrpcClient;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import klattice.exec.MutinyExecGrpc;
+import klattice.exec.Exec;
 import klattice.msg.*;
-import klattice.plan.MutinyPlannerGrpc;
-import klattice.query.MutinyQueryGrpc;
+import klattice.plan.Planner;
+import klattice.query.Query;
 import klattice.store.SchemaMetadata;
 import klattice.store.SchemaRegistryStoreSource;
 
 @ApplicationScoped
 public class Oracle {
     @GrpcClient
-    MutinyQueryGrpc.MutinyQueryStub query;
+    Query query;
 
     @GrpcClient
-    MutinyPlannerGrpc.MutinyPlannerStub planner;
+    Planner planner;
 
     @GrpcClient
-    MutinyExecGrpc.MutinyExecStub exec;
+    Exec exec;
 
     @Inject
     SchemaRegistryStoreSource schemaRegistryStoreSource;

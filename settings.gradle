@@ -6,5 +6,4 @@ pluginManagement {
     }
 }
 
-include 'jvm-api'
 include 'jvm-core'

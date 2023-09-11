@@ -1,4 +1,4 @@
-package klattice.delphos;
+package klattice.facade;
 
 import klattice.msg.QueryDiagnostics;
 

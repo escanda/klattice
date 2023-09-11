@@ -1,7 +1,6 @@
 package klattice.query;
 
 import jakarta.enterprise.context.Dependent;
-import jakarta.inject.Inject;
 import klattice.calcite.DomainFactory;
 import klattice.msg.Environment;
 import klattice.msg.Plan;
@@ -15,13 +14,10 @@ import org.apache.calcite.tools.ValidationException;
 
 @Dependent
 public class Prepare {
-    @Inject
-    DomainFactory domainFactory;
-
     public PreparedQuery compile(String query, Environment environ) throws SqlParseException, RelConversionException, ValidationException {
         var inspector = new SchemaFactory(environ);
         var planner = Frameworks.getPlanner(Frameworks.newConfigBuilder()
-                        .parserConfig(domainFactory.sqlParserConfig())
+                        .parserConfig(DomainFactory.sqlParserConfig())
                         .defaultSchema(inspector.getCatalog().getRootSchema().plus())
                 .build());
         var sqlNode = planner.parse(query);

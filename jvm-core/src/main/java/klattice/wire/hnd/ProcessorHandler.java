@@ -5,7 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
-import klattice.delphos.Oracle;
+import klattice.facade.Oracle;
 import klattice.msg.Batch;
 import klattice.msg.Row;
 import klattice.wire.msg.Message;
