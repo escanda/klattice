@@ -2,7 +2,6 @@ package klattice.plan;
 
 import io.quarkus.arc.log.LoggerName;
 import io.quarkus.grpc.GrpcService;
-import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
 import io.substrait.isthmus.ImmutableFeatureBoard;
 import io.substrait.isthmus.SubstraitRelVisitor;
@@ -26,7 +25,6 @@ public class PlannerServiceGrpc implements Planner {
     @LoggerName("PlannerServiceGrpc")
     Logger logger;
 
-    @Blocking
     @Override
     public Uni<klattice.msg.ExpandedPlan> expand(klattice.msg.Plan request) {
         var environ = request.getEnviron();

@@ -3,8 +3,8 @@ package klattice.wire.hnd;
 import com.google.common.collect.Streams;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.quarkus.grpc.GrpcClient;
 import jakarta.enterprise.context.Dependent;
-import jakarta.inject.Inject;
 import klattice.facade.Oracle;
 import klattice.msg.Batch;
 import klattice.msg.Row;
@@ -20,7 +20,7 @@ import java.time.Duration;
 
 @Dependent
 public class ProcessorHandler extends SimpleChannelInboundHandler<Message> {
-    @Inject
+    @GrpcClient
     Oracle oracle;
 
     @Override
@@ -40,7 +40,7 @@ public class ProcessorHandler extends SimpleChannelInboundHandler<Message> {
                 ctx.write(new CommandComplete(0, CommandComplete.Tag.SET));
                 ctx.write(new ReadyForQuery(ReadyForQuery.TransactionStatus.IDLE));
             } else {
-                var answer = oracle.answer(query)
+                var answer = oracle.answer(klattice.msg.Query.newBuilder().setQuery(query).build())
                         .await()
                         .atMost(Duration.ofMillis(1000));
                 print(ctx, answer);

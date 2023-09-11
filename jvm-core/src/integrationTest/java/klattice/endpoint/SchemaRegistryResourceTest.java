@@ -2,8 +2,7 @@ package klattice.endpoint;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.quarkus.test.junit.QuarkusTest;
-import jakarta.inject.Inject;
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 import klattice.registry.SchemaEntry;
 import klattice.registry.SchemaRegistryResource;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -12,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@QuarkusTest
+@QuarkusIntegrationTest
 public class SchemaRegistryResourceTest {
     private static final String EX_SCHEMA = """
             {
@@ -27,9 +26,6 @@ public class SchemaRegistryResourceTest {
             """;
     @RestClient
     SchemaRegistryResource schemaRegistryResource;
-
-    @Inject
-    ObjectMapper objectMapper;
 
     @Test
     public void test_Types() {
@@ -53,6 +49,7 @@ public class SchemaRegistryResourceTest {
         assertEquals("topic.a", s1.subject());
         assertEquals("AVRO", s1.schemaTypeStr());
         assertEquals("AVRO", s2.schemaTypeStr());
+        var objectMapper = new ObjectMapper();
         assertEquals(objectMapper.readTree(EX_SCHEMA), objectMapper.readTree(s1.schema()));
         assertEquals(objectMapper.readTree(EX_SCHEMA), objectMapper.readTree(s2.schema()));
     }
