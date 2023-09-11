@@ -1,0 +1,58 @@
+* Introduction
+KLattice is a backend over Postgres protocol which mimics Postgresql semantics but pings back into Kafka and Confluent compatible Schema-Registry.
+** Pointcuts
+*** Query
+This pointcut allows to further integrate pgsql's own parser into core using gRPC as encoding and communications hub.
+For instance, we would use [[https://github.com/pganalyze/libpg_query][libpgquery]].
+*** Plan
+Plan's pointcut is intended to be able to further use a different language for query planning, for instance, OCaml, or
+any other for that matter, given the right Postgresql binding.
+*** Execution
+Execution is performed after a query has been prepared and planned. A computed plan is in Substrait's encoding form.
+The plan, before being sent for execution, has been processed in the *Query* pointcut, where the encompassed SQL statement
+is transpiled into a Pull-based query against an endpoint using DuckDB's `HTTPFS'.
+The DuckDB prepared plan is further sent to a service where DuckDB receives the Substrait plan, and pings back into the Parquet and CSV
+table-value expressions exposed through HTTP.
+** Calcite
+Calcite goal is serving as foundational library for RDBMS systems. In this case, we are using it as means of query planning
+and normalization. Another goal of using this library is transpiling from a SQL representation into a relational algebra one.
+The main class for this node-tree like ontology is called in Calcite `RelNode', from there, all node representations are derived.
+In order to traverse this tree, exists an `accept' method.
+** Substrait
+Substrait is a common-lingua for query plan encoding. Its goal is to be backend-agnostic, and describe, in relational algebra,
+the operations involved during query execution on any backend: such as DuckDB, or [[https://github.com/facebookincubator/velox][Facebook one]].
+** Operational notes
+Although Substrait is based on Calcite's *relnode* ontology, there are subtle differences, so [[https://github.com/substrait-io/substrait-java/tree/main/isthmus/][Substrait's Isthmus]] converter is used
+to translate across domains; afterwards, the Substrait's *rel* ontology is translated into Protobuf's one.
+* Goals
+1. Achieve protocol compatiblity to Postgresql; including /complex/ subprotocol.
+2. Reify /Schema Registry/ schemas over Postgresql-protocol compatible queries.
+3. Reify /Kafka's topics/ over Postgresql-protocol compatible tables.
+4. Reify the above into DuckDB so the actual SQL is executed by this very same engine.
+* Topics of interest
+** DuckDB
+The main difference across DuckDB and PostgreSQL, beside the protocol, which will be adressed later on, are:
++ Syntax. For instance, `::<type>' cast expressions.
++ Function names. Although some functions are equivalent in functionality, their names are different. Need to translate across
+  Calcite and DuckDB.
+Also other value expressions might differ from DuckDB, Postgresql and Calcite's.
+*** Addressing above issues
+Syntax can be easily be homogenized using a proper Postgresql parser - such as its native one, as DuckDB does up to some extent -
+and encoding its syntax-tree into Protobuf, for instance.
+Function names with identical semantics can be easily translated during query preparation. Different semantics can be achieved combining
+nested value expressions, or windowing functions/expressions.
+** Reification
+The project needs to reify, or materialize, into table-value expressions, Kafka's topics and schemas. In order to do so, CSV is used as
+pull-based table-view(s).
+For larga Kafka topics, Parquet might be used, and it is already in the project's code, only the right endpoint shall be called with its
+topic name over DuckDB's `HTTPFS'.
+*** Schema registry reify
+These datums can be easily encoded into CSV and integrated within DuckDB's core infra invoking a remote HTTP endpoint.
+*** Kafka topic reify
+Since this data is - potentially - much larger than its metadata (see above) this data can be pulled with `HTTPFS' also, in Parquet
+format, but beware Parquet's format encodes data at large so resting the data in some temporary file, or memory-mapped file, might be
+wise.
+* Tickets
+** TODO Achieve protocol compatibility pair-wise with Postgresql.
+In order to do so, complex subprotocol, paired with query cancellation, preparation and such must be implemented: so far only simple
+protocol is implemented.
