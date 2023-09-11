@@ -1,11 +1,9 @@
 package klattice.registry;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
 
-import java.util.Collection;
+import java.util.List;
 
 @RegisterRestClient(configKey = "schema-registry-api")
 public interface SchemaRegistryResource {
@@ -13,31 +11,31 @@ public interface SchemaRegistryResource {
     @GET
     @Path("/schemas/types")
     @Produces({ CONTENT_TYPE })
-    Response types();
+    List<String> types();
 
     @GET
     @Path("/schemas/ids/{id}")
     @Consumes({ CONTENT_TYPE })
-    Response byId(int id);
+    SchemaSubject byId(@PathParam("id") int id);
 
     @GET
     @Path("/subjects/{subject}/versions/-1")
     @Consumes({ CONTENT_TYPE })
-    Response byTopicName(@PathParam("subject") String subject);
+    SchemaSubject byTopicName(@PathParam("subject") String subject);
 
     @POST
     @Path("/subjects/{subject}/versions")
     @Produces({ CONTENT_TYPE })
     @Consumes({ CONTENT_TYPE })
-    Response add(@PathParam("subject") String subject, JsonNode node);
+    SchemaSubject add(@PathParam("subject") String subject, SchemaEntry schemaEntry);
 
     @GET
     @Path("/subjects")
     @Consumes({ CONTENT_TYPE })
-    Collection<SchemaSubject> allSubjects();
+    List<String> allSubjects();
 
     @GET
     @Path("/subjects")
     @Consumes({ CONTENT_TYPE })
-    Collection<SchemaSubject> allSubjectsByPrefix(@QueryParam("subjectPrefix") String prefix);
+    List<String> allSubjectsByPrefix(@QueryParam("subjectPrefix") String prefix);
 }

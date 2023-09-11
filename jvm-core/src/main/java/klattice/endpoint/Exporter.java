@@ -1,10 +1,10 @@
 package klattice.endpoint;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.arc.log.LoggerName;
 import jakarta.annotation.Nonnull;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import klattice.registry.SchemaSubject;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
@@ -39,7 +39,7 @@ public class Exporter {
     @Inject
     CommandLine.ParseResult parseResult;
 
-    public void export(@Nonnull JsonNode schemaNode, @Nonnull String topicName, @Nonnull OutputStream outputStream, long rowLimit) throws IOException {
+    public void export(@Nonnull SchemaSubject schemaSubject, @Nonnull String topicName, @Nonnull OutputStream outputStream, long rowLimit) throws IOException {
         var props = new Properties();
         var bootstrapServers = parseResult.matchedOptionValue('b', "127.0.0.1:9092");
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
@@ -51,7 +51,7 @@ public class Exporter {
 
         try (var consumer = new KafkaConsumer<byte[], byte[]>(props)) {
             consumer.subscribe(Collections.singletonList(topicName));
-            var schema = schemaNode.get("schema").asText();
+            var schema = schemaSubject.schema();
             var parser = new Schema.Parser();
             var parsedSchema = parser.parse(schema);
             var bos = new BufferedOutputStream(outputStream);

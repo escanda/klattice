@@ -6,8 +6,9 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.quarkus.runtime.Startup;
-import jakarta.annotation.PostConstruct;
+import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import klattice.wire.hnd.SocketChannelInitializer;
@@ -33,7 +34,16 @@ public class NettyPgWireServer {
         this.port = port;
     }
 
-    @PostConstruct
+    public void onStartup(@Observes StartupEvent ev) throws InterruptedException {
+        new Thread(() -> {
+            try {
+                this.start();
+            } catch (InterruptedException e) {
+                logger.errorv("Cannot start NettyPgWireServer", e);
+            }
+        }, "NettyPgWireServer").start();
+    }
+
     public void start() throws InterruptedException {
         logger.debug("Starting event loop to handle Pgsql proto connections");
         var bossGroup = new NioEventLoopGroup();

@@ -1,6 +1,5 @@
 package klattice.endpoint;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.quarkus.arc.log.LoggerName;
 import io.smallrye.common.annotation.Blocking;
 import jakarta.annotation.Resource;
@@ -89,14 +88,8 @@ public class ParquetExportResource {
         topicFileMap.put(topicName, file);
         try (var fos = new FileOutputStream(file, true)) {
             logger.infov("Starting topic export by name '{0}'", new Object[]{topicName});
-            final JsonNode jsonNode;
-            try (var schemaResponse = schemaRegistryResource.byTopicName(topicName)) {
-                jsonNode = schemaResponse.readEntity(JsonNode.class);
-            } catch (WebApplicationException e) {
-                logger.error("Cannot find topic by subject name", e);
-                return Optional.empty();
-            }
-            exporter.export(jsonNode, topicName, fos, rowLimit);
+            var schemaSubject = schemaRegistryResource.byTopicName(topicName);
+            exporter.export(schemaSubject, topicName, fos, rowLimit);
         }
         return Optional.of(file);
     }

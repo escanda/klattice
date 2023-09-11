@@ -1,4 +1,3 @@
 package klattice.registry;
 
-public record SchemaSubject(String name) {
-}
+public record SchemaSubject(String subject, int id, int version, String schema) {}

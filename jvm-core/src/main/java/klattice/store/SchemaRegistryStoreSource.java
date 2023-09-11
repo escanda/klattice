@@ -16,13 +16,13 @@ public class SchemaRegistryStoreSource implements DatabaseStoreSource {
     public Stream<SchemaMetadata> allSchemas() {
         return schemaRegistryResource.allSubjects()
                 .stream()
-                .map(schemaSubject -> new SchemaMetadata(schemaSubject.name()));
+                .map(SchemaMetadata::new);
     }
 
     @Override
     public Stream<SchemaMetadata> byPrefix(String prefix) {
         return schemaRegistryResource.allSubjectsByPrefix(prefix)
                 .stream()
-                .map(schemaSubject -> new SchemaMetadata(schemaSubject.name()));
+                .map(SchemaMetadata::new);
     }
 }
