@@ -57,7 +57,7 @@ public class ProcessorHandler extends SimpleChannelInboundHandler<Message> {
     private void print(ChannelHandlerContext ctx, Batch batch) {
         int[] count = new int[]{0};
         var fields = Streams.zip(batch.getFieldNamesList().stream(), batch.getFieldTypesList().stream(), Tuple2::new)
-                .map(tuple -> new RowDescription.Field(tuple.head(), 0, (short) count[0]++, 25, (short) -1, -1, RowFieldType.TEXT)) // TODO: dataTypeOid
+                .map(tuple -> new RowDescription.Field(tuple.head(), 0, (short) count[0]++, 25, (short) -1, -1, RowFieldType.TEXT)) // TODO: dataTypeOid lookup
                 .toList();
         ctx.write(new RowDescription(fields));
         ctx.flush();

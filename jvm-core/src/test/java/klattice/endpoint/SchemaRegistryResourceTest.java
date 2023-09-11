@@ -51,8 +51,8 @@ public class SchemaRegistryResourceTest {
         var s1 = schemaRegistryResource.byTopicName("topic.a");
         var s2 = schemaRegistryResource.byId(s1.version());
         assertEquals("topic.a", s1.subject());
-        assertEquals("AVRO", s1.schemaType());
-        assertEquals("AVRO", s2.schemaType());
+        assertEquals("AVRO", s1.schemaTypeStr());
+        assertEquals("AVRO", s2.schemaTypeStr());
         assertEquals(objectMapper.readTree(EX_SCHEMA), objectMapper.readTree(s1.schema()));
         assertEquals(objectMapper.readTree(EX_SCHEMA), objectMapper.readTree(s2.schema()));
     }

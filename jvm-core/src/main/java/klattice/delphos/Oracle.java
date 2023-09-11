@@ -3,7 +3,7 @@ package klattice.delphos;
 import io.quarkus.grpc.GrpcClient;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
-import jakarta.enterprise.context.Dependent;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import klattice.exec.MutinyExecGrpc;
 import klattice.msg.*;
@@ -12,7 +12,7 @@ import klattice.query.MutinyQueryGrpc;
 import klattice.store.SchemaMetadata;
 import klattice.store.SchemaRegistryStoreSource;
 
-@Dependent
+@ApplicationScoped
 public class Oracle {
     @GrpcClient
     MutinyQueryGrpc.MutinyQueryStub query;

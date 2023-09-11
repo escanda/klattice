@@ -4,6 +4,8 @@ import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 @QuarkusTest
 public class OracleTest {
     @Inject
@@ -11,6 +13,8 @@ public class OracleTest {
 
     @Test
     public void test_SimpleQuery() {
-        System.out.println(oracle.answer("SELECT version()").await().indefinitely());
+        var batch = oracle.answer("SELECT version()").await().indefinitely();
+        System.out.println(batch);
+        assertNotNull(batch);
     }
 }
