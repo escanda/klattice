@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "klattice.exec";
+option java_outer_classname = "KLExecProto";
+
+package klattice.exec;
+
+import "messages.proto";
+
+service Exec {
+  rpc execute (klattice.msg.Plan) returns (klattice.msg.Batch) {};
+}

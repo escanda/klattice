@@ -46,21 +46,11 @@ message Rel {
     string relName = 2;
     repeated Column columns = 3;
     uint64 estimated_rows = 4;
-    oneof next {
-        Rel next_rel = 5;
-        Endpoint next_endpoint = 6;
-    }
 }
 
 message Column {
     string columnName = 1;
     substrait.Type type = 2;
-}
-
-message Endpoint {
-    HostAndPort host_port = 1;
-    bytes helo_payload = 2;
-    ResponseAdaptorKind response_adaptor = 3;
 }
 
 message Batch {
@@ -70,16 +60,6 @@ message Batch {
 
 message Row {
     repeated bytes fields = 1;
-}
-
-message HostAndPort {
-    string host = 1;
-    uint32 port = 2;
-}
-
-enum ResponseAdaptorKind {
-    ARROW = 0;
-    AVRO = 1;
 }
 
 message PreparedQuery {

@@ -3,6 +3,8 @@ package klattice.wire.hnd;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import jakarta.enterprise.context.Dependent;
+import jakarta.inject.Inject;
+import klattice.delphos.Oracle;
 import klattice.wire.msg.Message;
 import klattice.wire.msg.client.Query;
 import klattice.wire.msg.client.Startup;
@@ -16,6 +18,9 @@ import java.util.List;
 
 @Dependent
 public class ProcessorHandler extends SimpleChannelInboundHandler<Message> {
+    @Inject
+    Oracle oracle;
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
         if (msg instanceof Startup) {
@@ -33,6 +38,7 @@ public class ProcessorHandler extends SimpleChannelInboundHandler<Message> {
                 ctx.write(new CommandComplete(0, CommandComplete.Tag.SET));
                 ctx.write(new ReadyForQuery(ReadyForQuery.TransactionStatus.IDLE));
             } else {
+                oracle.answer(query);
                 ctx.write(new RowDescription(List.of(
                         new RowDescription.Field(
                                 "version",
