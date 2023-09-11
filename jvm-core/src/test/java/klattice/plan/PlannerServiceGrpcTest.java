@@ -1,11 +1,13 @@
 package klattice.plan;
 
+import com.google.protobuf.InvalidProtocolBufferException;
 import io.quarkus.grpc.GrpcClient;
 import io.quarkus.test.junit.QuarkusTest;
 import io.substrait.proto.Type;
 import klattice.msg.*;
 import org.junit.jupiter.api.Test;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.List;
 
@@ -18,7 +20,7 @@ public class PlannerServiceGrpcTest {
     Planner planner;
 
     @Test
-    public void smokeTest() {
+    public void smokeTest() throws InvalidProtocolBufferException {
         var relDescriptor = Rel.newBuilder()
                 .setRelName("public_table")
                 .addAllColumns(
@@ -27,7 +29,8 @@ public class PlannerServiceGrpcTest {
                         .build())
                 .build()))
             .build();
-        var nonExpanded = Plan.newBuilder().setEnviron(Environment.newBuilder().addSchemas(Schema.newBuilder().setSchemaId(1).setRelName("public").addRels(relDescriptor).build()).build()).build();
+        var actualPlan = io.substrait.proto.Plan.parseFrom((ByteBuffer) null); // TODO: insert payload
+        var nonExpanded = Plan.newBuilder().setPlan(actualPlan).setEnviron(Environment.newBuilder().addSchemas(Schema.newBuilder().setSchemaId(1).setRelName("public").addRels(relDescriptor).build()).build()).build();
         var expanded = planner.expand(nonExpanded);
         assertNotNull(expanded);
         var expandedPlan = expanded.await().atMost(Duration.ofMinutes(1));

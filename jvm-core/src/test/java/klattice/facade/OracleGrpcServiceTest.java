@@ -18,7 +18,6 @@ public class OracleGrpcServiceTest {
         var batch = oracle.answer(Query.newBuilder().setQuery("SELECT 1").build())
                 .await()
                 .indefinitely();
-        System.out.println(batch);
         assertNotNull(batch);
         assertEquals(1, batch.getRowsList().size());
     }
