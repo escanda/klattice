@@ -1,4 +1,4 @@
-package klattice.calcite;
+package klattice.registry;
 
 import klattice.msg.Column;
 import klattice.msg.Environment;

@@ -1,8 +1,11 @@
 package klattice.delphos;
 
 import io.quarkus.grpc.GrpcClient;
+import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
+import klattice.exec.MutinyExecGrpc;
 import klattice.msg.*;
 import klattice.plan.MutinyPlannerGrpc;
 import klattice.query.MutinyQueryGrpc;
@@ -17,36 +20,38 @@ public class Oracle {
     @GrpcClient
     MutinyPlannerGrpc.MutinyPlannerStub planner;
 
+    @GrpcClient
+    MutinyExecGrpc.MutinyExecStub exec;
+
     @Inject
     SchemaRegistryStoreSource schemaRegistryStoreSource;
 
-    public void answer(String query) throws SyntacticalException, PlanningException {
+    public Uni<Batch> answer(String query) {
         Environment environ = environ();
         var qd = QueryDescriptor.newBuilder().setQuery(query).setEnviron(environ).build();
-        var inflatedQuery = this.query.inflate(qd)
-                .await()
-                .indefinitely();
-        if (inflatedQuery.getHasError()) {
-            throw SyntacticalException.from(inflatedQuery.getDiagnostics());
-        } else {
-            var serializedPlan = inflatedQuery.getPlan();
-            var replannedPlan = replan(environ, serializedPlan);
-            var finalPlan = replannedPlan.getPlan();
-        }
+        var inflatedQuery = this.query.inflate(qd);
+        return inflatedQuery.flatMap(Unchecked.function(preparedQuery -> {
+            if (preparedQuery.getHasError()) {
+                throw SyntacticalException.from(preparedQuery.getDiagnostics());
+            } else {
+                var serializedPlan = preparedQuery.getPlan();
+                return replan(environ, serializedPlan).flatMap(Unchecked.function(expandedPlan -> {
+                    var finalPlan = expandedPlan.getPlan();
+                    return execute(finalPlan);
+                }));
+            }
+        }));
     }
 
-    public ExpandedPlan replan(Environment environ, Plan plan) throws PlanningException {
-        var expandedPlan = planner.expand(plan)
-                .await()
-                .indefinitely();
-        if (expandedPlan.getHasError()) {
-            throw PlanningException.from(expandedPlan.getDiagnostics());
-        } else {
-            return expandedPlan;
-        }
+    public Uni<Batch> execute(Plan plan) {
+        return exec.execute(plan);
     }
 
-    private Environment environ() {
+    public Uni<ExpandedPlan> replan(Environment environ, Plan plan) throws PlanningException {
+        return planner.expand(plan);
+    }
+
+    public Environment environ() {
         var environBuilder = Environment.newBuilder();
         for (SchemaMetadata schemaMetadata : schemaRegistryStoreSource.allSchemas()) {
             environBuilder.addSchemas(Schema.newBuilder().setSchemaId(schemaMetadata.id()).build());
