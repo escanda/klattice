@@ -17,7 +17,9 @@ public class SchemaRegistryService {
                         schemaSubject.subject(),
                         schemaSubject.id(),
                         schemaSubject.schema(),
-                        SchemaEntity.SchemaType.valueOf(schemaSubject.schemaType()))
+                        schemaSubject.schemaType() == null ?
+                                null :
+                                SchemaEntity.SchemaType.valueOf(schemaSubject.schemaType()))
                 )
                 .toList();
     }

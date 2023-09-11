@@ -4,20 +4,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.arc.log.LoggerName;
+import io.substrait.type.ImmutableType;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 import klattice.registry.SchemaEntity;
 import klattice.registry.SchemaRegistryService;
-import klattice.row.RowConverter;
-import klattice.row.RowTypeColumnInfo;
-import klattice.row.RowTypeInfo;
-import klattice.row.RowValueType;
 import org.jboss.logging.Logger;
 
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Function;
 
 @Dependent
 public class SchemaRegistryStoreSource implements DatabaseStoreSource {
@@ -47,15 +42,20 @@ public class SchemaRegistryStoreSource implements DatabaseStoreSource {
                 .iterator();
     }
 
-    private RowTypeInfo parseSchema(SchemaEntity.SchemaType schemaType, String schema) throws JsonProcessingException {
+    private TypeAndName parseSchema(SchemaEntity.SchemaType schemaType, String schema) throws JsonProcessingException {
         var jsonNode = om.readTree(schema); // TODO: assume `schemaType' is AVRO
         var fieldsNode = jsonNode.get("fields");
-        var cols = new ArrayList<RowTypeColumnInfo>();
+        var cols = new ArrayList<TypeAndName.TypeKind>();
+        var rootName = jsonNode.get("name").asText();
         for (JsonNode fieldNode : fieldsNode) {
             var name = fieldNode.get("name").asText();
-            var typeName = fieldNode.get("type").asText();
-            cols.add(new RowTypeColumnInfo(name, RowValueType.valueOf(typeName), Optional.of((RowConverter) Function.identity())));
+            // TODO: var typeName = fieldNode.get("type").asText();
+            var builder = ImmutableType.VarChar.builder();
+            builder.nullable(true);
+            builder.length(-1);
+            var typeTerminal = new TypeAndName.TypeTerminal(name, builder.build());
+            cols.add(typeTerminal);
         }
-        return new RowTypeInfo(cols);
+        return new TypeAndName(new TypeAndName.TypeLeaf(cols), rootName);
     }
 }
