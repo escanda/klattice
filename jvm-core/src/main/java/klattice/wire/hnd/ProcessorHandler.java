@@ -1,10 +1,13 @@
 package klattice.wire.hnd;
 
+import com.google.common.collect.Streams;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
 import klattice.delphos.Oracle;
+import klattice.msg.Batch;
+import klattice.msg.Row;
 import klattice.wire.msg.Message;
 import klattice.wire.msg.client.Query;
 import klattice.wire.msg.client.Startup;
@@ -13,8 +16,7 @@ import klattice.wire.msg.client.Terminate;
 import klattice.wire.msg.server.*;
 import klattice.wire.msg.shared.ParameterStatus;
 
-import java.nio.charset.StandardCharsets;
-import java.util.List;
+import java.time.Duration;
 
 @Dependent
 public class ProcessorHandler extends SimpleChannelInboundHandler<Message> {
@@ -38,20 +40,10 @@ public class ProcessorHandler extends SimpleChannelInboundHandler<Message> {
                 ctx.write(new CommandComplete(0, CommandComplete.Tag.SET));
                 ctx.write(new ReadyForQuery(ReadyForQuery.TransactionStatus.IDLE));
             } else {
-                oracle.answer(query);
-                ctx.write(new RowDescription(List.of(
-                        new RowDescription.Field(
-                                "version",
-                                0,
-                                (short) 0,
-                                25,
-                                (short) -1,
-                                -1,
-                                RowFieldType.TEXT
-                        ))));
-                ctx.write(new DataRow(List.of(new DataRow.Column(-1, "hehe".getBytes(StandardCharsets.UTF_8)))));
-                ctx.write(new CommandComplete(1, CommandComplete.Tag.SELECT));
-                ctx.write(new ReadyForQuery(ReadyForQuery.TransactionStatus.IDLE));
+                var answer = oracle.answer(query)
+                        .await()
+                        .atMost(Duration.ofMillis(1000));
+                print(ctx, answer);
             }
             ctx.flush();
         } else if (msg instanceof Sync) {
@@ -61,4 +53,24 @@ public class ProcessorHandler extends SimpleChannelInboundHandler<Message> {
             ctx.close();
         }
     }
+
+    private void print(ChannelHandlerContext ctx, Batch batch) {
+        int[] count = new int[]{0};
+        var fields = Streams.zip(batch.getFieldNamesList().stream(), batch.getFieldTypesList().stream(), Tuple2::new)
+                .map(tuple -> new RowDescription.Field(tuple.head(), 0, (short) count[0]++, 25, (short) -1, -1, RowFieldType.TEXT))
+                .toList();
+        ctx.write(new RowDescription(fields));
+        ctx.flush();
+        for (Row row : batch.getRowsList()) {
+            var cols = row.getFieldsList().stream()
+                    .map(bytes -> new DataRow.Column(-1, bytes.toByteArray()))
+                    .toList();
+            ctx.write(new DataRow(cols));
+        }
+        ctx.write(new CommandComplete(batch.getRowsCount(), CommandComplete.Tag.SELECT));
+        ctx.write(new ReadyForQuery(ReadyForQuery.TransactionStatus.IDLE));
+        ctx.flush();
+    }
+
+    record Tuple2<P, Q>(P head, Q tail) {}
 }
