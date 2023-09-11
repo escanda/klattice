@@ -2,7 +2,7 @@ package klattice.endpoint;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.quarkus.test.junit.QuarkusIntegrationTest;
+import io.quarkus.test.junit.QuarkusTest;
 import klattice.registry.SchemaEntry;
 import klattice.registry.SchemaRegistryResource;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@QuarkusIntegrationTest
+@QuarkusTest
 public class SchemaRegistryResourceTest {
     private static final String EX_SCHEMA = """
             {

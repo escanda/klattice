@@ -1,12 +1,12 @@
 package klattice.duckdb;
 
-import io.quarkus.test.junit.QuarkusIntegrationTest;
+import io.quarkus.test.junit.QuarkusTest;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@QuarkusIntegrationTest
+@QuarkusTest
 public class DuckDbRestServiceTest {
     @RestClient
     DuckDbRestService duckDbRestService;

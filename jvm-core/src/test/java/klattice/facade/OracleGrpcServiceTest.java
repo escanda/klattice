@@ -1,14 +1,14 @@
 package klattice.facade;
 
 import io.quarkus.grpc.GrpcClient;
-import io.quarkus.test.junit.QuarkusIntegrationTest;
+import io.quarkus.test.junit.QuarkusTest;
 import klattice.msg.Query;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@QuarkusIntegrationTest
+@QuarkusTest
 public class OracleGrpcServiceTest {
     @GrpcClient
     Oracle oracle;

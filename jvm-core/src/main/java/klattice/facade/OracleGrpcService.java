@@ -2,6 +2,7 @@ package klattice.facade;
 
 import io.quarkus.grpc.GrpcClient;
 import io.quarkus.grpc.GrpcService;
+import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.inject.Inject;
@@ -26,15 +27,15 @@ public class OracleGrpcService implements Oracle {
     @Inject
     SchemaRegistryStoreSource schemaRegistryStoreSource;
 
-    public Uni<Batch> execute(Plan plan) {
+    protected Uni<Batch> execute(Plan plan) {
         return exec.execute(plan);
     }
 
-    public Uni<ExpandedPlan> replan(Environment environ, Plan plan) throws PlanningException {
+    protected Uni<ExpandedPlan> replan(Environment environ, Plan plan) {
         return planner.expand(plan);
     }
 
-    public Environment environ() {
+    protected Environment environ() {
         var environBuilder = Environment.newBuilder();
         for (SchemaMetadata schemaMetadata : schemaRegistryStoreSource.allSchemas()) {
             environBuilder.addSchemas(Schema.newBuilder().setSchemaId(schemaMetadata.id()).build());
@@ -42,21 +43,18 @@ public class OracleGrpcService implements Oracle {
         return environBuilder.build();
     }
 
+    @Blocking
     @Override
     public Uni<Batch> answer(klattice.msg.Query request) {
         Environment environ = environ();
         var qd = QueryDescriptor.newBuilder().setQuery(request.getQuery()).setEnviron(environ).build();
         var inflatedQuery = this.query.inflate(qd);
         return inflatedQuery.flatMap(Unchecked.function(preparedQuery -> {
-            if (preparedQuery.getHasError()) {
-                throw SyntacticalException.from(preparedQuery.getDiagnostics());
-            } else {
-                var serializedPlan = preparedQuery.getPlan();
-                return replan(environ, serializedPlan).flatMap(Unchecked.function(expandedPlan -> {
-                    var finalPlan = expandedPlan.getPlan();
-                    return execute(finalPlan);
-                }));
-            }
+            var serializedPlan = preparedQuery.getPlan();
+            return replan(environ, serializedPlan).flatMap(Unchecked.function(expandedPlan -> {
+                var finalPlan = expandedPlan.getPlan();
+                return execute(finalPlan);
+            }));
         }));
     }
 }
