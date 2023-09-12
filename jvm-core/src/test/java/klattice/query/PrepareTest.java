@@ -1,13 +1,10 @@
 package klattice.query;
 
 import io.quarkus.arc.log.LoggerName;
+import io.quarkus.grpc.GrpcClient;
 import io.quarkus.test.junit.QuarkusTest;
 import io.substrait.proto.Type;
-import jakarta.inject.Inject;
-import klattice.msg.Column;
-import klattice.msg.Environment;
-import klattice.msg.Rel;
-import klattice.msg.Schema;
+import klattice.msg.*;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.tools.RelConversionException;
 import org.apache.calcite.tools.ValidationException;
@@ -24,8 +21,8 @@ public class PrepareTest {
     @LoggerName("PrepareTest")
     Logger logger;
 
-    @Inject
-    Prepare prepare;
+    @GrpcClient
+    Query query;
     @Test
     public void smokeTest() throws SqlParseException, RelConversionException, ValidationException {
         var type = Type.newBuilder().setBool(Type.Boolean.newBuilder().setNullability(Type.Nullability.NULLABILITY_NULLABLE).build());
@@ -37,7 +34,9 @@ public class PrepareTest {
                 .build();
         var environ = Environment.newBuilder().addSchemas(Schema.newBuilder().setSchemaId(1).setRelName("PUBLIC").addRels(projection)).build();
         var q = "SELECT 'public' FROM PUBLIC.PUBLIC";
-        var preparedQuery = prepare.compile(q, environ);
+        var preparedQuery = query.inflate(QueryDescriptor.newBuilder().setQuery(q).setEnviron(environ).build())
+                .await()
+                .indefinitely();
         logger.info(preparedQuery);
         assertNotNull(preparedQuery);
         assertFalse(preparedQuery.getHasError());
