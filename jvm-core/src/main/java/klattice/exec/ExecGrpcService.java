@@ -13,6 +13,7 @@ import klattice.msg.Row;
 import org.jboss.logging.Logger;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 @GrpcService
 public class ExecGrpcService implements Exec {
@@ -26,7 +27,7 @@ public class ExecGrpcService implements Exec {
     @Override
     public Uni<Batch> execute(Plan request) {
         var substraitPlanBytes = request.getPlan().toByteArray();
-        logger.infov("Received request {0}", substraitPlanBytes);
+        logger.infov("Received request for plan {0} and bytes {1}", new Object[]{ request.getPlan(), Arrays.toString(substraitPlanBytes) });
         var iterableResult = duckDbService.execSubstrait(substraitPlanBytes);
         var batchBuilder = Batch.newBuilder();
         iterableResult.forEach(strings -> {

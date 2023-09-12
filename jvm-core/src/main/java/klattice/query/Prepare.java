@@ -22,6 +22,7 @@ public class Prepare {
         var planner = Frameworks.getPlanner(Frameworks.newConfigBuilder()
                         .parserConfig(DomainFactory.sqlParserConfig())
                         .defaultSchema(inspector.getCatalog().getRootSchema().plus())
+                        .operatorTable(schemaInflator.getSqlOperatorTable())
                 .build());
         var sqlNode = planner.parse(query);
         var rewrittenSqlNode = planner.validate(sqlNode);

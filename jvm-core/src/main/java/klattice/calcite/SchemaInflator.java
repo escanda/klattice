@@ -19,7 +19,7 @@ public class SchemaInflator {
     private Iterable<? extends SqlOperator> getFunctionList() {
         return List.of(
                 new SqlFunction(
-                        "version",
+                        FunctionNames.VERSION,
                         SqlKind.OTHER_FUNCTION,
                         ReturnTypes.VARCHAR,
                         null,

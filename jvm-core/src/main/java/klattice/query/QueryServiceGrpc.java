@@ -28,7 +28,7 @@ public class QueryServiceGrpc implements Query {
             logger.warnv("Error preparing statement {0} with error {1}", new Object[]{request.getQuery()}, e);
             preparedQuery = PreparedQuery.newBuilder().setDiagnostics(QueryDiagnostics.newBuilder().setErrorMessage(e.getMessage()).build()).build();
         }
-        logger.infov("Query {0} became {1} prepared query", request, preparedQuery);
+        logger.infov("Query {0} became {1}", request, preparedQuery);
         return Uni.createFrom().item(preparedQuery);
     }
 }
