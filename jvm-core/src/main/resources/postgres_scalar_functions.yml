@@ -1,0 +1,11 @@
+%YAML 1.2
+---
+scalar_functions:
+  -
+    name: version
+    description: Postgresql server version.
+    impls:
+      - args: []
+        variadic:
+          min: 0
+        return: "string"

@@ -32,16 +32,17 @@ public class QueryServiceGrpc implements Query {
     public Uni<PreparedQuery> inflate(QueryDescriptor request) {
         PreparedQuery preparedQuery;
         try {
-            var inspector = new SchemaFactory(schemaInflator, request.getEnviron());
+            var extraSqlOperatorTable = schemaInflator.getSqlOperatorTable();
+            var inspector = new SchemaFactory(extraSqlOperatorTable, request.getEnviron());
             var planner = Frameworks.getPlanner(Frameworks.newConfigBuilder()
                     .parserConfig(DomainFactory.sqlParserConfig())
                     .defaultSchema(inspector.getCatalog().getRootSchema().plus())
-                    .operatorTable(schemaInflator.getSqlOperatorTable())
+                    .operatorTable(extraSqlOperatorTable)
                     .build());
             var sqlNode = planner.parse(request.getQuery());
             var rewrittenSqlNode = planner.validate(sqlNode);
             var relNode = planner.rel(rewrittenSqlNode);
-            var plan = CalciteToSubstraitConverter.getPlan(relNode);
+            var plan = CalciteToSubstraitConverter.getPlan(inspector.getCatalog().getRootSchema(), inspector.getTypeFactory(), relNode);
             preparedQuery = PreparedQuery.newBuilder().setPlan(Plan.newBuilder().setEnviron(request.getEnviron()).setPlan(plan).build()).build();
         } catch (SqlParseException | RelConversionException | ValidationException e) {
             logger.warnv("Error preparing statement {0} with error {1}", request.getQuery(), e);
