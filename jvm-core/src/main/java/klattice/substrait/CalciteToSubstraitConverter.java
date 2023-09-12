@@ -8,9 +8,6 @@ import io.substrait.isthmus.TypeConverter;
 import io.substrait.proto.Plan;
 import io.substrait.proto.PlanRel;
 import io.substrait.relation.RelProtoConverter;
-import klattice.msg.Environment;
-import klattice.registry.SchemaFactory;
-import org.apache.calcite.jdbc.CalciteSchema;
 import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
@@ -88,9 +85,5 @@ public final class CalciteToSubstraitConverter {
             }
         }
         return types[0];
-    }
-
-    public static CalciteSchema getSchema(Environment environ) {
-        return new SchemaFactory(environ).getCatalog().getRootSchema();
     }
 }

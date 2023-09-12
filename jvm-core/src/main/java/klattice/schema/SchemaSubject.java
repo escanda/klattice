@@ -1,4 +1,4 @@
-package klattice.registry;
+package klattice.schema;
 
 public record SchemaSubject(String subject, int id, int version, String schema, String schemaType) {
     public String schemaTypeStr() {

@@ -3,8 +3,8 @@ package klattice.endpoint;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusTest;
-import klattice.registry.SchemaEntry;
-import klattice.registry.SchemaRegistryResource;
+import klattice.schema.SchemaEntry;
+import klattice.schema.SchemaRegistryResource;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.junit.jupiter.api.Test;
 

@@ -6,7 +6,7 @@ import jakarta.annotation.Resource;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
-import klattice.registry.SchemaRegistryResource;
+import klattice.schema.SchemaRegistryResource;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 

@@ -1,4 +1,4 @@
-package klattice.registry;
+package klattice.schema;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.rest.client.inject.RestClient;

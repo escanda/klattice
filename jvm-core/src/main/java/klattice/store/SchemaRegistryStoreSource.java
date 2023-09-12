@@ -7,8 +7,8 @@ import io.quarkus.arc.log.LoggerName;
 import io.substrait.type.ImmutableType;
 import jakarta.enterprise.context.Dependent;
 import jakarta.inject.Inject;
-import klattice.registry.SchemaEntity;
-import klattice.registry.SchemaRegistryService;
+import klattice.schema.SchemaEntity;
+import klattice.schema.SchemaRegistryService;
 import org.jboss.logging.Logger;
 
 import java.util.ArrayList;

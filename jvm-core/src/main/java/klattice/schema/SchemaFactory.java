@@ -1,5 +1,6 @@
-package klattice.registry;
+package klattice.schema;
 
+import klattice.calcite.SchemaInflator;
 import klattice.msg.Column;
 import klattice.msg.Environment;
 import klattice.msg.Schema;
@@ -20,6 +21,7 @@ import org.apache.calcite.rel.type.*;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.schema.impl.ListTransientTable;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.util.SqlOperatorTables;
 import org.apache.calcite.sql.validate.SqlValidator;
 
 import java.util.ArrayList;
@@ -35,8 +37,7 @@ public class SchemaFactory {
     private final JavaTypeFactory typeFactory;
     private final CalciteSqlValidator calciteSqlValidator;
 
-    public SchemaFactory(Environment environment) {
-        SqlStdOperatorTable operatorTable = new SqlStdOperatorTable();
+    public SchemaFactory(SchemaInflator schemaInflator, Environment environment) {
         var rootSchema = LookupCalciteSchema.createRootSchema(false);
         for (Schema schema : environment. getSchemasList()) {
             CalciteSchema schemaPlus = CalciteSchema.createRootSchema(false);
@@ -73,7 +74,12 @@ public class SchemaFactory {
                 typeFactory,
                 new CalciteConnectionConfigImpl(props)
         );
-        this.calciteSqlValidator = new CalciteSqlValidator(operatorTable, getCatalog(), getTypeFactory(), SqlValidator.Config.DEFAULT);
+        this.calciteSqlValidator = new CalciteSqlValidator(
+                SqlOperatorTables.chain(schemaInflator.getSqlOperatorTable(), new SqlStdOperatorTable()),
+                getCatalog(),
+                getTypeFactory(),
+                SqlValidator.Config.DEFAULT
+        );
     }
 
     public CalciteCatalogReader getCatalog() {

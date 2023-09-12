@@ -1,4 +1,4 @@
-package klattice.registry;
+package klattice.schema;
 
 import jakarta.ws.rs.*;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;

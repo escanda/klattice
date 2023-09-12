@@ -4,7 +4,7 @@ import io.quarkus.arc.log.LoggerName;
 import jakarta.annotation.Nonnull;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import klattice.registry.SchemaSubject;
+import klattice.schema.SchemaSubject;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
