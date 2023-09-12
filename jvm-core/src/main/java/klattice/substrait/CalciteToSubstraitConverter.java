@@ -33,21 +33,21 @@ public final class CalciteToSubstraitConverter {
         var plan = Plan.newBuilder();
         ExtensionCollector functionCollector = new ExtensionCollector();
         var relProtoConverter = new RelProtoConverter(functionCollector);
+        var input = SubstraitRelVisitor.convert(
+                        relRoot,
+                        EXTENSION_COLLECTION,
+                        ImmutableFeatureBoard.builder().build()
+                )
+                .accept(relProtoConverter);
+        var names = TypeConverter.DEFAULT
+                .toNamedStruct(relRoot.validatedRowType)
+                .names();
         plan.addRelations(
                 PlanRel.newBuilder()
                         .setRoot(
                                 io.substrait.proto.RelRoot.newBuilder()
-                                        .setInput(
-                                                SubstraitRelVisitor.convert(
-                                                                relRoot,
-                                                                EXTENSION_COLLECTION,
-                                                                ImmutableFeatureBoard.builder().build()
-                                                        )
-                                                        .accept(relProtoConverter))
-                                        .addAllNames(
-                                                TypeConverter.DEFAULT
-                                                        .toNamedStruct(relRoot.validatedRowType)
-                                                        .names())));
+                                        .setInput(input)
+                                        .addAllNames(names)));
         functionCollector.addExtensionsToPlan(plan);
         return plan;
     }

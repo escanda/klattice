@@ -2,7 +2,11 @@ package klattice.calcite;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.calcite.jdbc.CalciteSchema;
-import org.apache.calcite.sql.*;
+import org.apache.calcite.sql.SqlBasicFunction;
+import org.apache.calcite.sql.SqlFunctionCategory;
+import org.apache.calcite.sql.SqlOperator;
+import org.apache.calcite.sql.SqlOperatorTable;
+import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 import org.apache.calcite.sql.util.SqlOperatorTables;
 
@@ -15,18 +19,17 @@ public class SchemaInflator {
     }
 
     public SqlOperatorTable getSqlOperatorTable() {
-        return SqlOperatorTables.of(getFunctionList());
+        return SqlOperatorTables.of(getFunctionOperators());
     }
 
-    private Iterable<? extends SqlOperator> getFunctionList() {
+    private Iterable<? extends SqlOperator> getFunctionOperators() {
         return List.of(
-                new SqlFunction(
+                SqlBasicFunction.create(
                         FunctionNames.VERSION,
-                        SqlKind.OTHER_FUNCTION,
-                        ReturnTypes.VARCHAR,
-                        null,
-                        null,
-                        SqlFunctionCategory.USER_DEFINED_FUNCTION
-                ));
+                        ReturnTypes.CURSOR,
+                        OperandTypes.NILADIC,
+                        SqlFunctionCategory.USER_DEFINED_TABLE_FUNCTION
+                )
+        );
     }
 }

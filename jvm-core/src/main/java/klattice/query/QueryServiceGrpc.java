@@ -44,7 +44,7 @@ public class QueryServiceGrpc implements Query {
             var plan = CalciteToSubstraitConverter.getPlan(relNode);
             preparedQuery = PreparedQuery.newBuilder().setPlan(Plan.newBuilder().setEnviron(request.getEnviron()).setPlan(plan).build()).build();
         } catch (SqlParseException | RelConversionException | ValidationException e) {
-            logger.warnv("Error preparing statement {0} with error {1}", new Object[]{request.getQuery()}, e);
+            logger.warnv("Error preparing statement {0} with error {1}", request.getQuery(), e);
             preparedQuery = PreparedQuery.newBuilder().setDiagnostics(QueryDiagnostics.newBuilder().setErrorMessage(e.getMessage()).build()).build();
         }
         logger.infov("Query {0} became {1}", request, preparedQuery);
