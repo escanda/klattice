@@ -16,8 +16,6 @@ import klattice.wire.msg.client.Terminate;
 import klattice.wire.msg.server.*;
 import klattice.wire.msg.shared.ParameterStatus;
 
-import java.time.Duration;
-
 @Dependent
 public class ProcessorHandler extends SimpleChannelInboundHandler<Message> {
     @GrpcClient
@@ -42,7 +40,7 @@ public class ProcessorHandler extends SimpleChannelInboundHandler<Message> {
             } else {
                 var answer = oracle.answer(klattice.msg.Query.newBuilder().setQuery(query).build())
                         .await()
-                        .atMost(Duration.ofMillis(1000));
+                        .indefinitely();
                 print(ctx, answer);
             }
             ctx.flush();
