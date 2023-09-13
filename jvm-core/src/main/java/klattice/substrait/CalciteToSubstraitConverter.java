@@ -31,7 +31,11 @@ public final class CalciteToSubstraitConverter {
     static {
         SimpleExtension.ExtensionCollection defaults;
         try {
-            defaults = SimpleExtension.loadDefaults();
+            defaults = SimpleExtension.loadDefaults()
+                    .merge(SimpleExtension.load(
+                            "postgres_scalar_functions.yml",
+                            CalciteToSubstraitConverter.class.getResourceAsStream("/postgres_scalar_functions.yml")
+                    ));
         } catch (IOException e) {
             throw new RuntimeException("Failure while loading defaults.", e);
         }
@@ -42,20 +46,16 @@ public final class CalciteToSubstraitConverter {
     public static Plan.Builder getPlan(CalciteSchema rootSchema, RelDataTypeFactory relDataTypeFactory, RelRoot relRoot) {
         var plan = Plan.newBuilder();
         ExtensionCollector functionCollector = new ExtensionCollector();
-        var extensionCollection = EXTENSION_COLLECTION.merge(SimpleExtension.load(
-                "postgres_scalar_functions.yml",
-                CalciteToSubstraitConverter.class.getResourceAsStream("/postgres_scalar_functions.yml")
-        ));
-        var relProtoConverter = new RelProtoConverter(new ExtensionCollector());
+        var relProtoConverter = new RelProtoConverter(functionCollector);
         List<FunctionMappings.Sig> additionalSignatures = Arrays.stream(FunctionDefs.values())
                 .map(functionDefs -> FunctionMappings.s(functionDefs.operator))
                 .toList();
         var input = new SubstraitRelVisitor(
                 relDataTypeFactory,
-                new ScalarFunctionConverter(extensionCollection.scalarFunctions(), additionalSignatures, relDataTypeFactory, TypeConverter.DEFAULT),
-                new AggregateFunctionConverter(extensionCollection.aggregateFunctions(), relDataTypeFactory),
-                new WindowFunctionConverter(extensionCollection.windowFunctions(), relDataTypeFactory,
-                        new AggregateFunctionConverter(extensionCollection.aggregateFunctions(), relDataTypeFactory),
+                new ScalarFunctionConverter(EXTENSION_COLLECTION.scalarFunctions(), additionalSignatures, relDataTypeFactory, TypeConverter.DEFAULT),
+                new AggregateFunctionConverter(EXTENSION_COLLECTION.aggregateFunctions(), relDataTypeFactory),
+                new WindowFunctionConverter(EXTENSION_COLLECTION.windowFunctions(), relDataTypeFactory,
+                        new AggregateFunctionConverter(EXTENSION_COLLECTION.aggregateFunctions(), relDataTypeFactory),
                         TypeConverter.DEFAULT
                 ),
                 TypeConverter.DEFAULT,

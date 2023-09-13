@@ -9,7 +9,7 @@ import org.apache.calcite.sql.type.ReturnTypes;
 public enum FunctionDefs {
     VERSION(SqlBasicFunction.create(
             FunctionNames.VERSION,
-            ReturnTypes.CHAR,
+            ReturnTypes.VARCHAR,
             OperandTypes.NILADIC,
             SqlFunctionCategory.USER_DEFINED_TABLE_FUNCTION
     ));

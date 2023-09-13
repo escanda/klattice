@@ -6,6 +6,4 @@ scalar_functions:
     description: Postgresql server version.
     impls:
       - args: []
-        variadic:
-          min: 0
         return: "string"
