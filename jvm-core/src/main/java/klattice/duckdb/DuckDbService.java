@@ -52,7 +52,7 @@ public class DuckDbService {
                         .map(line -> line.split(DELIMITER))
                         .iterator();
             } catch (IOException e) {
-                logger.error("Error during reading IO from substrait response");
+                logger.error("Error during reading response from substrait response");
                 throw new RuntimeException(e);
             }
         }

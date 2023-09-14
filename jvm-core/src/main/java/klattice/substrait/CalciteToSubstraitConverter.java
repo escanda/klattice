@@ -2,17 +2,10 @@ package klattice.substrait;
 
 import io.substrait.extension.ExtensionCollector;
 import io.substrait.extension.SimpleExtension;
-import io.substrait.isthmus.ImmutableFeatureBoard;
-import io.substrait.isthmus.SubstraitRelVisitor;
 import io.substrait.isthmus.TypeConverter;
-import io.substrait.isthmus.expression.AggregateFunctionConverter;
-import io.substrait.isthmus.expression.FunctionMappings;
-import io.substrait.isthmus.expression.ScalarFunctionConverter;
-import io.substrait.isthmus.expression.WindowFunctionConverter;
 import io.substrait.proto.Plan;
 import io.substrait.proto.PlanRel;
 import io.substrait.relation.RelProtoConverter;
-import klattice.calcite.FunctionDefs;
 import org.apache.calcite.jdbc.CalciteSchema;
 import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.rel.type.RelDataType;
@@ -22,8 +15,8 @@ import org.apache.calcite.sql.type.BasicSqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
+
+import static klattice.substrait.Shared.additionalSignatures;
 
 public final class CalciteToSubstraitConverter {
     public static final SimpleExtension.ExtensionCollection EXTENSION_COLLECTION;
@@ -47,20 +40,7 @@ public final class CalciteToSubstraitConverter {
         var plan = Plan.newBuilder();
         ExtensionCollector functionCollector = new ExtensionCollector();
         var relProtoConverter = new RelProtoConverter(functionCollector);
-        List<FunctionMappings.Sig> additionalSignatures = Arrays.stream(FunctionDefs.values())
-                .map(functionDefs -> FunctionMappings.s(functionDefs.operator))
-                .toList();
-        var input = new SubstraitRelVisitor(
-                relDataTypeFactory,
-                new ScalarFunctionConverter(EXTENSION_COLLECTION.scalarFunctions(), additionalSignatures, relDataTypeFactory, TypeConverter.DEFAULT),
-                new AggregateFunctionConverter(EXTENSION_COLLECTION.aggregateFunctions(), relDataTypeFactory),
-                new WindowFunctionConverter(EXTENSION_COLLECTION.windowFunctions(), relDataTypeFactory,
-                        new AggregateFunctionConverter(EXTENSION_COLLECTION.aggregateFunctions(), relDataTypeFactory),
-                        TypeConverter.DEFAULT
-                ),
-                TypeConverter.DEFAULT,
-                ImmutableFeatureBoard.builder().build()
-        ).apply(relRoot.rel).accept(relProtoConverter);
+        var input = Shared.createSubstraitRelVisitor(relDataTypeFactory, additionalSignatures).apply(relRoot.rel).accept(relProtoConverter);
         var names = TypeConverter.DEFAULT
                 .toNamedStruct(relRoot.validatedRowType)
                 .names();
