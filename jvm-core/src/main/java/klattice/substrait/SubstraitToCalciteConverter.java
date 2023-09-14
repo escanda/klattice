@@ -37,14 +37,16 @@ public interface SubstraitToCalciteConverter {
                         var recordRelDataType = typeConverter.toCalcite(typeFactory, virtualTableScan.getRecordType());
                         var tupleList = new ArrayList<List<RexLiteral>>();
                         var rows = virtualTableScan.getRows();
+                        var expressionRexConverter = Shared.createExpressionRexConverter(typeFactory);
                         int i = 0;
                         for (Expression.StructLiteral row : rows) {
                             int j = 0;
                             for (Expression.Literal field : row.fields()) {
                                 if (i == 0) tupleList.add(new ArrayList<>(rows.size()));
-                                tupleList.get(j).add((RexLiteral) field.accept(Shared.createExpressionRexConverter(typeFactory)));
+                                tupleList.get(j).add((RexLiteral) field.accept(expressionRexConverter));
+                                ++j;
                             }
-                            i++;
+                            ++i;
                         }
                         return relBuilder.values(tupleList, recordRelDataType).build();
                     }
