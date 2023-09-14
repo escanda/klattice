@@ -15,6 +15,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 @ApplicationScoped
 public class DuckDbService {
     private static final String DELIMITER = "\t";
+    private static final String CMD_INSTALL_SUBSTRAIT = "INSTALL substrait";
+    private static final String CMD_LOAD_SUBSTRAIT = "LOAD substrait";
+
     @LoggerName("DuckDbService")
     Logger logger;
 
@@ -30,8 +33,8 @@ public class DuckDbService {
 
     protected void doProvisioning() {
         logger.infov("Provisioning Substrait extension to env...");
-        duckDbRestService.execArbitrarySql(this.sessionId.get(), "INSTALL substrait");
-        duckDbRestService.execArbitrarySql(this.sessionId.get(), "LOAD substrait");
+        duckDbRestService.execArbitrarySql(this.sessionId.get(), CMD_INSTALL_SUBSTRAIT);
+        duckDbRestService.execArbitrarySql(this.sessionId.get(), CMD_LOAD_SUBSTRAIT);
         logger.infov("Installed Substrait extension to env");
     }
 

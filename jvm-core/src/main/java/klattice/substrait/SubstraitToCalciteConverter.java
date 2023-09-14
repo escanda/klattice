@@ -1,5 +1,6 @@
 package klattice.substrait;
 
+import io.substrait.expression.Expression;
 import io.substrait.isthmus.SubstraitRelNodeConverter;
 import io.substrait.isthmus.SubstraitToCalcite;
 import io.substrait.isthmus.TypeConverter;
@@ -8,9 +9,11 @@ import io.substrait.isthmus.expression.ScalarFunctionConverter;
 import io.substrait.relation.VirtualTableScan;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
+import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.calcite.tools.RelBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static klattice.substrait.CalciteToSubstraitConverter.EXTENSION_COLLECTION;
@@ -32,7 +35,18 @@ public interface SubstraitToCalciteConverter {
                     @Override
                     public RelNode visit(VirtualTableScan virtualTableScan) throws RuntimeException {
                         var recordRelDataType = typeConverter.toCalcite(typeFactory, virtualTableScan.getRecordType());
-                        return relBuilder.values(recordRelDataType).build();
+                        var tupleList = new ArrayList<List<RexLiteral>>();
+                        var rows = virtualTableScan.getRows();
+                        int i = 0;
+                        for (Expression.StructLiteral row : rows) {
+                            int j = 0;
+                            for (Expression.Literal field : row.fields()) {
+                                if (i == 0) tupleList.add(new ArrayList<>(rows.size()));
+                                tupleList.get(j).add((RexLiteral) field.accept(Shared.createExpressionRexConverter(typeFactory)));
+                            }
+                            i++;
+                        }
+                        return relBuilder.values(tupleList, recordRelDataType).build();
                     }
                 };
             }
