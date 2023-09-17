@@ -10,10 +10,13 @@ import io.substrait.plan.ProtoPlanConverter;
 import klattice.msg.ExpandedPlan;
 import klattice.msg.Plan;
 import klattice.msg.PlanDiagnostics;
+import klattice.schema.SchemaFactory;
 import klattice.substrait.Shared;
 import klattice.substrait.SubstraitToCalciteConverter;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
+import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
+import org.apache.calcite.tools.RelBuilder;
 import org.jboss.logging.Logger;
 
 import static klattice.substrait.CalciteToSubstraitConverter.EXTENSION_COLLECTION;
@@ -35,11 +38,19 @@ public class PlannerServiceGrpc implements Planner {
             logger.warn(errorMessage);
             return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(true).setDiagnostics(PlanDiagnostics.newBuilder().setErrorMessage(errorMessage).build()).build());
         } else {
-            var replannedRelNode = relRoots.stream().findFirst().orElse(null).accept(new Replanner(environ));
             var typeFactory = new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
+            var schemaFactory = new SchemaFactory(new SqlStdOperatorTable(), environ);
+            var planner = schemaFactory.getRelOptCluster().getPlanner();
+            var optimizedRelNodes = relRoots.stream().map(relNode -> {
+                planner.setRoot(relNode);
+                return planner.findBestExp();
+            }).toList();
+            var relBuilder = RelBuilder.create(Shared.framework(schemaFactory));
+            var replannedRelNodes = optimizedRelNodes.stream().map(relNode -> relNode.accept(new Replanner(environ, typeFactory, relBuilder))).toList();
             var relPlanBuilder = io.substrait.plan.ImmutablePlan.builder();
-            var rel = Shared.createSubstraitRelVisitor(typeFactory, Shared.additionalSignatures).apply(replannedRelNode);
-            relPlanBuilder.addRoots(ImmutableRoot.builder().input(rel).build());
+            var substraitRelVisitor = Shared.createSubstraitRelVisitor(typeFactory, Shared.additionalSignatures);
+            var rels = replannedRelNodes.stream().map(substraitRelVisitor::apply).toList();
+            relPlanBuilder.roots(rels.stream().map(rel -> ImmutableRoot.builder().input(rel).build()).toList());
             var planProto = new PlanProtoConverter().toProto(relPlanBuilder.build());
             logger.infov("Original plan was:\n {0} \nNew plan is:\n {1}", request.getPlan(), planProto);
             return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(false).setPlan(Plan.newBuilder().setEnviron(environ).setPlan(planProto)).build());

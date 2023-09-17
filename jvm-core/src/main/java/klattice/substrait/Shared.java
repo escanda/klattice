@@ -4,8 +4,12 @@ import io.substrait.isthmus.ImmutableFeatureBoard;
 import io.substrait.isthmus.SubstraitRelVisitor;
 import io.substrait.isthmus.TypeConverter;
 import io.substrait.isthmus.expression.*;
+import klattice.calcite.DomainFactory;
 import klattice.calcite.FunctionDefs;
+import klattice.schema.SchemaFactory;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.tools.FrameworkConfig;
+import org.apache.calcite.tools.Frameworks;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,5 +44,13 @@ public interface Shared {
                 new AggregateFunctionConverter(EXTENSION_COLLECTION.aggregateFunctions(), relDataTypeFactory),
                 TypeConverter.DEFAULT
         );
+    }
+
+    static FrameworkConfig framework(SchemaFactory schemaFactory) {
+        return Frameworks.newConfigBuilder()
+                .parserConfig(DomainFactory.sqlParserConfig())
+                .defaultSchema(schemaFactory.getCatalog().getRootSchema().plus())
+                .operatorTable(schemaFactory.getSqlOperatorTable())
+                .build();
     }
 }

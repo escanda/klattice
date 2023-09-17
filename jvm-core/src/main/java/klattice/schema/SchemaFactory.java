@@ -1,5 +1,6 @@
 package klattice.schema;
 
+import klattice.calcite.FunctionDefs;
 import klattice.msg.Column;
 import klattice.msg.Environment;
 import klattice.msg.Schema;
@@ -19,13 +20,13 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.*;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.schema.impl.ListTransientTable;
+import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.SqlOperatorTable;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.util.SqlOperatorTables;
 import org.apache.calcite.sql.validate.SqlValidator;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -54,23 +55,27 @@ public class SchemaFactory {
             rootSchema.add(schema.getRelName(), schemaPlus.plus());
         }
 
+        var enrichedSchema = enrich(rootSchema);
+
         typeFactory = new JavaTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
 
         var program = HepProgram.builder().build();
         var planner = new HepPlanner(program);
         relOptCluster = RelOptCluster.create(planner, new RexBuilder(typeFactory));
         relOptCluster.setMetadataQuerySupplier(() -> {
-            ProxyingMetadataHandlerProvider handler = new ProxyingMetadataHandlerProvider(DefaultRelMetadataProvider.INSTANCE);
+            var handler = new ProxyingMetadataHandlerProvider(DefaultRelMetadataProvider.INSTANCE);
             return new RelMetadataQuery(handler);
         });
 
         var props = new Properties();
         props.put("caseSensitive", Boolean.FALSE);
         this.catalog = new CalciteCatalogReader(
-                rootSchema,
+                enrichedSchema,
                 environment.getSchemasList().stream()
                         .findFirst()
-                        .map(schemaDescriptor -> List.of(schemaDescriptor.getRelName())).orElse(Collections.emptyList()),
+                        .map(Schema::getRelName)
+                        .map(List::of)
+                        .orElse(List.of()),
                 typeFactory,
                 new CalciteConnectionConfigImpl(props)
         );
@@ -96,5 +101,20 @@ public class SchemaFactory {
 
     public CalciteSqlValidator getSqlValidator() {
         return calciteSqlValidator;
+    }
+
+    public SqlOperatorTable getSqlOperatorTable() {
+        return SqlOperatorTables.of(getFunctionOperators());
+    }
+
+    private Iterable<? extends SqlOperator> getFunctionOperators() {
+        return List.of(FunctionDefs.VERSION.operator);
+    }
+
+    public CalciteSchema enrich(CalciteSchema schema) {
+        for (BuiltinTables builtinTable : BuiltinTables.values()) {
+            schema.add(builtinTable.tableName, new ListTransientTable(builtinTable.tableName, builtinTable.rowType));
+        }
+        return schema;
     }
 }
