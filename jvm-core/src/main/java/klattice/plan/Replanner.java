@@ -10,7 +10,6 @@ import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.tools.RelBuilder;
 
 public class Replanner extends RelShuttleImpl implements RelShuttle {
-    public static final String ZERO_TABLE = "ZERO";
     private final Environment environ;
     private final RelDataTypeFactory relDataTypeFactory;
     private final RelBuilder relBuilder;
