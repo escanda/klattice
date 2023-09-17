@@ -7,7 +7,10 @@ import io.substrait.isthmus.expression.*;
 import klattice.calcite.DomainFactory;
 import klattice.calcite.FunctionDefs;
 import klattice.schema.SchemaFactory;
+import org.apache.calcite.plan.ViewExpanders;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.sql2rel.ReflectiveConvertletTable;
+import org.apache.calcite.sql2rel.SqlToRelConverter;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Frameworks;
 
@@ -20,6 +23,10 @@ public interface Shared {
     List<FunctionMappings.Sig> additionalSignatures = Arrays.stream(FunctionDefs.values())
             .map(functionDefs -> FunctionMappings.s(functionDefs.operator))
             .toList();
+
+    static SubstraitRelVisitor createSubstraitRelVisitor(RelDataTypeFactory relDataTypeFactory) {
+        return createSubstraitRelVisitor(relDataTypeFactory, additionalSignatures);
+    }
 
     static SubstraitRelVisitor createSubstraitRelVisitor(RelDataTypeFactory relDataTypeFactory, List<FunctionMappings.Sig> additionalSignatures) {
         return new SubstraitRelVisitor(
@@ -52,5 +59,9 @@ public interface Shared {
                 .defaultSchema(schemaFactory.getCatalog().getRootSchema().plus())
                 .operatorTable(schemaFactory.getSqlOperatorTable())
                 .build();
+    }
+
+    static SqlToRelConverter createSqlToRelConverter(SchemaFactory schemaFactory) {
+        return new SqlToRelConverter(ViewExpanders.simpleContext(schemaFactory.getRelOptCluster()), null, schemaFactory.getCatalog(), schemaFactory.getRelOptCluster(), new ReflectiveConvertletTable(), SqlToRelConverter.CONFIG);
     }
 }

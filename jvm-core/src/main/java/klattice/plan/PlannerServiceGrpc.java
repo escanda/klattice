@@ -7,19 +7,23 @@ import io.smallrye.mutiny.Uni;
 import io.substrait.plan.ImmutableRoot;
 import io.substrait.plan.PlanProtoConverter;
 import io.substrait.plan.ProtoPlanConverter;
+import klattice.calcite.DucksDbDialect;
 import klattice.msg.ExpandedPlan;
 import klattice.msg.Plan;
 import klattice.msg.PlanDiagnostics;
 import klattice.schema.SchemaFactory;
-import klattice.substrait.Shared;
 import klattice.substrait.SubstraitToCalciteConverter;
+import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
+import org.apache.calcite.rel.rel2sql.SqlImplementor;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
+import org.apache.calcite.sql.SqlSelect;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.apache.calcite.tools.RelBuilder;
 import org.jboss.logging.Logger;
 
 import static klattice.substrait.CalciteToSubstraitConverter.EXTENSION_COLLECTION;
+import static klattice.substrait.Shared.*;
 
 @GrpcService
 public class PlannerServiceGrpc implements Planner {
@@ -45,15 +49,26 @@ public class PlannerServiceGrpc implements Planner {
                 planner.setRoot(relNode);
                 return planner.findBestExp();
             }).toList();
-            var relBuilder = RelBuilder.create(Shared.framework(schemaFactory));
-            var replannedRelNodes = optimizedRelNodes.stream().map(relNode -> relNode.accept(new Replanner(environ, typeFactory, relBuilder))).toList();
+            var framework = framework(schemaFactory);
+            var relBuilder = RelBuilder.create(framework);
+            var replannedRelNodes = optimizedRelNodes.stream()
+                    .map(relNode -> relNode.accept(new Replanner(environ, typeFactory, relBuilder)))
+                    .toList();
+            var relToSqlConverter = new RelToSqlConverter(DucksDbDialect.INSTANCE);
+            var rewrittenNodes = replannedRelNodes.stream()
+                    .map(relToSqlConverter::visitRoot)
+                    .map(SqlImplementor.Result::asSelect)
+                    .map(sqlSelect -> (SqlSelect) sqlSelect.accept(new Renamer()))
+                    .map(sqlSelect -> createSqlToRelConverter(schemaFactory).convertSelect(sqlSelect, true))
+                    .toList();
             var relPlanBuilder = io.substrait.plan.ImmutablePlan.builder();
-            var substraitRelVisitor = Shared.createSubstraitRelVisitor(typeFactory, Shared.additionalSignatures);
-            var rels = replannedRelNodes.stream().map(substraitRelVisitor::apply).toList();
+            var substraitRelVisitor = createSubstraitRelVisitor(typeFactory);
+            var rels = rewrittenNodes.stream().map(substraitRelVisitor::apply).toList();
             relPlanBuilder.roots(rels.stream().map(rel -> ImmutableRoot.builder().input(rel).build()).toList());
             var planProto = new PlanProtoConverter().toProto(relPlanBuilder.build());
             logger.infov("Original plan was:\n {0} \nNew plan is:\n {1}", request.getPlan(), planProto);
             return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(false).setPlan(Plan.newBuilder().setEnviron(environ).setPlan(planProto)).build());
         }
     }
+
 }

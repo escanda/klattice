@@ -16,8 +16,6 @@ import org.apache.calcite.sql.type.SqlTypeName;
 
 import java.io.IOException;
 
-import static klattice.substrait.Shared.additionalSignatures;
-
 public final class CalciteToSubstraitConverter {
     public static final SimpleExtension.ExtensionCollection EXTENSION_COLLECTION;
 
@@ -40,7 +38,7 @@ public final class CalciteToSubstraitConverter {
         var plan = Plan.newBuilder();
         ExtensionCollector functionCollector = new ExtensionCollector();
         var relProtoConverter = new RelProtoConverter(functionCollector);
-        var input = Shared.createSubstraitRelVisitor(relDataTypeFactory, additionalSignatures).apply(relRoot.rel).accept(relProtoConverter);
+        var input = Shared.createSubstraitRelVisitor(relDataTypeFactory).apply(relRoot.rel).accept(relProtoConverter);
         var names = TypeConverter.DEFAULT
                 .toNamedStruct(relRoot.validatedRowType)
                 .names();
