@@ -11,9 +11,6 @@ repositories {
     maven {
         url 'https://packages.confluent.io/maven/'
     }
-    maven {
-        url "https://packages.confluent.io/maven/"
-    }
 }
 
 configurations.all {
