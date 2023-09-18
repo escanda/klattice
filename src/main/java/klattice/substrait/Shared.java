@@ -4,11 +4,15 @@ import io.substrait.isthmus.ImmutableFeatureBoard;
 import io.substrait.isthmus.SubstraitRelVisitor;
 import io.substrait.isthmus.TypeConverter;
 import io.substrait.isthmus.expression.*;
-import klattice.calcite.DomainFactory;
 import klattice.calcite.FunctionDefs;
 import klattice.schema.SchemaFactory;
+import org.apache.calcite.avatica.util.Casing;
+import org.apache.calcite.avatica.util.Quoting;
 import org.apache.calcite.plan.ViewExpanders;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.sql.parser.SqlParser;
+import org.apache.calcite.sql.parser.impl.SqlParserImpl;
+import org.apache.calcite.sql.validate.SqlConformanceEnum;
 import org.apache.calcite.sql2rel.ReflectiveConvertletTable;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
 import org.apache.calcite.tools.FrameworkConfig;
@@ -55,7 +59,7 @@ public interface Shared {
 
     static FrameworkConfig framework(SchemaFactory schemaFactory) {
         return Frameworks.newConfigBuilder()
-                .parserConfig(DomainFactory.sqlParserConfig())
+                .parserConfig(sqlParserConfig())
                 .defaultSchema(schemaFactory.getCatalog().getRootSchema().plus())
                 .operatorTable(schemaFactory.getSqlOperatorTable())
                 .build();
@@ -63,5 +67,14 @@ public interface Shared {
 
     static SqlToRelConverter createSqlToRelConverter(SchemaFactory schemaFactory) {
         return new SqlToRelConverter(ViewExpanders.simpleContext(schemaFactory.getRelOptCluster()), null, schemaFactory.getCatalog(), schemaFactory.getRelOptCluster(), new ReflectiveConvertletTable(), SqlToRelConverter.CONFIG);
+    }
+
+    static SqlParser.Config sqlParserConfig() {
+        return SqlParser.configBuilder()
+                .setConformance(SqlConformanceEnum.DEFAULT)
+                .setParserFactory(SqlParserImpl.FACTORY)
+                .setUnquotedCasing(Casing.TO_UPPER)
+                .setQuoting(Quoting.DOUBLE_QUOTE)
+                .build();
     }
 }

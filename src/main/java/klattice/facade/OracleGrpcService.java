@@ -7,7 +7,7 @@ import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.inject.Inject;
 import klattice.exec.Exec;
-import klattice.msg.QueryDescriptor;
+import klattice.msg.*;
 import klattice.plan.Planner;
 import klattice.query.Query;
 import klattice.store.SchemaMetadata;
