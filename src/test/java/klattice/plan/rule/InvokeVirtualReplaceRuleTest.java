@@ -9,7 +9,6 @@ import klattice.plan.RePlanner;
 import klattice.query.Query;
 import klattice.schema.SchemaHolder;
 import klattice.substrait.SubstraitToCalciteConverter;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +27,7 @@ public class InvokeVirtualReplaceRuleTest {
     @BeforeEach
     void setupRePlanner() {
         this.environment = Environment.newBuilder().build();
-        this.rePlanner = new RePlanner(new SchemaHolder(new SqlStdOperatorTable(), environment));
+        this.rePlanner = new RePlanner(new SchemaHolder(environment));
     }
 
     @Test

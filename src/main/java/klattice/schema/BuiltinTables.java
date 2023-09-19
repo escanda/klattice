@@ -10,7 +10,7 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import java.util.List;
 
 public enum BuiltinTables {
-    ZERO("zero", new RelRecordType(List.of(
+    MAGIC_VALUES("_magic_values", new RelRecordType(List.of(
             new RelDataTypeFieldImpl("value", 0, new BasicSqlType(RelDataTypeSystem.DEFAULT, SqlTypeName.VARCHAR))
     )));
 

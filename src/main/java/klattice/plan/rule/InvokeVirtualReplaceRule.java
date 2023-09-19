@@ -1,7 +1,7 @@
 package klattice.plan.rule;
 
 import klattice.calcite.FunctionDefs;
-import klattice.schema.SchemaHolder;
+import klattice.schema.BuiltinTables;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.rel.logical.LogicalProject;
@@ -10,51 +10,55 @@ import org.apache.calcite.rel.rules.TransformationRule;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.immutables.value.Value;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Value.Enclosing
 public class InvokeVirtualReplaceRule extends RelRule<InvokeVirtualReplaceRule.Config>
         implements TransformationRule {
-    private final SchemaHolder schemaHolder;
 
-    public InvokeVirtualReplaceRule(SchemaHolder schemaHolder) {
-        this(Config.DEFAULT, schemaHolder);
+    public InvokeVirtualReplaceRule() {
+        this(Config.DEFAULT);
     }
 
-    protected InvokeVirtualReplaceRule(Config config, SchemaHolder schemaHolder) {
+    protected InvokeVirtualReplaceRule(Config config) {
         super(config);
-        this.schemaHolder = schemaHolder;
     }
 
     @Override
     public void onMatch(RelOptRuleCall ruleCall) {
         var logicalProject = (LogicalProject) ruleCall.rel(0);
-        var builder = ruleCall.builder();
+        var b0 = ruleCall.builder();
         var projects = logicalProject.getProjects();
+        var lst = new ArrayList<RexNode>(projects.size());
         for (RexNode project : projects) {
+            var no = lst.size();
             if (project.isA(SqlKind.FUNCTION)) {
                 var call = (RexCall) project;
                 for (FunctionDefs functionDef : FunctionDefs.values()) {
                     if (functionDef.operator.equals(call.getOperator())) {
-                        var relOptTable = schemaHolder.resolveTable(FunctionDefs.MAGIC_TABLE);
-                        var relTableRef = RexTableInputRef.RelTableRef.of(relOptTable, 1);
                         var i = 0;
-                        var varcharSqlType = builder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR);
-                        var filterRexNode = new RexInputRef(i, varcharSqlType);
-                        var tableRef = RexTableInputRef.of(relTableRef, i, varcharSqlType);
-                        var rexSubQuery = builder.scalarQuery(relBuilder -> {
-                            relBuilder.push(logicalProject.getInput());
-                            return relBuilder.project(tableRef).filter(filterRexNode).build();
-                        });
-                        ruleCall.transformTo(rexSubQuery.rel);
+                        var varcharSqlType = b0.getTypeFactory().createSqlType(SqlTypeName.VARCHAR);
+                        var inputRef = new RexInputRef(i, varcharSqlType);
+                        var rexSubQuery = b0.scalarQuery(b1 -> b1.scan(List.of(BuiltinTables.MAGIC_VALUES.tableName))
+                                .project(b1.field(functionDef.operator.getName()))
+                                .filter(b1.equals(inputRef, b1.literal(functionDef.discriminator)))
+                                .build());
+                        lst.add(rexSubQuery);
                         break;
                     }
                 }
             }
+            if (no == lst.size()) {
+                lst.add(project);
+            }
         }
+        b0.push(logicalProject);
+        ruleCall.transformTo(b0.project(lst).build());
     }
 
     @Value.Immutable
@@ -69,7 +73,7 @@ public class InvokeVirtualReplaceRule extends RelRule<InvokeVirtualReplaceRule.C
 
         @Override
         default InvokeVirtualReplaceRule toRule() {
-            return new InvokeVirtualReplaceRule(this, null);
+            return new InvokeVirtualReplaceRule(this);
         }
     }
 }

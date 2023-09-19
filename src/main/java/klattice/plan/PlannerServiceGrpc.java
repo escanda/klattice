@@ -13,7 +13,6 @@ import klattice.msg.PlanDiagnostics;
 import klattice.schema.SchemaHolder;
 import klattice.substrait.SubstraitToCalciteConverter;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
 import org.jboss.logging.Logger;
 
@@ -38,7 +37,7 @@ public class PlannerServiceGrpc implements Planner {
             return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(true).setDiagnostics(PlanDiagnostics.newBuilder().setErrorMessage(errorMessage).build()).build());
         } else {
             var typeFactory = new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
-            var schemaFactory = new SchemaHolder(new SqlStdOperatorTable(), environ);
+            var schemaFactory = new SchemaHolder(environ);
             var rePlanner = new RePlanner(schemaFactory);
             var optimizedRelNodes = rePlanner.optimizeRelNodes(relRoots);
             var rewrittenNodes = rePlanner.rewriteRelNodes(optimizedRelNodes);

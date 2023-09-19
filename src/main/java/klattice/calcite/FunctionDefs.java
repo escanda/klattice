@@ -12,13 +12,13 @@ public enum FunctionDefs {
             ReturnTypes.VARCHAR,
             OperandTypes.NILADIC,
             SqlFunctionCategory.USER_DEFINED_TABLE_FUNCTION
-    ));
+    ), FunctionNames.VERSION);
 
     public final SqlOperator operator;
+    public final String discriminator;
 
-    FunctionDefs(SqlOperator operator) {
+    FunctionDefs(SqlOperator operator, String discriminator) {
         this.operator = operator;
+        this.discriminator = discriminator;
     }
-
-    public static final String MAGIC_TABLE = "zero";
 }

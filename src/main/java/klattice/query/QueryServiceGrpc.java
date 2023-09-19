@@ -11,7 +11,6 @@ import klattice.msg.QueryDiagnostics;
 import klattice.schema.SchemaHolder;
 import klattice.substrait.CalciteToSubstraitConverter;
 import klattice.substrait.Shared;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.tools.Frameworks;
 import org.apache.calcite.tools.RelConversionException;
@@ -28,8 +27,7 @@ public class QueryServiceGrpc implements Query {
     public Uni<PreparedQuery> inflate(QueryDescriptor request) {
         PreparedQuery preparedQuery;
         try {
-            var baseSqlOperatorTable = new SqlStdOperatorTable();
-            var schemaFactory = new SchemaHolder(baseSqlOperatorTable, request.getEnviron());
+            var schemaFactory = new SchemaHolder(request.getEnviron());
             var planner = Frameworks.getPlanner(Shared.framework(schemaFactory));
             var sqlNode = planner.parse(request.getQuery());
             var rewrittenSqlNode = planner.validate(sqlNode);

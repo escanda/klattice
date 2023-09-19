@@ -19,6 +19,7 @@ import org.apache.calcite.sql2rel.ReflectiveConvertletTable;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Frameworks;
+import org.apache.calcite.tools.RelBuilder;
 
 import java.util.Arrays;
 import java.util.List;
@@ -68,10 +69,21 @@ public interface Shared {
     }
 
     static SqlToRelConverter createSqlToRelConverter(SchemaHolder schemaHolder) {
-        return new SqlToRelConverter(ViewExpanders.simpleContext(schemaHolder.getRelOptCluster()), createSqlValidator(schemaHolder), schemaHolder.getCatalog(), schemaHolder.getRelOptCluster(), new ReflectiveConvertletTable(), SqlToRelConverter.CONFIG);
+        return new SqlToRelConverter(
+                ViewExpanders.simpleContext(schemaHolder.getRelOptCluster()),
+                createSqlValidator(schemaHolder),
+                schemaHolder.getCatalog(),
+                schemaHolder.getRelOptCluster(),
+                new ReflectiveConvertletTable(),
+                SqlToRelConverter.CONFIG.withRelBuilderFactory((cluster, schema) -> RelBuilder
+                        .create(Frameworks.newConfigBuilder()
+                                .defaultSchema(schemaHolder.getCatalog().getRootSchema().plus())
+                                .build())
+                )
+        );
     }
 
-    private static SqlAdvisorValidator createSqlValidator(SchemaHolder schemaHolder) {
+    static SqlAdvisorValidator createSqlValidator(SchemaHolder schemaHolder) {
         return new SqlAdvisorValidator(schemaHolder.getSqlOperatorTable(), schemaHolder.getCatalog(), schemaHolder.getTypeFactory(), SqlValidator.Config.DEFAULT);
     }
 
