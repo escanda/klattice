@@ -80,7 +80,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         elif self.path.startswith("/exec-arbitrary"):
             session_id = self.get_session_id()
             query = self.read_input()
-            print("executing arbitrary statament in session id %d: '%s'" % (session_id, query))
+            print("executing arbitrary statement in session id %d: '%s'" % (session_id, query))
             self.sessions[session_id].execute(query)
             self.send_response(200)
             self.end_headers()
