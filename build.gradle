@@ -27,8 +27,8 @@ dependencies {
     implementation('com.google.guava:guava:30.1.1-jre')
 
     def immutablesVersion = '2.9.3'
-    compileOnly("org.immutables:value:$immutablesVersion")
     annotationProcessor("org.immutables:value:$immutablesVersion")
+    compileOnly("org.immutables:value:$immutablesVersion")
 
     implementation 'io.quarkus:quarkus-arc'
     implementation 'io.quarkus:quarkus-grpc'

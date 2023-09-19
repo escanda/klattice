@@ -10,6 +10,7 @@ import org.apache.calcite.jdbc.CalciteSchema;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.jdbc.LookupCalciteSchema;
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgram;
 import org.apache.calcite.prepare.CalciteCatalogReader;
@@ -32,13 +33,15 @@ import java.util.Properties;
 
 import static klattice.substrait.CalciteToSubstraitConverter.asType;
 
-public class SchemaFactory {
+public class SchemaHolder {
+    private final Environment environment;
     private final CalciteCatalogReader catalog;
     private final RelOptCluster relOptCluster;
     private final JavaTypeFactory typeFactory;
     private final CalciteSqlValidator calciteSqlValidator;
 
-    public SchemaFactory(SqlOperatorTable sqlOperatorTable, Environment environment) {
+    public SchemaHolder(SqlOperatorTable sqlOperatorTable, Environment environment) {
+        this.environment = environment;
         var rootSchema = LookupCalciteSchema.createRootSchema(false);
         for (Schema schema : environment. getSchemasList()) {
             CalciteSchema schemaPlus = CalciteSchema.createRootSchema(false);
@@ -87,6 +90,17 @@ public class SchemaFactory {
         );
     }
 
+    public CalciteSchema enrich(CalciteSchema schema) {
+        for (BuiltinTables builtinTable : BuiltinTables.values()) {
+            schema.add(builtinTable.tableName, new ListTransientTable(builtinTable.tableName, builtinTable.rowType));
+        }
+        return schema;
+    }
+
+    public Environment getEnvironment() {
+        return environment;
+    }
+
     public CalciteCatalogReader getCatalog() {
         return this.catalog;
     }
@@ -111,10 +125,7 @@ public class SchemaFactory {
         return List.of(FunctionDefs.VERSION.operator);
     }
 
-    public CalciteSchema enrich(CalciteSchema schema) {
-        for (BuiltinTables builtinTable : BuiltinTables.values()) {
-            schema.add(builtinTable.tableName, new ListTransientTable(builtinTable.tableName, builtinTable.rowType));
-        }
-        return schema;
+    public RelOptTable resolveTable(String tableName) {
+        return getCatalog().getTable(List.of(tableName));
     }
 }

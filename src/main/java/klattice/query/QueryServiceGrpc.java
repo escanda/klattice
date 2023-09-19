@@ -8,7 +8,7 @@ import klattice.msg.Plan;
 import klattice.msg.PreparedQuery;
 import klattice.msg.QueryDescriptor;
 import klattice.msg.QueryDiagnostics;
-import klattice.schema.SchemaFactory;
+import klattice.schema.SchemaHolder;
 import klattice.substrait.CalciteToSubstraitConverter;
 import klattice.substrait.Shared;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
@@ -29,7 +29,7 @@ public class QueryServiceGrpc implements Query {
         PreparedQuery preparedQuery;
         try {
             var baseSqlOperatorTable = new SqlStdOperatorTable();
-            var schemaFactory = new SchemaFactory(baseSqlOperatorTable, request.getEnviron());
+            var schemaFactory = new SchemaHolder(baseSqlOperatorTable, request.getEnviron());
             var planner = Frameworks.getPlanner(Shared.framework(schemaFactory));
             var sqlNode = planner.parse(request.getQuery());
             var rewrittenSqlNode = planner.validate(sqlNode);

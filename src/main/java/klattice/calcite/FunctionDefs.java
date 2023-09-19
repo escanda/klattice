@@ -19,4 +19,6 @@ public enum FunctionDefs {
     FunctionDefs(SqlOperator operator) {
         this.operator = operator;
     }
+
+    public static final String MAGIC_TABLE = "zero";
 }

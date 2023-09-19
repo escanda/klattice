@@ -5,7 +5,7 @@ import io.substrait.isthmus.SubstraitRelVisitor;
 import io.substrait.isthmus.TypeConverter;
 import io.substrait.isthmus.expression.*;
 import klattice.calcite.FunctionDefs;
-import klattice.schema.SchemaFactory;
+import klattice.schema.SchemaHolder;
 import org.apache.calcite.avatica.util.Casing;
 import org.apache.calcite.avatica.util.Quoting;
 import org.apache.calcite.plan.ViewExpanders;
@@ -59,20 +59,20 @@ public interface Shared {
         );
     }
 
-    static FrameworkConfig framework(SchemaFactory schemaFactory) {
+    static FrameworkConfig framework(SchemaHolder schemaHolder) {
         return Frameworks.newConfigBuilder()
                 .parserConfig(sqlParserConfig())
-                .defaultSchema(schemaFactory.getCatalog().getRootSchema().plus())
-                .operatorTable(schemaFactory.getSqlOperatorTable())
+                .defaultSchema(schemaHolder.getCatalog().getRootSchema().plus())
+                .operatorTable(schemaHolder.getSqlOperatorTable())
                 .build();
     }
 
-    static SqlToRelConverter createSqlToRelConverter(SchemaFactory schemaFactory) {
-        return new SqlToRelConverter(ViewExpanders.simpleContext(schemaFactory.getRelOptCluster()), createAdvisorSqlValidator(schemaFactory), schemaFactory.getCatalog(), schemaFactory.getRelOptCluster(), new ReflectiveConvertletTable(), SqlToRelConverter.CONFIG);
+    static SqlToRelConverter createSqlToRelConverter(SchemaHolder schemaHolder) {
+        return new SqlToRelConverter(ViewExpanders.simpleContext(schemaHolder.getRelOptCluster()), createSqlValidator(schemaHolder), schemaHolder.getCatalog(), schemaHolder.getRelOptCluster(), new ReflectiveConvertletTable(), SqlToRelConverter.CONFIG);
     }
 
-    private static SqlAdvisorValidator createAdvisorSqlValidator(SchemaFactory schemaFactory) {
-        return new SqlAdvisorValidator(schemaFactory.getSqlOperatorTable(), schemaFactory.getCatalog(), schemaFactory.getTypeFactory(), SqlValidator.Config.DEFAULT);
+    private static SqlAdvisorValidator createSqlValidator(SchemaHolder schemaHolder) {
+        return new SqlAdvisorValidator(schemaHolder.getSqlOperatorTable(), schemaHolder.getCatalog(), schemaHolder.getTypeFactory(), SqlValidator.Config.DEFAULT);
     }
 
     static SqlParser.Config sqlParserConfig() {

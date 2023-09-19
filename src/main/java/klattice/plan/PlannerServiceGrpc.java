@@ -7,27 +7,18 @@ import io.smallrye.mutiny.Uni;
 import io.substrait.plan.ImmutableRoot;
 import io.substrait.plan.PlanProtoConverter;
 import io.substrait.plan.ProtoPlanConverter;
-import klattice.calcite.DucksDbDialect;
-import klattice.msg.Environment;
 import klattice.msg.ExpandedPlan;
 import klattice.msg.Plan;
 import klattice.msg.PlanDiagnostics;
-import klattice.schema.SchemaFactory;
+import klattice.schema.SchemaHolder;
 import klattice.substrait.SubstraitToCalciteConverter;
-import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
-import org.apache.calcite.rel.rel2sql.SqlImplementor;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
-import org.apache.calcite.sql.SqlSelect;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
-import org.apache.calcite.tools.RelBuilder;
 import org.jboss.logging.Logger;
 
-import java.util.List;
-
 import static klattice.substrait.CalciteToSubstraitConverter.EXTENSION_COLLECTION;
-import static klattice.substrait.Shared.*;
+import static klattice.substrait.Shared.createSubstraitRelVisitor;
 
 @GrpcService
 public class PlannerServiceGrpc implements Planner {
@@ -47,41 +38,17 @@ public class PlannerServiceGrpc implements Planner {
             return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(true).setDiagnostics(PlanDiagnostics.newBuilder().setErrorMessage(errorMessage).build()).build());
         } else {
             var typeFactory = new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
-            var schemaFactory = new SchemaFactory(new SqlStdOperatorTable(), environ);
-            var optimizedRelNodes = optimizeRelNodes(schemaFactory, relRoots);
-            var rewrittenNodes = rewriteRelNodes(schemaFactory, optimizedRelNodes, environ, typeFactory);
+            var schemaFactory = new SchemaHolder(new SqlStdOperatorTable(), environ);
+            var rePlanner = new RePlanner(schemaFactory);
+            var optimizedRelNodes = rePlanner.optimizeRelNodes(relRoots);
+            var rewrittenNodes = rePlanner.rewriteRelNodes(optimizedRelNodes);
             var relPlanBuilder = io.substrait.plan.ImmutablePlan.builder();
             var substraitRelVisitor = createSubstraitRelVisitor(typeFactory);
-            var rels = rewrittenNodes.stream().map(substraitRelVisitor::apply).toList();
+            var rels = rewrittenNodes.stream().map(relRoot -> substraitRelVisitor.apply(relRoot.rel)).toList();
             relPlanBuilder.roots(rels.stream().map(rel -> ImmutableRoot.builder().input(rel).build()).toList());
             var planProto = new PlanProtoConverter().toProto(relPlanBuilder.build());
             logger.infov("Original plan was:\n {0} \nNew plan is:\n {1}", request.getPlan(), planProto);
             return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(false).setPlan(Plan.newBuilder().setEnviron(environ).setPlan(planProto)).build());
         }
     }
-
-    private static List<RelNode> rewriteRelNodes(SchemaFactory schemaFactory, List<RelNode> optimizedRelNodes, Environment environ, SqlTypeFactoryImpl typeFactory) {
-        var framework = framework(schemaFactory);
-        var relBuilder = RelBuilder.create(framework);
-        var replannedRelNodes = optimizedRelNodes.stream()
-                .map(relNode -> relNode.accept(new Replanner(environ, typeFactory, relBuilder)))
-                .toList();
-        var relToSqlConverter = new RelToSqlConverter(DucksDbDialect.INSTANCE);
-        var rewrittenNodes = replannedRelNodes.stream()
-                .map(relToSqlConverter::visitRoot)
-                .map(SqlImplementor.Result::asSelect)
-                .map(sqlSelect -> (SqlSelect) sqlSelect.accept(new Renamer()))
-                .map(sqlSelect -> createSqlToRelConverter(schemaFactory).convertSelect(sqlSelect, true))
-                .toList();
-        return rewrittenNodes;
-    }
-
-    private static List<RelNode> optimizeRelNodes(SchemaFactory schemaFactory, List<RelNode> relRoots) {
-        var planner = schemaFactory.getRelOptCluster().getPlanner();
-        return relRoots.stream().map(relNode -> {
-            planner.setRoot(relNode);
-            return planner.findBestExp();
-        }).toList();
-    }
-
 }
