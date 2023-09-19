@@ -22,7 +22,8 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 @Value.Enclosing
-public class InvokeVirtualReplaceRule extends RelRule<InvokeVirtualReplaceRule.Config>
+public class InvokeVirtualReplaceRule
+        extends RelRule<InvokeVirtualReplaceRule.Config>
         implements TransformationRule {
     private final SchemaHolder schemaHolder;
 
@@ -38,9 +39,6 @@ public class InvokeVirtualReplaceRule extends RelRule<InvokeVirtualReplaceRule.C
         var projects = logicalProject.getProjects();
         var lst = new ArrayList<RexNode>(projects.size());
 
-        var relContext = ViewExpanders.simpleContext(schemaHolder.getRelOptCluster());
-        var tableName = BuiltinTables.MAGIC_VALUES.tableName;
-        var relOptTable = schemaHolder.resolveTable(tableName);
 
         for (RexNode project : projects) {
             if (project.isA(SqlKind.FUNCTION)) {
@@ -48,6 +46,9 @@ public class InvokeVirtualReplaceRule extends RelRule<InvokeVirtualReplaceRule.C
                 for (FunctionDefs functionDef : FunctionDefs.values()) {
                     if (functionDef.operator.equals(call.getOperator())
                         && functionDef.category.equals(FunctionCategory.MAGIC)) {
+                        var tableName = BuiltinTables.MAGIC_VALUES.tableName;
+                        var relOptTable = schemaHolder.resolveTable(tableName);
+                        var relContext = ViewExpanders.simpleContext(schemaHolder.getRelOptCluster());
                         var relDataTypeField = Objects.requireNonNull(relOptTable.getRowType().getField(functionDef.discriminator, false, false));
                         var inputRef = RexInputRef.of(relDataTypeField.getIndex(), relOptTable.getRowType());
                         var rexSubQuery = b0.scalarQuery(b1 -> {
