@@ -14,7 +14,7 @@ import java.util.List;
 public enum BuiltinTables {
     MAGIC_VALUES("_magic_values", new RelRecordType(StructKind.FULLY_QUALIFIED, List.of(
             new RelDataTypeFieldImpl(
-                    FunctionDefs.VERSION.discriminator,
+                    FunctionDefs.VERSION.category.queryField,
                     0,
                     BasicSqlType.proto(SqlTypeName.VARCHAR, false)
                             .apply(Shared.relDataTypeFactory)

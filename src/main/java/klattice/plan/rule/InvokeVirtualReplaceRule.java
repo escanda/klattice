@@ -48,7 +48,7 @@ public class InvokeVirtualReplaceRule
                         var tableName = BuiltinTables.MAGIC_VALUES.tableName;
                         var relOptTable = schemaHolder.resolveTable(tableName);
                         var relContext = ViewExpanders.simpleContext(schemaHolder.getRelOptCluster());
-                        var relDataTypeField = Objects.requireNonNull(relOptTable.getRowType().getField(functionDef.discriminator, false, false));
+                        var relDataTypeField = Objects.requireNonNull(relOptTable.getRowType().getField(functionDef.category.queryField, false, false));
                         var inputRef = RexInputRef.of(relDataTypeField.getIndex(), relOptTable.getRowType());
                         var rexSubQuery = b0.scalarQuery(b1 -> {
                             var scan = b0.getScanFactory().createScan(relContext, relOptTable);
