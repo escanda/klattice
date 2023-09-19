@@ -6,8 +6,10 @@ import io.substrait.isthmus.SubstraitToCalcite;
 import io.substrait.isthmus.TypeConverter;
 import io.substrait.isthmus.expression.AggregateFunctionConverter;
 import io.substrait.isthmus.expression.ScalarFunctionConverter;
+import io.substrait.isthmus.expression.WindowFunctionConverter;
 import io.substrait.relation.VirtualTableScan;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.rex.RexLiteral;
 import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
@@ -18,11 +20,17 @@ import java.util.List;
 
 import static klattice.substrait.CalciteToSubstraitConverter.EXTENSION_COLLECTION;
 import static klattice.substrait.Shared.additionalSignatures;
+import static klattice.substrait.Shared.relDataTypeFactory;
 
 public interface SubstraitToCalciteConverter {
     static List<RelNode> getRelRoots(io.substrait.plan.Plan relPlan) {
         var typeFactory = new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
-        var converter = new SubstraitToCalcite(EXTENSION_COLLECTION, typeFactory, TypeConverter.DEFAULT) {
+        var converter = createSubstraitToCalcite(typeFactory);
+        return relPlan.getRoots().stream().map(root -> converter.convert(root.getInput())).toList();
+    }
+
+    static SubstraitToCalcite createSubstraitToCalcite(RelDataTypeFactory typeFactory) {
+        return new SubstraitToCalcite(EXTENSION_COLLECTION, typeFactory, TypeConverter.DEFAULT) {
             @Override
             protected SubstraitRelNodeConverter createSubstraitRelNodeConverter(RelBuilder relBuilder) {
                 var substraitRelNodeConverter = new SubstraitRelNodeConverter(
@@ -30,7 +38,9 @@ public interface SubstraitToCalciteConverter {
                         relBuilder,
                         new ScalarFunctionConverter(EXTENSION_COLLECTION.scalarFunctions(), additionalSignatures, typeFactory, TypeConverter.DEFAULT),
                         new AggregateFunctionConverter(EXTENSION_COLLECTION.aggregateFunctions(), typeFactory),
-                        TypeConverter.DEFAULT
+                        new WindowFunctionConverter(EXTENSION_COLLECTION.windowFunctions(), typeFactory),
+                        TypeConverter.DEFAULT,
+                        Shared.createExpressionRexConverter(relDataTypeFactory)
                 ) {
                     // TODO: replace expression visitor with ours
                     @Override
@@ -55,6 +65,5 @@ public interface SubstraitToCalciteConverter {
                 return substraitRelNodeConverter;
             }
         };
-        return relPlan.getRoots().stream().map(root -> converter.convert(root.getInput())).toList();
     }
 }

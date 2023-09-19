@@ -3,6 +3,7 @@ package klattice.substrait;
 import io.substrait.expression.Expression;
 import io.substrait.isthmus.ImmutableFeatureBoard;
 import io.substrait.isthmus.SubstraitRelVisitor;
+import io.substrait.isthmus.SubstraitToCalcite;
 import io.substrait.isthmus.TypeConverter;
 import io.substrait.isthmus.expression.AggregateFunctionConverter;
 import io.substrait.isthmus.expression.ExpressionRexConverter;
@@ -17,6 +18,7 @@ import org.apache.calcite.plan.ViewExpanders;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.sql.advise.SqlAdvisorValidator;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.parser.impl.SqlParserImpl;
@@ -49,12 +51,7 @@ public interface Shared {
                 relDataTypeFactory,
                 new MyScalarFunctionConverter(EXTENSION_COLLECTION.scalarFunctions(), additionalSignatures, relDataTypeFactory, TypeConverter.DEFAULT),
                 new AggregateFunctionConverter(EXTENSION_COLLECTION.aggregateFunctions(), relDataTypeFactory),
-                new WindowFunctionConverter(
-                        EXTENSION_COLLECTION.windowFunctions(),
-                        relDataTypeFactory,
-                        new AggregateFunctionConverter(EXTENSION_COLLECTION.aggregateFunctions(), relDataTypeFactory),
-                        TypeConverter.DEFAULT
-                ),
+                new WindowFunctionConverter(EXTENSION_COLLECTION.windowFunctions(), relDataTypeFactory),
                 TypeConverter.DEFAULT,
                 ImmutableFeatureBoard.builder().build()
         );
@@ -64,12 +61,16 @@ public interface Shared {
         return new ExpressionRexConverter(
                 relDataTypeFactory,
                 new MyScalarFunctionConverter(EXTENSION_COLLECTION.scalarFunctions(), additionalSignatures, relDataTypeFactory, TypeConverter.DEFAULT),
-                new AggregateFunctionConverter(EXTENSION_COLLECTION.aggregateFunctions(), relDataTypeFactory),
+                new WindowFunctionConverter(EXTENSION_COLLECTION.windowFunctions(), relDataTypeFactory),
                 TypeConverter.DEFAULT
         ) {
+
+            private final SubstraitToCalcite substraitToCalcite = SubstraitToCalciteConverter.createSubstraitToCalcite(typeFactory);
+
             @Override
             public RexNode visit(Expression.ScalarSubquery expr) throws RuntimeException {
-                return super.visit(expr);
+                var relNode = substraitToCalcite.convert(expr.input());
+                return RexSubQuery.scalar(relNode);
             }
         };
     }
