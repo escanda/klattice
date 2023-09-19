@@ -1,7 +1,7 @@
 package klattice.plan;
 
 import com.google.common.collect.ImmutableList;
-import klattice.calcite.DucksDbDialect;
+import klattice.calcite.DuckDbDialect;
 import klattice.plan.rule.InvokeVirtualReplaceRule;
 import klattice.schema.SchemaHolder;
 import org.apache.calcite.config.CalciteSystemProperty;
@@ -53,7 +53,7 @@ public class RePlanner {
     }
 
     public List<RelRoot> rewriteRelNodes(List<RelNode> optimizedRelNodes) {
-        var relToSqlConverter = new RelToSqlConverter(DucksDbDialect.INSTANCE);
+        var relToSqlConverter = new RelToSqlConverter(DuckDbDialect.INSTANCE);
         return optimizedRelNodes.stream()
                 .map(relToSqlConverter::visitRoot)
                 .map(SqlImplementor.Result::asSelect)

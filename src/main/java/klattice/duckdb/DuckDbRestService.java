@@ -26,4 +26,8 @@ public interface DuckDbRestService {
     @Path("/make-session")
     @Consumes({MediaType.TEXT_PLAIN})
     int makeSession();
+
+    @POST
+    @Path("/exec-sql")
+    Response execSqlQuery(@QueryParam("session_id") int sessionId, String body);
 }

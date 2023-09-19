@@ -25,13 +25,14 @@ public interface SubstraitToCalciteConverter {
         var converter = new SubstraitToCalcite(EXTENSION_COLLECTION, typeFactory, TypeConverter.DEFAULT) {
             @Override
             protected SubstraitRelNodeConverter createSubstraitRelNodeConverter(RelBuilder relBuilder) {
-                return new SubstraitRelNodeConverter(
+                var substraitRelNodeConverter = new SubstraitRelNodeConverter(
                         typeFactory,
                         relBuilder,
                         new ScalarFunctionConverter(EXTENSION_COLLECTION.scalarFunctions(), additionalSignatures, typeFactory, TypeConverter.DEFAULT),
                         new AggregateFunctionConverter(EXTENSION_COLLECTION.aggregateFunctions(), typeFactory),
                         TypeConverter.DEFAULT
                 ) {
+                    // TODO: replace expression visitor with ours
                     @Override
                     public RelNode visit(VirtualTableScan virtualTableScan) throws RuntimeException {
                         var recordRelDataType = typeConverter.toCalcite(typeFactory, virtualTableScan.getRecordType());
@@ -51,6 +52,7 @@ public interface SubstraitToCalciteConverter {
                         return relBuilder.values(tupleList, recordRelDataType).build();
                     }
                 };
+                return substraitRelNodeConverter;
             }
         };
         return relPlan.getRoots().stream().map(root -> converter.convert(root.getInput())).toList();

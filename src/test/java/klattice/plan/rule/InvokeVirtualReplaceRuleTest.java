@@ -3,7 +3,7 @@ package klattice.plan.rule;
 import io.quarkus.grpc.GrpcClient;
 import io.quarkus.test.junit.QuarkusTest;
 import io.substrait.plan.ProtoPlanConverter;
-import klattice.calcite.DucksDbDialect;
+import klattice.calcite.DuckDbDialect;
 import klattice.msg.Environment;
 import klattice.msg.QueryDescriptor;
 import klattice.plan.RePlanner;
@@ -45,7 +45,7 @@ public class InvokeVirtualReplaceRuleTest {
         var relRoots = SubstraitToCalciteConverter.getRelRoots(relPlan);
         var relNodes = rePlanner.optimizeRelNodes(relRoots);
         System.out.println(relNodes);
-        var result = new RelToSqlConverter(DucksDbDialect.INSTANCE).visitRoot(relNodes.get(0));
+        var result = new RelToSqlConverter(DuckDbDialect.INSTANCE).visitRoot(relNodes.get(0));
         var selectNode = result.asSelect();
         System.out.println(selectNode);
     }

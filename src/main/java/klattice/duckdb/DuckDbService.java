@@ -60,4 +60,21 @@ public class DuckDbService {
             }
         }
     }
+
+    public Iterable<String[]> execSql(String sql) {
+        try (var response = this.duckDbRestService.execSqlQuery(this.sessionId.get(), sql)) {
+            if (!(response.getStatus() >= 200 && response.getStatus() < 300)) {
+                logger.warn("Response code from server was " + response.getStatus());
+            }
+            try (var is = response.readEntity(InputStream.class);
+                 var bis = new BufferedReader(new InputStreamReader(is))) {
+                return () -> bis.lines()
+                        .map(line -> line.split(DELIMITER))
+                        .iterator();
+            } catch (IOException e) {
+                logger.error("Error during reading response from substrait response");
+                throw new RuntimeException(e);
+            }
+        }
+    }
 }

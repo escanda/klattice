@@ -1,5 +1,6 @@
 package klattice.substrait;
 
+import io.substrait.expression.Expression;
 import io.substrait.isthmus.ImmutableFeatureBoard;
 import io.substrait.isthmus.SubstraitRelVisitor;
 import io.substrait.isthmus.TypeConverter;
@@ -15,6 +16,7 @@ import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.ViewExpanders;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
+import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.advise.SqlAdvisorValidator;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.parser.impl.SqlParserImpl;
@@ -64,7 +66,12 @@ public interface Shared {
                 new MyScalarFunctionConverter(EXTENSION_COLLECTION.scalarFunctions(), additionalSignatures, relDataTypeFactory, TypeConverter.DEFAULT),
                 new AggregateFunctionConverter(EXTENSION_COLLECTION.aggregateFunctions(), relDataTypeFactory),
                 TypeConverter.DEFAULT
-        );
+        ) {
+            @Override
+            public RexNode visit(Expression.ScalarSubquery expr) throws RuntimeException {
+                return super.visit(expr);
+            }
+        };
     }
 
     static FrameworkConfig framework(SchemaHolder schemaHolder) {
