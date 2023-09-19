@@ -1,14 +1,11 @@
 package klattice.calcite;
 
-import org.apache.calcite.sql.SqlDialect;
-import org.apache.calcite.sql.validate.SqlConformanceEnum;
+import org.apache.calcite.sql.dialect.PostgresqlSqlDialect;
 
-public class DuckDbDialect extends SqlDialect {
+public class DuckDbDialect extends PostgresqlSqlDialect {
     public static DuckDbDialect INSTANCE = new DuckDbDialect();
 
     private DuckDbDialect() {
-        super(DuckDbDialect.EMPTY_CONTEXT
-                .withDatabaseProduct(DatabaseProduct.POSTGRESQL)
-                .withConformance(SqlConformanceEnum.LENIENT));
+        super(DEFAULT_CONTEXT);
     }
 }
