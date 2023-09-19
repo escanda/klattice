@@ -1,25 +1,24 @@
 package klattice.plan.rule;
 
-import com.google.common.collect.ImmutableSet;
 import jakarta.annotation.Nullable;
+import klattice.calcite.FunctionCategory;
 import klattice.calcite.FunctionDefs;
 import klattice.schema.BuiltinTables;
 import klattice.schema.SchemaHolder;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelRule;
-import org.apache.calcite.rel.logical.LogicalFilter;
+import org.apache.calcite.plan.ViewExpanders;
 import org.apache.calcite.rel.logical.LogicalProject;
-import org.apache.calcite.rel.logical.LogicalTableScan;
 import org.apache.calcite.rel.logical.LogicalValues;
 import org.apache.calcite.rel.rules.TransformationRule;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.rex.RexTableInputRef;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.fun.SqlCoalesceFunction;
 import org.immutables.value.Value;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Value.Enclosing
@@ -38,31 +37,33 @@ public class InvokeVirtualReplaceRule extends RelRule<InvokeVirtualReplaceRule.C
         var b0 = ruleCall.builder();
         var projects = logicalProject.getProjects();
         var lst = new ArrayList<RexNode>(projects.size());
+
+        var relContext = ViewExpanders.simpleContext(schemaHolder.getRelOptCluster());
+        var tableName = BuiltinTables.MAGIC_VALUES.tableName;
+        var relOptTable = schemaHolder.resolveTable(tableName);
+
         for (RexNode project : projects) {
-            var no = lst.size();
             if (project.isA(SqlKind.FUNCTION)) {
                 var call = (RexCall) project;
                 for (FunctionDefs functionDef : FunctionDefs.values()) {
-                    if (functionDef.operator.equals(call.getOperator())) {
-                        var tableName = BuiltinTables.MAGIC_VALUES.tableName;
-                        var relOptTable = schemaHolder.resolveTable(tableName);
-                        var relTableRef = RexTableInputRef.RelTableRef.of(relOptTable, 1);
+                    if (functionDef.operator.equals(call.getOperator())
+                        && functionDef.category.equals(FunctionCategory.MAGIC)) {
                         var relDataTypeField = Objects.requireNonNull(relOptTable.getRowType().getField(functionDef.discriminator, false, false));
-                        var inputRef = RexTableInputRef.of(relTableRef, relDataTypeField.getIndex(), relDataTypeField.getType());
+                        var inputRef = RexInputRef.of(relDataTypeField.getIndex(), relOptTable.getRowType());
                         var rexSubQuery = b0.scalarQuery(b1 -> {
-                            b1.push(new LogicalTableScan(b1.getCluster(), logicalProject.getTraitSet(), List.of(), relOptTable));
-                            b1.push(new LogicalFilter(b1.getCluster(), logicalProject.getTraitSet(), b1.peek(), b1.equals(inputRef, b1.literal(functionDef.discriminator)), ImmutableSet.of()));
+                            var scan = b0.getScanFactory().createScan(relContext, relOptTable);
+                            b1.push(scan);
+                            b1.push(b1.filter(b1.equals(inputRef, b1.literal(functionDef.discriminator))).build());
                             return b1.build();
                         });
-                        lst.add(rexSubQuery);
+                        project = b0.call(new SqlCoalesceFunction(), rexSubQuery, b0.literal("[[NOT AVAILABLE]]"));
                         break;
                     }
                 }
             }
-            if (no == lst.size()) {
-                lst.add(project);
-            }
+            lst.add(project);
         }
+        b0.push(logicalProject.getInput());
         ruleCall.transformTo(b0.project(lst).build());
     }
 
