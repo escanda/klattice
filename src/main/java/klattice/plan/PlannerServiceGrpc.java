@@ -39,11 +39,10 @@ public class PlannerServiceGrpc implements Planner {
             var typeFactory = new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
             var schemaFactory = new SchemaHolder(environ);
             var rePlanner = new RePlanner(schemaFactory);
-            var optimizedRelNodes = rePlanner.optimizeRelNodes(relRoots);
-            var rewrittenNodes = rePlanner.rewriteRelNodes(optimizedRelNodes);
+            var rewrittenNodes = rePlanner.optimizeRelNodes(relRoots);
             var relPlanBuilder = io.substrait.plan.ImmutablePlan.builder();
             var substraitRelVisitor = createSubstraitRelVisitor(typeFactory);
-            var rels = rewrittenNodes.stream().map(relRoot -> substraitRelVisitor.apply(relRoot.rel)).toList();
+            var rels = rewrittenNodes.stream().map(substraitRelVisitor::apply).toList();
             relPlanBuilder.roots(rels.stream().map(rel -> ImmutableRoot.builder().input(rel).build()).toList());
             var planProto = new PlanProtoConverter().toProto(relPlanBuilder.build());
             logger.infov("Original plan was:\n {0} \nNew plan is:\n {1}", request.getPlan(), planProto);

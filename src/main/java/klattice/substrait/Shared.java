@@ -3,7 +3,10 @@ package klattice.substrait;
 import io.substrait.isthmus.ImmutableFeatureBoard;
 import io.substrait.isthmus.SubstraitRelVisitor;
 import io.substrait.isthmus.TypeConverter;
-import io.substrait.isthmus.expression.*;
+import io.substrait.isthmus.expression.AggregateFunctionConverter;
+import io.substrait.isthmus.expression.ExpressionRexConverter;
+import io.substrait.isthmus.expression.FunctionMappings;
+import io.substrait.isthmus.expression.WindowFunctionConverter;
 import klattice.calcite.FunctionDefs;
 import klattice.schema.SchemaHolder;
 import org.apache.calcite.avatica.util.Casing;
@@ -42,7 +45,7 @@ public interface Shared {
     static SubstraitRelVisitor createSubstraitRelVisitor(RelDataTypeFactory relDataTypeFactory, List<FunctionMappings.Sig> additionalSignatures) {
         return new SubstraitRelVisitor(
                 relDataTypeFactory,
-                new ScalarFunctionConverter(EXTENSION_COLLECTION.scalarFunctions(), additionalSignatures, relDataTypeFactory, TypeConverter.DEFAULT),
+                new MyScalarFunctionConverter(EXTENSION_COLLECTION.scalarFunctions(), additionalSignatures, relDataTypeFactory, TypeConverter.DEFAULT),
                 new AggregateFunctionConverter(EXTENSION_COLLECTION.aggregateFunctions(), relDataTypeFactory),
                 new WindowFunctionConverter(
                         EXTENSION_COLLECTION.windowFunctions(),
@@ -58,7 +61,7 @@ public interface Shared {
     static ExpressionRexConverter createExpressionRexConverter(RelDataTypeFactory relDataTypeFactory) {
         return new ExpressionRexConverter(
                 relDataTypeFactory,
-                new ScalarFunctionConverter(EXTENSION_COLLECTION.scalarFunctions(), additionalSignatures, relDataTypeFactory, TypeConverter.DEFAULT),
+                new MyScalarFunctionConverter(EXTENSION_COLLECTION.scalarFunctions(), additionalSignatures, relDataTypeFactory, TypeConverter.DEFAULT),
                 new AggregateFunctionConverter(EXTENSION_COLLECTION.aggregateFunctions(), relDataTypeFactory),
                 TypeConverter.DEFAULT
         );

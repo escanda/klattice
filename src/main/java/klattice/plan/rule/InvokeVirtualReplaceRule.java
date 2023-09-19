@@ -15,7 +15,6 @@ import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
-import org.apache.calcite.sql.fun.SqlCoalesceFunction;
 import org.immutables.value.Value;
 
 import java.util.ArrayList;
@@ -57,7 +56,7 @@ public class InvokeVirtualReplaceRule
                             b1.push(b1.filter(b1.equals(inputRef, b1.literal(functionDef.discriminator))).build());
                             return b1.build();
                         });
-                        project = b0.call(new SqlCoalesceFunction(), rexSubQuery, b0.literal("[[NOT AVAILABLE]]"));
+                        project = b0.call(FunctionDefs.COALESCE.operator, rexSubQuery, b0.literal("[[NOT AVAILABLE]]"));
                         break;
                     }
                 }

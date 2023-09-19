@@ -28,6 +28,7 @@ import org.apache.calcite.sql.util.SqlOperatorTables;
 import org.apache.calcite.sql.validate.SqlValidator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -125,7 +126,9 @@ public class SchemaHolder {
     }
 
     private Iterable<? extends SqlOperator> getFunctionOperators() {
-        return List.of(FunctionDefs.VERSION.operator);
+        return Arrays.stream(FunctionDefs.values())
+                .map(functionDef -> functionDef.operator)
+                .toList();
     }
 
     public RelOptTable resolveTable(String tableName) {
