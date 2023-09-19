@@ -33,7 +33,7 @@ public interface SubstraitToCalciteConverter {
         return new SubstraitToCalcite(EXTENSION_COLLECTION, typeFactory, TypeConverter.DEFAULT) {
             @Override
             protected SubstraitRelNodeConverter createSubstraitRelNodeConverter(RelBuilder relBuilder) {
-                var substraitRelNodeConverter = new SubstraitRelNodeConverter(
+                return new SubstraitRelNodeConverter(
                         typeFactory,
                         relBuilder,
                         new ScalarFunctionConverter(EXTENSION_COLLECTION.scalarFunctions(), additionalSignatures, typeFactory, TypeConverter.DEFAULT),
@@ -62,7 +62,6 @@ public interface SubstraitToCalciteConverter {
                         return relBuilder.values(tupleList, recordRelDataType).build();
                     }
                 };
-                return substraitRelNodeConverter;
             }
         };
     }
