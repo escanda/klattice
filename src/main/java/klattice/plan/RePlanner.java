@@ -54,12 +54,11 @@ public class RePlanner {
 
     public List<RelRoot> rewriteRelNodes(List<RelNode> optimizedRelNodes) {
         var relToSqlConverter = new RelToSqlConverter(DucksDbDialect.INSTANCE);
-        var rewrittenNodes = optimizedRelNodes.stream()
+        return optimizedRelNodes.stream()
                 .map(relToSqlConverter::visitRoot)
                 .map(SqlImplementor.Result::asSelect)
                 .map(sqlSelect -> createSqlToRelConverter(schemaHolder).convertQuery(sqlSelect, false, true))
                 .toList();
-        return rewrittenNodes;
     }
 
     public List<RelNode> optimizeRelNodes(List<RelNode> relRoots) {
