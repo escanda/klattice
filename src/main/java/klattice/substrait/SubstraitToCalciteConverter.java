@@ -5,6 +5,7 @@ import io.substrait.isthmus.SubstraitRelNodeConverter;
 import io.substrait.isthmus.SubstraitToCalcite;
 import io.substrait.isthmus.TypeConverter;
 import io.substrait.isthmus.expression.AggregateFunctionConverter;
+import io.substrait.isthmus.expression.ExpressionRexConverter;
 import io.substrait.isthmus.expression.ScalarFunctionConverter;
 import io.substrait.isthmus.expression.WindowFunctionConverter;
 import io.substrait.relation.VirtualTableScan;
@@ -42,13 +43,13 @@ public interface SubstraitToCalciteConverter {
                         TypeConverter.DEFAULT,
                         Shared.createExpressionRexConverter(relDataTypeFactory)
                 ) {
-                    // TODO: replace expression visitor with ours
+                    final ExpressionRexConverter expressionRexConverter = Shared.createExpressionRexConverter(typeFactory);
+
                     @Override
                     public RelNode visit(VirtualTableScan virtualTableScan) throws RuntimeException {
                         var recordRelDataType = typeConverter.toCalcite(typeFactory, virtualTableScan.getRecordType());
                         var tupleList = new ArrayList<List<RexLiteral>>();
                         var rows = virtualTableScan.getRows();
-                        var expressionRexConverter = Shared.createExpressionRexConverter(typeFactory);
                         int i = 0;
                         for (Expression.StructLiteral row : rows) {
                             int j = 0;
