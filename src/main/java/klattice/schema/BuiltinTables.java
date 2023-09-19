@@ -19,13 +19,15 @@ public enum BuiltinTables {
                     BasicSqlType.proto(SqlTypeName.VARCHAR, false)
                             .apply(Shared.relDataTypeFactory)
             )
-    )));
+    )), BuiltinTableCategory.SYSTEM);
 
     public final String tableName;
     public final RelDataType rowType;
+    public final BuiltinTableCategory category;
 
-    BuiltinTables(String tableName, RelDataType rowType) {
+    BuiltinTables(String tableName, RelDataType rowType, BuiltinTableCategory category) {
         this.tableName = tableName;
         this.rowType = rowType;
+        this.category = category;
     }
 }
