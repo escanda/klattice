@@ -10,9 +10,11 @@ import org.apache.calcite.avatica.util.Casing;
 import org.apache.calcite.avatica.util.Quoting;
 import org.apache.calcite.plan.ViewExpanders;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.sql.advise.SqlAdvisorValidator;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.parser.impl.SqlParserImpl;
 import org.apache.calcite.sql.validate.SqlConformanceEnum;
+import org.apache.calcite.sql.validate.SqlValidator;
 import org.apache.calcite.sql2rel.ReflectiveConvertletTable;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
 import org.apache.calcite.tools.FrameworkConfig;
@@ -66,7 +68,11 @@ public interface Shared {
     }
 
     static SqlToRelConverter createSqlToRelConverter(SchemaFactory schemaFactory) {
-        return new SqlToRelConverter(ViewExpanders.simpleContext(schemaFactory.getRelOptCluster()), null, schemaFactory.getCatalog(), schemaFactory.getRelOptCluster(), new ReflectiveConvertletTable(), SqlToRelConverter.CONFIG);
+        return new SqlToRelConverter(ViewExpanders.simpleContext(schemaFactory.getRelOptCluster()), createAdvisorSqlValidator(schemaFactory), schemaFactory.getCatalog(), schemaFactory.getRelOptCluster(), new ReflectiveConvertletTable(), SqlToRelConverter.CONFIG);
+    }
+
+    private static SqlAdvisorValidator createAdvisorSqlValidator(SchemaFactory schemaFactory) {
+        return new SqlAdvisorValidator(schemaFactory.getSqlOperatorTable(), schemaFactory.getCatalog(), schemaFactory.getTypeFactory(), SqlValidator.Config.DEFAULT);
     }
 
     static SqlParser.Config sqlParserConfig() {
