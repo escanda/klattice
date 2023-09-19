@@ -33,7 +33,7 @@ public class RePlanner {
 
     public List<RelNode> optimizeRelNodes(List<RelNode> relRoots) {
         var hepPlanner = new HepPlanner(HepProgram.builder()
-                .addRuleInstance(new InvokeVirtualReplaceRule())
+                .addRuleInstance(new InvokeVirtualReplaceRule(InvokeVirtualReplaceRule.Config.DEFAULT, schemaHolder))
                 .build());
         return relRoots.stream().map(relNode -> {
             hepPlanner.setRoot(relNode);

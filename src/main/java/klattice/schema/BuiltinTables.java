@@ -1,17 +1,24 @@
 package klattice.schema;
 
+import klattice.calcite.FunctionDefs;
+import klattice.substrait.Shared;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFieldImpl;
-import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.rel.type.RelRecordType;
+import org.apache.calcite.rel.type.StructKind;
 import org.apache.calcite.sql.type.BasicSqlType;
 import org.apache.calcite.sql.type.SqlTypeName;
 
 import java.util.List;
 
 public enum BuiltinTables {
-    MAGIC_VALUES("_magic_values", new RelRecordType(List.of(
-            new RelDataTypeFieldImpl("value", 0, new BasicSqlType(RelDataTypeSystem.DEFAULT, SqlTypeName.VARCHAR))
+    MAGIC_VALUES("_magic_values", new RelRecordType(StructKind.FULLY_QUALIFIED, List.of(
+            new RelDataTypeFieldImpl(
+                    FunctionDefs.VERSION.discriminator,
+                    0,
+                    BasicSqlType.proto(SqlTypeName.VARCHAR, false)
+                            .apply(Shared.relDataTypeFactory)
+            )
     )));
 
     public final String tableName;

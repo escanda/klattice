@@ -8,8 +8,10 @@ import klattice.calcite.FunctionDefs;
 import klattice.schema.SchemaHolder;
 import org.apache.calcite.avatica.util.Casing;
 import org.apache.calcite.avatica.util.Quoting;
+import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.ViewExpanders;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
+import org.apache.calcite.rel.type.RelDataTypeSystem;
 import org.apache.calcite.sql.advise.SqlAdvisorValidator;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.parser.impl.SqlParserImpl;
@@ -27,6 +29,8 @@ import java.util.List;
 import static klattice.substrait.CalciteToSubstraitConverter.EXTENSION_COLLECTION;
 
 public interface Shared {
+    RelDataTypeFactory relDataTypeFactory = new JavaTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
+
     List<FunctionMappings.Sig> additionalSignatures = Arrays.stream(FunctionDefs.values())
             .map(functionDefs -> FunctionMappings.s(functionDefs.operator))
             .toList();
