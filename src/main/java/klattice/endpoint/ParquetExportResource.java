@@ -5,7 +5,10 @@ import io.smallrye.common.annotation.Blocking;
 import jakarta.annotation.Resource;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.*;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import klattice.schema.SchemaRegistryResource;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
@@ -14,19 +17,16 @@ import java.io.*;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
-import static klattice.endpoint.Regex.RANGE_PAT;
-
 @Resource
-@Path("/topic-table/{topicName}")
+@Path("/topic-table/{topicName}.parquet")
 public class ParquetExportResource {
     @LoggerName("ParquetExporterResource")
     Logger logger;
 
     @Inject
-    Exporter exporter;
+    KafkaExporter kafkaExporter;
 
     @RestClient
     SchemaRegistryResource schemaRegistryResource;
@@ -35,7 +35,6 @@ public class ParquetExportResource {
 
     @GET
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    @Blocking
     public Response get(@PathParam("topicName") String path, @Context HttpHeaders httpHeaders, @QueryParam("limit") int rowLimit) throws IOException {
         var topicName = path.replaceAll("\\.parquet$", "");
         File file;
@@ -46,33 +45,13 @@ public class ParquetExportResource {
         } else {
             file = topicFileMap.get(topicName);
         }
-        var rangeStr = httpHeaders.getHeaderString("Range");
-        if (!Objects.isNull(rangeStr)) {
-            var r = new RandomAccessFile(file, "r");
-            var matcher = RANGE_PAT.matcher(rangeStr);
-            if (matcher.matches()) {
-                var start = Integer.parseInt(matcher.group(1));
-                var end = Integer.parseInt(matcher.group(2));
-                var len = (end - start) + 1;
-                r.seek(start);
-                var bytesStr = String.format("bytes %s-%s/%d", start, end, r.length());
-                return Response.status(206).entity((StreamingOutput) output -> {
-                            int byteCount = 0;
-                            int byteV;
-                            while ((byteCount < len) && (byteV = r.read()) != -1) {
-                                output.write(byteV);
-                                byteCount++;
-                            }
-                            r.close();
-                        })
-                        .header("Accept-Ranges", "bytes")
-                        .header("Content-Range", bytesStr)
-                        .header("Content-Length", String.format("%d", len)).build();
+        return new RangeExposer(httpHeaders).answerWithFile(file).orElseGet(() -> {
+            try {
+                return Response.status(200).entity(new FileInputStream(file)).build();
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
             }
-            throw new NotFoundException("No HEAD prior request for topic " + topicName);
-        } else {
-            return Response.status(200).entity(new FileInputStream(file)).build();
-        }
+        });
     }
 
     @HEAD
@@ -89,7 +68,7 @@ public class ParquetExportResource {
         try (var fos = new FileOutputStream(file, true)) {
             logger.infov("Starting topic export by name '{0}'", new Object[]{topicName});
             var schemaSubject = schemaRegistryResource.byTopicName(topicName);
-            exporter.export(schemaSubject, topicName, fos, rowLimit);
+            kafkaExporter.export(schemaSubject, topicName, fos, rowLimit);
         }
         return Optional.of(file);
     }

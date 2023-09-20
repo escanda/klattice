@@ -4,6 +4,7 @@ import io.quarkus.arc.log.LoggerName;
 import jakarta.annotation.Nonnull;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import klattice.file.ParquetBufferedWriter;
 import klattice.schema.SchemaSubject;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -29,7 +30,7 @@ import java.util.Map;
 import java.util.Properties;
 
 @ApplicationScoped
-public class Exporter {
+public class KafkaExporter {
     private static final String BYTEARRAY_DESERIALIZER = "org.apache.kafka.common.serialization.ByteArrayDeserializer";
     private static final String RESET_VALUE = "earliest";
 
@@ -47,7 +48,7 @@ public class Exporter {
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, BYTEARRAY_DESERIALIZER);
         props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, Boolean.FALSE);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, RESET_VALUE);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, Exporter.class.getSimpleName());
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, KafkaExporter.class.getSimpleName());
 
         try (var consumer = new KafkaConsumer<byte[], byte[]>(props)) {
             consumer.subscribe(Collections.singletonList(topicName));

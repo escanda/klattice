@@ -1,4 +1,4 @@
-package klattice.endpoint;
+package klattice.file;
 
 import org.apache.parquet.io.OutputFile;
 import org.apache.parquet.io.PositionOutputStream;
@@ -6,7 +6,7 @@ import org.apache.parquet.io.PositionOutputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 
-class ParquetBufferedWriter implements OutputFile {
+public class ParquetBufferedWriter implements OutputFile {
     private final BufferedOutputStream out;
 
     public ParquetBufferedWriter(BufferedOutputStream out) {
