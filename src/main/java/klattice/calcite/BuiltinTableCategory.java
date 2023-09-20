@@ -1,4 +1,4 @@
-package klattice.schema;
+package klattice.calcite;
 
 public enum BuiltinTableCategory {
     SYSTEM, TOPIC

@@ -1,6 +1,5 @@
-package klattice.schema;
+package klattice.calcite;
 
-import klattice.calcite.FunctionDefs;
 import klattice.substrait.Shared;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFieldImpl;

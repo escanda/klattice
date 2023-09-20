@@ -1,10 +1,10 @@
 package klattice.plan.rule;
 
 import jakarta.annotation.Nullable;
+import klattice.calcite.BuiltinTables;
 import klattice.calcite.FunctionCategory;
 import klattice.calcite.FunctionDefs;
-import klattice.schema.BuiltinTables;
-import klattice.schema.SchemaHolder;
+import klattice.calcite.SchemaHolder;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.plan.ViewExpanders;

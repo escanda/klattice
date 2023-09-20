@@ -2,8 +2,8 @@ package klattice.plan;
 
 import com.google.common.collect.ImmutableList;
 import klattice.calcite.DuckDbDialect;
+import klattice.calcite.SchemaHolder;
 import klattice.plan.rule.InvokeVirtualReplaceRule;
-import klattice.schema.SchemaHolder;
 import org.apache.calcite.config.CalciteSystemProperty;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.hep.HepPlanner;

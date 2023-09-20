@@ -10,7 +10,7 @@ import io.substrait.isthmus.expression.ExpressionRexConverter;
 import io.substrait.isthmus.expression.FunctionMappings;
 import io.substrait.isthmus.expression.WindowFunctionConverter;
 import klattice.calcite.FunctionDefs;
-import klattice.schema.SchemaHolder;
+import klattice.calcite.SchemaHolder;
 import org.apache.calcite.avatica.util.Casing;
 import org.apache.calcite.avatica.util.Quoting;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;

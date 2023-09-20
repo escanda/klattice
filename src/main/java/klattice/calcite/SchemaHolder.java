@@ -1,6 +1,5 @@
-package klattice.schema;
+package klattice.calcite;
 
-import klattice.calcite.FunctionDefs;
 import klattice.msg.Column;
 import klattice.msg.Environment;
 import klattice.msg.Schema;
