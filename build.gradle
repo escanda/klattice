@@ -48,8 +48,9 @@ dependencies {
     implementation group: 'org.apache.parquet', name: 'parquet-avro', version: '1.13.1'
     implementation 'org.apache.commons:commons-csv:1.10.0'
 
-    implementation group: 'org.apache.calcite', name: 'calcite-core', version: '1.35.0'
-    implementation group: 'org.apache.calcite', name: 'calcite-kafka', version: '1.35.0'
+    def calciteVersion = '1.35.0'
+    implementation group: 'org.apache.calcite', name: 'calcite-core', version: calciteVersion
+    implementation group: 'org.apache.calcite', name: 'calcite-kafka', version: calciteVersion
 
     def substraitVersion = '0.17.0'
     implementation(group: 'io.substrait', name: 'core', version: substraitVersion)
