@@ -7,7 +7,6 @@ import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
 import io.substrait.plan.ProtoPlanConverter;
 import jakarta.inject.Inject;
-import klattice.calcite.BuiltinTables;
 import klattice.calcite.DuckDbDialect;
 import klattice.duckdb.DuckDbService;
 import klattice.msg.Batch;
@@ -22,7 +21,6 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jboss.logging.Logger;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 import static klattice.substrait.CalciteToSubstraitConverter.EXTENSION_COLLECTION;
 
@@ -30,6 +28,9 @@ import static klattice.substrait.CalciteToSubstraitConverter.EXTENSION_COLLECTIO
 public class ExecGrpcService implements Exec {
     @LoggerName("ExecGrpcService")
     Logger logger;
+
+    @Inject
+    SqlIdentifierResolver sqlIdentifierResolver;
 
     @Inject
     DuckDbService duckDbService;
@@ -44,19 +45,9 @@ public class ExecGrpcService implements Exec {
         var sqlNode = sql.accept(new SqlShuttle() {
             @Override
             public @Nullable SqlNode visit(SqlIdentifier id) {
-                var simple = id.getSimple();
-                var builtinOpt = Arrays.stream(BuiltinTables.values()).filter(builtinTable -> builtinTable.tableName.equalsIgnoreCase(simple)).findFirst();
-                if (builtinOpt.isPresent()) {
-                    switch (builtinOpt.get().category) {
-                        case SYSTEM -> {
-                            return new SqlIdentifier("http://localhost:8080/sys-table/" + simple + ".parquet", id.getCollation(), id.getParserPosition());
-                        }
-                        case TOPIC -> {
-                            return new SqlIdentifier("http://localhost:8080/topic-table/" + simple + ".parquet", id.getCollation(), id.getParserPosition());
-                        }
-                    }
-                }
-                return super.visit(id);
+                return sqlIdentifierResolver.resolve(request.getEnviron(), id)
+                                .map(translatedIdRef -> new SqlIdentifier(translatedIdRef.url(), id.getCollation(), id.getParserPosition()))
+                                        .orElseGet(() -> (SqlIdentifier) super.visit(id));
             }
         });
         logger.infov("Received request for plan {0} and sql {1}", request.getPlan(), sql);

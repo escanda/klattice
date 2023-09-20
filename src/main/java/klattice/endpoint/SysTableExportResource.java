@@ -3,10 +3,7 @@ package klattice.endpoint;
 import io.quarkus.arc.log.LoggerName;
 import io.smallrye.common.annotation.Blocking;
 import jakarta.annotation.Resource;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import klattice.schema.SchemaRegistryResource;
 import org.apache.commons.csv.CSVFormat;
@@ -19,7 +16,7 @@ import java.io.OutputStreamWriter;
 import java.util.List;
 
 @Resource
-@Path("/sys-table")
+@Path("/sys-table/{tableName}.parquet")
 public class SysTableExportResource {
     @LoggerName("SysInfoExportResource")
     Logger logger;
@@ -27,34 +24,6 @@ public class SysTableExportResource {
     @RestClient
     SchemaRegistryResource schemaRegistryResource;
 
-    /**
-     * Returns a CSV view of the available schemas in SchemaRegistry.
-     * @param httpHeaders
-     * @return
-     * @throws IOException
-     */
-    @Path("/schemas")
-    @GET
-    @Produces(MediaType.TEXT_PLAIN)
-    @Blocking
-    public Response schemas(@Context HttpHeaders httpHeaders) throws IOException {
-        StreamingOutput stream = os -> {
-            try (CSVPrinter writer = new CSVPrinter(new OutputStreamWriter(os), CSVFormat.DEFAULT)) {
-
-            } catch (IOException ex) {
-                logger.errorv("Cannot write CSV to output streaming in streaming response", ex);
-            }
-        };
-        return Response.ok().entity(stream).build();
-    }
-
-    /**
-     * Returns a CSV view of the available schemas in SchemaRegistry.
-     * @param httpHeaders
-     * @return
-     * @throws IOException
-     */
-    @Path("/{tableName}.parquet")
     @GET
     @Produces(MediaType.TEXT_PLAIN)
     @Blocking
@@ -69,5 +38,12 @@ public class SysTableExportResource {
             }
         };
         return Response.ok().entity(stream).build();
+    }
+
+    @HEAD
+    @Blocking
+    public Response head(@PathParam("tableName") String tableName, @QueryParam("limit") int rowLimit) throws IOException {
+        logger.warn("Head over " + tableName);
+        return Response.accepted().header("Accept-Ranges", "bytes").build();
     }
 }
