@@ -4,9 +4,8 @@ import io.quarkus.arc.log.LoggerName;
 import jakarta.annotation.Nonnull;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import klattice.file.ParquetBufferedWriter;
+import klattice.file.AvroParquetExport;
 import klattice.schema.SchemaSubject;
-import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.io.DecoderFactory;
@@ -14,13 +13,9 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
-import org.apache.parquet.avro.AvroParquetWriter;
-import org.apache.parquet.hadoop.ParquetWriter;
-import org.apache.parquet.hadoop.metadata.CompressionCodecName;
 import org.jboss.logging.Logger;
 import picocli.CommandLine;
 
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.time.Duration;
@@ -53,15 +48,7 @@ public class KafkaExporter {
         try (var consumer = new KafkaConsumer<byte[], byte[]>(props)) {
             consumer.subscribe(Collections.singletonList(topicName));
             var schema = schemaSubject.schema();
-            var parser = new Schema.Parser();
-            var parsedSchema = parser.parse(schema);
-            var bos = new BufferedOutputStream(outputStream);
-            var pbw = new ParquetBufferedWriter(bos);
-            try (ParquetWriter<GenericData.Record> writer = AvroParquetWriter.
-                    <GenericData.Record>builder(pbw)
-                    .withSchema(parsedSchema)
-                    .withCompressionCodec(CompressionCodecName.SNAPPY)
-                    .build()) {
+            try (var export = new AvroParquetExport(outputStream, schema)) {
                 var assignment = consumer.assignment();
                 consumer.seekToBeginning(assignment);
                 long rowCount = 0;
@@ -76,9 +63,9 @@ public class KafkaExporter {
                         } else {
                             for (var consumerRecord : poll) {
                                 var decoder = DecoderFactory.get().binaryDecoder(consumerRecord.value(), null);
-                                var reader = new GenericDatumReader<GenericData.Record>(parsedSchema);
+                                var reader = new GenericDatumReader<GenericData.Record>(export.schema());
                                 var record = reader.read(null, decoder);
-                                writer.write(record);
+                                export.record(record);
                                 rowCount++;
                                 var key = new TopicPartition(consumerRecord.topic(), consumerRecord.partition());
                                 var offset = new OffsetAndMetadata(consumerRecord.offset());
@@ -87,12 +74,12 @@ public class KafkaExporter {
                                     break loop;
                                 }
                             }
-                            bos.flush();
+                            export.flush();
                         }
                     }
                 }
                 consumer.commitSync(offsets);
-                bos.flush();
+                export.flush();
             }
         }
     }
