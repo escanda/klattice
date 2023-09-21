@@ -35,7 +35,7 @@ public interface DuckDbRestService {
     @ClientExceptionMapper
     static RuntimeException toException(Response response) {
         if (response.getStatus() == 500) {
-            return new IllegalArgumentException("Server answered with error telling: " + response.readEntity(String.class));
+            return new IllegalArgumentException(response.readEntity(String.class));
         }
         return null;
     }
