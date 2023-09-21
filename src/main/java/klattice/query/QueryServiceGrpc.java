@@ -28,7 +28,8 @@ public class QueryServiceGrpc implements Query {
         PreparedQuery preparedQuery;
         try {
             var schemaFactory = new SchemaHolder(request.getEnviron());
-            var planner = Frameworks.getPlanner(Shared.framework(schemaFactory));
+            var framework = Shared.framework(schemaFactory);
+            var planner = Frameworks.getPlanner(framework);
             var sqlNode = planner.parse(request.getQuery());
             var rewrittenSqlNode = planner.validate(sqlNode);
             var relNode = planner.rel(rewrittenSqlNode);

@@ -15,8 +15,6 @@ import klattice.calcite.FunctionShapes;
 import klattice.calcite.SchemaHolder;
 import klattice.exec.SqlIdentifierResolver;
 import klattice.msg.Plan;
-import org.apache.calcite.avatica.util.Casing;
-import org.apache.calcite.avatica.util.Quoting;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.ViewExpanders;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
@@ -28,10 +26,8 @@ import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlNode;
 import org.apache.calcite.sql.advise.SqlAdvisorValidator;
 import org.apache.calcite.sql.parser.SqlParser;
-import org.apache.calcite.sql.parser.impl.SqlParserImpl;
 import org.apache.calcite.sql.util.SqlShuttle;
 import org.apache.calcite.sql.util.SqlString;
-import org.apache.calcite.sql.validate.SqlConformanceEnum;
 import org.apache.calcite.sql.validate.SqlValidator;
 import org.apache.calcite.sql2rel.ReflectiveConvertletTable;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
@@ -114,12 +110,9 @@ public interface Shared {
     }
 
     static SqlParser.Config sqlParserConfig() {
-        return SqlParser.configBuilder()
-                .setConformance(SqlConformanceEnum.DEFAULT)
-                .setParserFactory(SqlParserImpl.FACTORY)
-                .setUnquotedCasing(Casing.TO_UPPER)
-                .setQuoting(Quoting.DOUBLE_QUOTE)
-                .build();
+        var config = SqlParser.config();
+        config = DuckDbDialect.INSTANCE.configureParser(config);
+        return config;
     }
 
     static SqlString toSql(SqlIdentifierResolver resolver, Plan request) {
