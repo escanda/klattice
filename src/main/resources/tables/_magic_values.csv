@@ -1,2 +1,7 @@
 value(VARCHAR),kind(VARCHAR)
-"KLattice 1.0.0-SNAPSHOT","version"
+"KLattice 1.0.0-SNAPSHOT","VERSION"
+"klattice","CURRENT_DATABASE"
+"system","CURRENT_SCHEMAS"
+"public","CURRENT_SCHEMAS"
+"klattice_user","CURRENT_USER"
+"public","CURRENT_SCHEMA"

@@ -14,7 +14,32 @@ public enum FunctionDefs {
             OperandTypes.NILADIC,
             SqlFunctionCategory.USER_DEFINED_TABLE_FUNCTION
     ), FunctionNames.VERSION),
-    COALESCE(FunctionCategory.EQUIVALENCE, SqlStdOperatorTable.COALESCE, FunctionNames.COALESCE);
+    COALESCE(FunctionCategory.EQUIVALENCE, SqlStdOperatorTable.COALESCE, FunctionNames.COALESCE),
+    CURRENT_DATABASE(FunctionCategory.MAGIC, SqlBasicFunction.create(
+            FunctionNames.CURRENT_DATABASE,
+            ReturnTypes.VARCHAR,
+            OperandTypes.NILADIC,
+            SqlFunctionCategory.USER_DEFINED_TABLE_FUNCTION
+    ), FunctionNames.CURRENT_DATABASE),
+    CURRENT_SCHEMAS(FunctionCategory.MAGIC, SqlBasicFunction.create(
+            FunctionNames.CURRENT_SCHEMAS,
+            ReturnTypes.VARCHAR,
+            OperandTypes.NILADIC.or(OperandTypes.BOOLEAN),
+            SqlFunctionCategory.USER_DEFINED_TABLE_FUNCTION
+    ), FunctionNames.CURRENT_SCHEMAS),
+    CURRENT_USER(FunctionCategory.MAGIC, SqlBasicFunction.create(
+            FunctionNames.CURRENT_USER,
+            ReturnTypes.VARCHAR,
+            OperandTypes.NILADIC,
+            SqlFunctionCategory.USER_DEFINED_TABLE_FUNCTION
+    ), FunctionNames.CURRENT_USER),
+    CURRENT_SCHEMA(FunctionCategory.MAGIC, SqlBasicFunction.create(
+            FunctionNames.CURRENT_SCHEMA,
+            ReturnTypes.VARCHAR,
+            OperandTypes.NILADIC,
+            SqlFunctionCategory.USER_DEFINED_TABLE_FUNCTION
+    ), FunctionNames.CURRENT_SCHEMA),
+    ;
 
     public final FunctionCategory category;
     public final SqlOperator operator;

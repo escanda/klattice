@@ -1,8 +1,8 @@
 package klattice.duckdb;
 
 import io.quarkus.arc.log.LoggerName;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+import jakarta.annotation.PostConstruct;
+import jakarta.inject.Singleton;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
@@ -11,7 +11,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.concurrent.atomic.AtomicInteger;
 
-@ApplicationScoped
+@Singleton
 public class DuckDbService {
     private static final String DELIMITER = "\t";
     private static final String CMD_INSTALL_HTTPFS = "INSTALL httpfs";
@@ -24,7 +24,7 @@ public class DuckDbService {
     DuckDbRestService duckDbRestService;
     private final AtomicInteger sessionId = new AtomicInteger(0);
 
-    @Inject
+    @PostConstruct
     public void init() {
         ensureSessionId();
         doProvisioning();

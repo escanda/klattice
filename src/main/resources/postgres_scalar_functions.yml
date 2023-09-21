@@ -6,4 +6,31 @@ scalar_functions:
     description: Postgresql server version.
     impls:
       - args: []
-        return: "string"
+        return: string
+  -
+    name: current_database
+    description: Postgresql system function that returns connection's current database.
+    impls:
+      - args: []
+        return: string
+  -
+    name: current_schemas
+    description: Postgresql system function that returns database's available schemas.
+    impls:
+      - args:
+          - value: boolean?
+            name: include_implicit
+            description: whether to include implicit schemas
+        return: string
+  -
+    name: current_user
+    description: Postgresql system function that returns database's current user.
+    impls:
+      - args: []
+        return: string
+  -
+    name: current_schema
+    description: Postgresql system function that returns database's current schema.
+    impls:
+      - args: []
+        return: string
