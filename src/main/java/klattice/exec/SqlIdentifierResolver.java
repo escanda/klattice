@@ -2,6 +2,7 @@ package klattice.exec;
 
 import com.google.common.collect.ImmutableList;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 import klattice.calcite.BuiltinTables;
 import klattice.msg.Environment;
 import klattice.msg.Rel;
@@ -15,11 +16,15 @@ import java.util.stream.Stream;
 
 @ApplicationScoped
 public class SqlIdentifierResolver {
-    @ConfigProperty(name = "quarkus.http.host")
-    String host;
+    private final String host;
+    private final int port;
 
-    @ConfigProperty(name = "quarkus.http.port")
-    int port;
+    @Inject
+    public SqlIdentifierResolver(@ConfigProperty(name = "quarkus.http.host") String host,
+                                 @ConfigProperty(name = "quarkus.http.port") int port) {
+        this.host = host;
+        this.port = port;
+    }
 
     public Optional<TranslatedIdRef> resolve(Environment environ, SqlIdentifier id) {
         var formatted = String.format("%s", String.join(".", id.names));

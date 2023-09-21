@@ -6,7 +6,7 @@ import io.substrait.extension.SimpleExtension;
 import io.substrait.isthmus.TypeConverter;
 import io.substrait.isthmus.expression.FunctionMappings;
 import io.substrait.isthmus.expression.ScalarFunctionConverter;
-import klattice.calcite.FunctionDefs;
+import klattice.calcite.FunctionShapes;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
@@ -30,7 +30,7 @@ public class MyScalarFunctionConverter extends ScalarFunctionConverter {
     protected ImmutableList<FunctionMappings.Sig> getSigs() {
         return super.getSigs()
                 .stream()
-                .filter(sig -> Arrays.stream(FunctionDefs.values()).noneMatch(functionDefs -> functionDefs.operator.equals(sig.operator())))
+                .filter(sig -> Arrays.stream(FunctionShapes.values()).noneMatch(functionShapes -> functionShapes.operator.equals(sig.operator())))
                 .collect(ImmutableList.toImmutableList());
     }
 }

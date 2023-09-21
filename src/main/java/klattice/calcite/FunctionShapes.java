@@ -7,7 +7,7 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 
-public enum FunctionDefs {
+public enum FunctionShapes {
     VERSION(FunctionCategory.MAGIC, SqlBasicFunction.create(
             FunctionNames.VERSION,
             ReturnTypes.VARCHAR,
@@ -45,7 +45,7 @@ public enum FunctionDefs {
     public final SqlOperator operator;
     public final String discriminator;
 
-    FunctionDefs(FunctionCategory category, SqlOperator operator, String discriminator) {
+    FunctionShapes(FunctionCategory category, SqlOperator operator, String discriminator) {
         this.category = category;
         this.operator = operator;
         this.discriminator = discriminator;

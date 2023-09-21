@@ -125,7 +125,7 @@ public class SchemaHolder {
     }
 
     private Iterable<? extends SqlOperator> getFunctionOperators() {
-        return Arrays.stream(FunctionDefs.values())
+        return Arrays.stream(FunctionShapes.values())
                 .map(functionDef -> functionDef.operator)
                 .toList();
     }

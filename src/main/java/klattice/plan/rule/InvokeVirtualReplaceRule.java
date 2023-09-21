@@ -3,7 +3,7 @@ package klattice.plan.rule;
 import jakarta.annotation.Nullable;
 import klattice.calcite.BuiltinTables;
 import klattice.calcite.FunctionCategory;
-import klattice.calcite.FunctionDefs;
+import klattice.calcite.FunctionShapes;
 import klattice.calcite.SchemaHolder;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelRule;
@@ -40,7 +40,7 @@ public class InvokeVirtualReplaceRule
         for (RexNode project : projects) {
             if (project.isA(SqlKind.FUNCTION)) {
                 var call = (RexCall) project;
-                for (FunctionDefs functionDef : FunctionDefs.values()) {
+                for (FunctionShapes functionDef : FunctionShapes.values()) {
                     if (functionDef.operator.equals(call.getOperator())
                         && functionDef.category.equals(FunctionCategory.MAGIC)) {
                         var tableName = BuiltinTables.MAGIC_VALUES.tableName;
@@ -54,7 +54,7 @@ public class InvokeVirtualReplaceRule
                                     .build());
                             return b1.project(b1.field(0)).build();
                         });
-                        project = b0.call(FunctionDefs.COALESCE.operator, List.of(rexSubQuery, b0.literal("[[NOT AVAILABLE]]")));
+                        project = b0.call(FunctionShapes.COALESCE.operator, List.of(rexSubQuery, b0.literal("[[NOT AVAILABLE]]")));
                         break;
                     }
                 }

@@ -47,7 +47,6 @@ public class FrontendMessageDecoder extends ByteToMessageDecoder {
             }
             case Query -> {
                 var queryStr = Util.readCstring(in).orElse("");
-                System.out.println(queryStr);
                 ctx.fireChannelRead(new Query(queryStr));
             }
             case Sync -> {
