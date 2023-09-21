@@ -36,7 +36,7 @@ public class QueryServiceGrpc implements Query {
             preparedQuery = PreparedQuery.newBuilder().setPlan(Plan.newBuilder().setEnviron(request.getEnviron()).setPlan(plan).build()).build();
         } catch (SqlParseException | RelConversionException | ValidationException e) {
             logger.warnv("Error preparing statement {0} with error {1}", request.getQuery(), e);
-            preparedQuery = PreparedQuery.newBuilder().setDiagnostics(QueryDiagnostics.newBuilder().setErrorMessage(e.getMessage()).build()).build();
+            preparedQuery = PreparedQuery.newBuilder().setHasError(true).setDiagnostics(QueryDiagnostics.newBuilder().setErrorMessage(e.getMessage()).build()).build();
         }
         logger.infov("Query {0} became {1}", request, preparedQuery);
         return Uni.createFrom().item(preparedQuery);
