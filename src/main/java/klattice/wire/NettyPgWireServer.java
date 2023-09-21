@@ -5,10 +5,7 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
-import io.quarkus.runtime.Startup;
-import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Observes;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import klattice.wire.hnd.SocketChannelInitializer;
@@ -16,7 +13,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 
 
-@Startup
 @ApplicationScoped
 public class NettyPgWireServer {
     Logger logger = Logger.getLogger("NettyPgWireServer");
@@ -32,16 +28,6 @@ public class NettyPgWireServer {
                              @ConfigProperty(name = "klattice.netty.port") int port) {
         this.host = host;
         this.port = port;
-    }
-
-    public void onStartup(@Observes StartupEvent ev) throws InterruptedException {
-        new Thread(() -> {
-            try {
-                this.start();
-            } catch (InterruptedException e) {
-                logger.errorv("Cannot start NettyPgWireServer", e);
-            }
-        }, "NettyPgWireServer").start();
     }
 
     public void start() throws InterruptedException {
