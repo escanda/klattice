@@ -6,6 +6,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import klattice.file.AvroParquetExport;
 import klattice.schema.SchemaSubject;
+import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
 import org.apache.avro.io.DecoderFactory;
@@ -47,7 +48,9 @@ public class KafkaExporter {
 
         try (var consumer = new KafkaConsumer<byte[], byte[]>(props)) {
             consumer.subscribe(Collections.singletonList(topicName));
-            var schema = schemaSubject.schema();
+            var schemaStr = schemaSubject.schema();
+            var parser = new Schema.Parser();
+            var schema = parser.parse(schemaStr);
             try (var export = new AvroParquetExport(outputStream, schema)) {
                 var assignment = consumer.assignment();
                 consumer.seekToBeginning(assignment);
@@ -63,7 +66,7 @@ public class KafkaExporter {
                         } else {
                             for (var consumerRecord : poll) {
                                 var decoder = DecoderFactory.get().binaryDecoder(consumerRecord.value(), null);
-                                var reader = new GenericDatumReader<GenericData.Record>(export.schema());
+                                var reader = new GenericDatumReader<GenericData.Record>(schema);
                                 var record = reader.read(null, decoder);
                                 export.record(record);
                                 rowCount++;

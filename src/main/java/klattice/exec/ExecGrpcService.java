@@ -50,8 +50,9 @@ public class ExecGrpcService implements Exec {
                                         .orElseGet(() -> (SqlIdentifier) super.visit(id));
             }
         });
-        logger.infov("Received request for plan {0} and sql {1}", request.getPlan(), sql);
-        var iterableResult = duckDbService.execSql(sqlNode.toSqlString(DuckDbDialect.INSTANCE).getSql());
+        var sqlString = sqlNode.toSqlString(DuckDbDialect.INSTANCE);
+        logger.infov("Received request for plan {0} and sql {1}", request.getPlan(), sqlString);
+        var iterableResult = duckDbService.execSql(sqlString.getSql());
         var batchBuilder = Batch.newBuilder();
         iterableResult.forEach(strings -> {
             var rowBuilder = Row.newBuilder();

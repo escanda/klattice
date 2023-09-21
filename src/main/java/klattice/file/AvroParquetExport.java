@@ -14,23 +14,16 @@ import java.io.OutputStream;
 public class AvroParquetExport implements Closeable {
     private final OutputStream os;
     private final ParquetWriter<GenericData.Record> writer;
-    private final Schema parsedSchema;
 
-    public AvroParquetExport(OutputStream os, String schema) throws IOException {
+    public AvroParquetExport(OutputStream os, Schema schema) throws IOException {
         this.os = os;
-        var parser = new Schema.Parser();
-        parsedSchema = parser.parse(schema);
         var bos = new BufferedOutputStream(os);
         var pbw = new ParquetBufferedWriter(bos);
         writer = AvroParquetWriter.
                 <GenericData.Record>builder(pbw)
-                .withSchema(parsedSchema)
+                .withSchema(schema)
                 .withCompressionCodec(CompressionCodecName.SNAPPY)
                 .build();
-    }
-
-    public Schema schema() {
-        return parsedSchema;
     }
 
     public void record(GenericData.Record record) throws IOException {
