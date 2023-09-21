@@ -23,7 +23,7 @@ public enum FunctionShapes {
     ), FunctionNames.CURRENT_DATABASE),
     CURRENT_SCHEMAS(FunctionCategory.MAGIC, SqlBasicFunction.create(
             FunctionNames.CURRENT_SCHEMAS,
-            ReturnTypes.VARCHAR,
+            ReturnTypes.TO_ARRAY,
             OperandTypes.NILADIC.or(OperandTypes.BOOLEAN),
             SqlFunctionCategory.USER_DEFINED_TABLE_FUNCTION
     ), FunctionNames.CURRENT_SCHEMAS),
