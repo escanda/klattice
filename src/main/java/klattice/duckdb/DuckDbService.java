@@ -7,7 +7,6 @@ import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.jboss.logging.Logger;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,31 +43,13 @@ public class DuckDbService {
         this.sessionId.set(sessionId);
     }
 
-    public Iterable<String[]> execSubstrait(byte[] payload) {
-        try (var response = this.duckDbRestService.execSubstrait(this.sessionId.get(), payload)) {
-            try (var is = response.readEntity(InputStream.class);
-                 var bis = new BufferedReader(new InputStreamReader(is))) {
-                return () -> bis.lines()
-                        .map(line -> line.split(DELIMITER))
-                        .iterator();
-            } catch (IOException e) {
-                logger.error("Error during reading response from substrait response");
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
     public Iterable<String[]> execSql(String sql) {
         try (var response = this.duckDbRestService.execSqlQuery(this.sessionId.get(), sql)) {
-            try (var is = response.readEntity(InputStream.class);
-                 var bis = new BufferedReader(new InputStreamReader(is))) {
-                return () -> bis.lines()
-                        .map(line -> line.split(DELIMITER))
-                        .iterator();
-            } catch (IOException e) {
-                logger.error("Error during reading response from sql response");
-                throw new RuntimeException(e);
-            }
+            var is = response.readEntity(InputStream.class);
+            var bis = new BufferedReader(new InputStreamReader(is));
+            return () -> bis.lines()
+                    .map(line -> line.split(DELIMITER))
+                    .iterator();
         }
     }
 }

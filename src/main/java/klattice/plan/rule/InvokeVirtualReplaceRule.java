@@ -12,13 +12,12 @@ import org.apache.calcite.rel.logical.LogicalProject;
 import org.apache.calcite.rel.logical.LogicalValues;
 import org.apache.calcite.rel.rules.TransformationRule;
 import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
 import org.immutables.value.Value;
 
 import java.util.ArrayList;
-import java.util.Objects;
+import java.util.List;
 
 @Value.Enclosing
 public class InvokeVirtualReplaceRule
@@ -38,7 +37,6 @@ public class InvokeVirtualReplaceRule
         var projects = logicalProject.getProjects();
         var lst = new ArrayList<RexNode>(projects.size());
 
-
         for (RexNode project : projects) {
             if (project.isA(SqlKind.FUNCTION)) {
                 var call = (RexCall) project;
@@ -48,15 +46,15 @@ public class InvokeVirtualReplaceRule
                         var tableName = BuiltinTables.MAGIC_VALUES.tableName;
                         var relOptTable = schemaHolder.resolveTable(tableName);
                         var relContext = ViewExpanders.simpleContext(schemaHolder.getRelOptCluster());
-                        var relDataTypeField = Objects.requireNonNull(relOptTable.getRowType().getField(functionDef.category.queryField, false, false));
-                        var inputRef = RexInputRef.of(relDataTypeField.getIndex(), relOptTable.getRowType());
                         var rexSubQuery = b0.scalarQuery(b1 -> {
-                            var scan = b0.getScanFactory().createScan(relContext, relOptTable);
+                            var scan = b1.getScanFactory().createScan(relContext, relOptTable);
                             b1.push(scan);
-                            b1.push(b1.filter(b1.equals(inputRef, b1.literal(functionDef.discriminator))).build());
-                            return b1.build();
+                            b1.push(b1.project(b1.field("value"), b1.field("kind"))
+                                    .filter(b1.equals(b1.field("kind"), b1.literal(functionDef.discriminator)))
+                                    .build());
+                            return b1.project(b1.field(0)).build();
                         });
-                        project = b0.call(FunctionDefs.COALESCE.operator, rexSubQuery, b0.literal("[[NOT AVAILABLE]]"));
+                        project = b0.call(FunctionDefs.COALESCE.operator, List.of(rexSubQuery, b0.literal("[[NOT AVAILABLE]]")));
                         break;
                     }
                 }

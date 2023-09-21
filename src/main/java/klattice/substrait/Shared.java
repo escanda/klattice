@@ -84,17 +84,18 @@ public interface Shared {
     }
 
     static SqlToRelConverter createSqlToRelConverter(SchemaHolder schemaHolder) {
+        var config = SqlToRelConverter.CONFIG.withRelBuilderFactory((cluster, schema) -> RelBuilder
+                .create(Frameworks.newConfigBuilder()
+                        .defaultSchema(schemaHolder.getCatalog().getRootSchema().plus())
+                        .build())
+        );
         return new SqlToRelConverter(
                 ViewExpanders.simpleContext(schemaHolder.getRelOptCluster()),
                 createSqlValidator(schemaHolder),
                 schemaHolder.getCatalog(),
                 schemaHolder.getRelOptCluster(),
                 new ReflectiveConvertletTable(),
-                SqlToRelConverter.CONFIG.withRelBuilderFactory((cluster, schema) -> RelBuilder
-                        .create(Frameworks.newConfigBuilder()
-                                .defaultSchema(schemaHolder.getCatalog().getRootSchema().plus())
-                                .build())
-                )
+                config
         );
     }
 
