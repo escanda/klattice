@@ -30,7 +30,7 @@ public class NettyPgWireServer {
         this.port = port;
     }
 
-    public void start() throws InterruptedException {
+    public void run() throws InterruptedException {
         logger.debug("Starting event loop to handle Pgsql proto connections");
         var bossGroup = new NioEventLoopGroup();
         var workerGroup = new NioEventLoopGroup();

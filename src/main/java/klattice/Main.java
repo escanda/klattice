@@ -37,7 +37,7 @@ public class Main implements Runnable, QuarkusApplication {
     public void run() {
         logger.infov("gRPC server up and running in {0}:{1}", host, port);
         try {
-            pgWireServer.start();
+            pgWireServer.run();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
