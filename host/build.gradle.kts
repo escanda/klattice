@@ -25,7 +25,6 @@ dependencies {
     implementation("io.quarkus:quarkus-resteasy-reactive")
 
     implementation("io.quarkus:quarkus-rest-client-reactive")
-    implementation("io.quarkus:quarkus-resteasy-reactive-jackson")
 
     implementation("io.quarkus:quarkus-smallrye-reactive-messaging-kafka")
     implementation("io.confluent:kafka-schema-registry-client:7.4.0")
