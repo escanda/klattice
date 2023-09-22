@@ -5,3 +5,8 @@ pluginManagement {
         mavenLocal()
     }
 }
+include 'core'
+include 'host'
+include 'wire'
+include 'planner'
+
