@@ -44,7 +44,7 @@ public class PrepareTest {
 
     @Test
     public void test_BuiltinFunctions() throws ValidationException, SqlParseException, RelConversionException {
-        String q = "select CURRENT_DATABASE(), CURRENT_SCHEMA()";
+        String q = "select VERSION(), CURRENT_DATABASE()";
         var environ = Environment.newBuilder();
         var plan = new Querier(new SchemaHolder(environ.build())).plan(q);
         System.out.println(Shared.toSql(new SqlIdentifierResolver("localhost", 8080), environ.build(), plan));

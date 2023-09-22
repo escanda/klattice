@@ -3,7 +3,6 @@ package klattice.calcite;
 import org.apache.calcite.sql.SqlBasicFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlOperator;
-import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.OperandTypes;
 import org.apache.calcite.sql.type.ReturnTypes;
 
@@ -14,7 +13,6 @@ public enum FunctionShapes {
             OperandTypes.NILADIC,
             SqlFunctionCategory.USER_DEFINED_TABLE_FUNCTION
     ), FunctionNames.VERSION),
-    COALESCE(FunctionCategory.EQUIVALENCE, SqlStdOperatorTable.COALESCE, FunctionNames.COALESCE),
     CURRENT_DATABASE(FunctionCategory.MAGIC, SqlBasicFunction.create(
             FunctionNames.CURRENT_DATABASE,
             ReturnTypes.VARCHAR,
@@ -23,7 +21,7 @@ public enum FunctionShapes {
     ), FunctionNames.CURRENT_DATABASE),
     CURRENT_SCHEMAS(FunctionCategory.MAGIC, SqlBasicFunction.create(
             FunctionNames.CURRENT_SCHEMAS,
-            ReturnTypes.TO_ARRAY,
+            ReturnTypes.CURSOR,
             OperandTypes.NILADIC.or(OperandTypes.BOOLEAN),
             SqlFunctionCategory.USER_DEFINED_TABLE_FUNCTION
     ), FunctionNames.CURRENT_SCHEMAS),

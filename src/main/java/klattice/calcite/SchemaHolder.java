@@ -39,6 +39,7 @@ public class SchemaHolder {
     private final RelOptCluster relOptCluster;
     private final JavaTypeFactory typeFactory;
     private final CalciteSqlValidator calciteSqlValidator;
+    private final SqlOperatorTable sqlOperatorTable;
 
     public SchemaHolder(Environment environment) {
         this.environment = environment;
@@ -82,6 +83,10 @@ public class SchemaHolder {
                 typeFactory,
                 new CalciteConnectionConfigImpl(props)
         );
+        this.sqlOperatorTable = SqlOperatorTables.chain(
+                SqlOperatorTables.of(getFunctionOperators()),
+                new SqlStdOperatorTable()
+        );
         this.calciteSqlValidator = new CalciteSqlValidator(
                 getSqlOperatorTable(),
                 getCatalog(),
@@ -118,10 +123,7 @@ public class SchemaHolder {
     }
 
     public SqlOperatorTable getSqlOperatorTable() {
-        return SqlOperatorTables.chain(
-                SqlOperatorTables.of(getFunctionOperators()),
-                new SqlStdOperatorTable()
-        );
+        return sqlOperatorTable;
     }
 
     private Iterable<? extends SqlOperator> getFunctionOperators() {

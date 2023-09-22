@@ -54,7 +54,11 @@ public class InvokeVirtualReplaceRule
                                     .build());
                             return b1.project(b1.field(0)).build();
                         });
-                        project = b0.call(FunctionShapes.COALESCE.operator, List.of(rexSubQuery, b0.literal("[[NOT AVAILABLE]]")));
+                        var coalesce = schemaHolder.getSqlOperatorTable().getOperatorList().stream()
+                                .filter(sqlOperator -> sqlOperator.isName("COALESCE", false))
+                                .findFirst()
+                                .orElseThrow();
+                        project = b0.call(coalesce, List.of(rexSubQuery, b0.literal("[[NOT AVAILABLE]]")));
                         break;
                     }
                 }

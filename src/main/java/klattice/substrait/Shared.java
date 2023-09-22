@@ -18,6 +18,7 @@ import klattice.exec.SqlIdentifierResolver;
 import klattice.msg.Environment;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.ViewExpanders;
+import org.apache.calcite.prepare.CalciteSqlValidator;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
@@ -25,7 +26,6 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlNode;
-import org.apache.calcite.sql.advise.SqlAdvisorValidator;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.util.SqlShuttle;
 import org.apache.calcite.sql.util.SqlString;
@@ -34,7 +34,6 @@ import org.apache.calcite.sql2rel.ReflectiveConvertletTable;
 import org.apache.calcite.sql2rel.SqlToRelConverter;
 import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Frameworks;
-import org.apache.calcite.tools.RelBuilder;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import java.util.Arrays;
@@ -91,29 +90,24 @@ public interface Shared {
     }
 
     static SqlToRelConverter createSqlToRelConverter(SchemaHolder schemaHolder) {
-        var config = SqlToRelConverter.CONFIG.withRelBuilderFactory((cluster, schema) -> RelBuilder
-                .create(Frameworks.newConfigBuilder()
-                        .defaultSchema(schemaHolder.getCatalog().getRootSchema().plus())
-                        .build())
-        );
         return new SqlToRelConverter(
                 ViewExpanders.simpleContext(schemaHolder.getRelOptCluster()),
                 createSqlValidator(schemaHolder),
                 schemaHolder.getCatalog(),
                 schemaHolder.getRelOptCluster(),
                 new ReflectiveConvertletTable(),
-                config
+                SqlToRelConverter.CONFIG
         );
     }
 
-    static SqlAdvisorValidator createSqlValidator(SchemaHolder schemaHolder) {
-        return new SqlAdvisorValidator(schemaHolder.getSqlOperatorTable(), schemaHolder.getCatalog(), schemaHolder.getTypeFactory(), SqlValidator.Config.DEFAULT);
+    static SqlValidator createSqlValidator(SchemaHolder schemaHolder) {
+        return new CalciteSqlValidator(schemaHolder.getSqlOperatorTable(), schemaHolder.getCatalog(), schemaHolder.getTypeFactory(), SqlValidator.Config.DEFAULT);
     }
 
     static SqlParser.Config sqlParserConfig() {
         var config = SqlParser.config();
         config = DuckDbDialect.INSTANCE.configureParser(config);
-        return config;
+        return config.withCaseSensitive(false);
     }
 
     static SqlString toSql(SqlIdentifierResolver resolver, Environment environ, Plan plan) {
