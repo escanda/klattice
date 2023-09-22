@@ -1,6 +1,7 @@
 plugins {
     id("java")
     id("io.quarkus") version "3.3.3"
+    id("org.kordamp.gradle.jandex") version "1.1.0"
 }
 
 group = "klattice"
