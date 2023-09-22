@@ -1,13 +1,13 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "klattice.query";
+option java_package = "klattice.grpc";
 option java_outer_classname = "KLQueryProto";
 
 package klattice.query;
 
 import "messages.proto";
 
-service Query {
+service QueryService {
   rpc Inflate (klattice.msg.QueryDescriptor) returns (klattice.msg.PreparedQuery) {};
 }

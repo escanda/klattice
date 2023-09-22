@@ -5,7 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.quarkus.grpc.GrpcClient;
 import jakarta.enterprise.context.Dependent;
-import klattice.facade.Oracle;
+import klattice.grpc.OracleService;
 import klattice.msg.Batch;
 import klattice.msg.Row;
 import klattice.wire.msg.Message;
@@ -19,7 +19,7 @@ import klattice.wire.msg.shared.ParameterStatus;
 @Dependent
 public class ProcessorHandler extends SimpleChannelInboundHandler<Message> {
     @GrpcClient
-    Oracle oracle;
+    OracleService oracle;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {

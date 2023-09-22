@@ -4,6 +4,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.quarkus.grpc.GrpcClient;
 import io.quarkus.test.junit.QuarkusTest;
 import io.substrait.proto.Type;
+import klattice.grpc.PlannerService;
 import klattice.msg.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @QuarkusTest
 public class PlannerServiceGrpcTest {
     @GrpcClient
-    Planner planner;
+    PlannerService planner;
 
     @Test
     public void smokeTest() throws InvalidProtocolBufferException {

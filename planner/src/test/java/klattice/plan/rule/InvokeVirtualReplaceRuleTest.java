@@ -5,10 +5,10 @@ import io.quarkus.test.junit.QuarkusTest;
 import io.substrait.plan.ProtoPlanConverter;
 import klattice.calcite.DuckDbDialect;
 import klattice.calcite.SchemaHolder;
+import klattice.grpc.QueryService;
 import klattice.msg.Environment;
 import klattice.msg.QueryDescriptor;
 import klattice.plan.RePlanner;
-import klattice.query.Query;
 import klattice.substrait.SubstraitToCalciteConverter;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +21,7 @@ import static klattice.substrait.CalciteToSubstraitConverter.EXTENSION_COLLECTIO
 @QuarkusTest
 public class InvokeVirtualReplaceRuleTest {
     @GrpcClient
-    Query query;
+    QueryService query;
 
     private RePlanner rePlanner;
     private Environment environment;

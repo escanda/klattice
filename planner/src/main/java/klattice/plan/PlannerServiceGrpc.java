@@ -8,6 +8,7 @@ import io.substrait.plan.ImmutableRoot;
 import io.substrait.plan.PlanProtoConverter;
 import io.substrait.plan.ProtoPlanConverter;
 import klattice.calcite.SchemaHolder;
+import klattice.grpc.PlannerService;
 import klattice.msg.ExpandedPlan;
 import klattice.msg.Plan;
 import klattice.msg.PlanDiagnostics;
@@ -20,7 +21,7 @@ import static klattice.substrait.CalciteToSubstraitConverter.EXTENSION_COLLECTIO
 import static klattice.substrait.Shared.createSubstraitRelVisitor;
 
 @GrpcService
-public class PlannerServiceGrpc implements Planner {
+public class PlannerServiceGrpc implements PlannerService {
     @LoggerName("PlannerServiceGrpc")
     Logger logger;
 

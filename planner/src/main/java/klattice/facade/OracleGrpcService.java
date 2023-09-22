@@ -6,23 +6,24 @@ import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.inject.Inject;
-import klattice.exec.Exec;
+import klattice.grpc.ExecService;
+import klattice.grpc.OracleService;
+import klattice.grpc.PlannerService;
+import klattice.grpc.QueryService;
 import klattice.msg.*;
-import klattice.plan.Planner;
-import klattice.query.Query;
 import klattice.store.SchemaMetadata;
 import klattice.store.SchemaRegistryStoreSource;
 
 @GrpcService
-public class OracleGrpcService implements Oracle {
+public class OracleGrpcService implements OracleService {
     @GrpcClient
-    Query query;
+    QueryService query;
 
     @GrpcClient
-    Planner planner;
+    PlannerService planner;
 
     @GrpcClient
-    Exec exec;
+    ExecService exec;
 
     @Inject
     SchemaRegistryStoreSource schemaRegistryStoreSource;

@@ -1,13 +1,13 @@
 syntax = "proto3";
 
 option java_multiple_files = true;
-option java_package = "klattice.facade";
+option java_package = "klattice.grpc";
 option java_outer_classname = "KLOracleProto";
 
 package klattice.facade;
 
 import "messages.proto";
 
-service Oracle {
+service OracleService {
   rpc answer (klattice.msg.Query) returns (klattice.msg.Batch);
 }

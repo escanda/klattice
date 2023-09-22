@@ -7,6 +7,7 @@ import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import klattice.duckdb.DuckDbService;
+import klattice.grpc.ExecService;
 import klattice.msg.Batch;
 import klattice.msg.Plan;
 import klattice.msg.Row;
@@ -16,7 +17,7 @@ import org.jboss.logging.Logger;
 import java.nio.charset.StandardCharsets;
 
 @GrpcService
-public class ExecGrpcService implements Exec {
+public class ExecGrpcService implements ExecService {
     @LoggerName("ExecGrpcService")
     Logger logger;
 

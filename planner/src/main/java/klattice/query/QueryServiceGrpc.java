@@ -5,6 +5,7 @@ import io.quarkus.grpc.GrpcService;
 import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
 import klattice.calcite.SchemaHolder;
+import klattice.grpc.QueryService;
 import klattice.msg.Plan;
 import klattice.msg.PreparedQuery;
 import klattice.msg.QueryDescriptor;
@@ -15,7 +16,7 @@ import org.apache.calcite.tools.ValidationException;
 import org.jboss.logging.Logger;
 
 @GrpcService
-public class QueryServiceGrpc implements Query {
+public class QueryServiceGrpc implements QueryService {
     @LoggerName("QueryServiceGrpc")
     Logger logger;
 

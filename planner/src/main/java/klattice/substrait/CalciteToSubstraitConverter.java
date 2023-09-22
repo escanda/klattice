@@ -22,11 +22,12 @@ public final class CalciteToSubstraitConverter {
     static {
         SimpleExtension.ExtensionCollection defaults;
         try {
+            var scalarFunctions = SimpleExtension.load(
+                    "postgres_scalar_functions.yml",
+                    CalciteToSubstraitConverter.class.getResourceAsStream("/postgres_scalar_functions.yml")
+            );
             defaults = SimpleExtension.loadDefaults()
-                    .merge(SimpleExtension.load(
-                            "postgres_scalar_functions.yml",
-                            CalciteToSubstraitConverter.class.getResourceAsStream("/postgres_scalar_functions.yml")
-                    ));
+                    .merge(scalarFunctions);
         } catch (IOException e) {
             throw new RuntimeException("Failure while loading defaults.", e);
         }

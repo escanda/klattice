@@ -5,7 +5,6 @@ import io.quarkus.runtime.Quarkus;
 import io.quarkus.runtime.QuarkusApplication;
 import io.quarkus.runtime.annotations.QuarkusMain;
 import jakarta.inject.Inject;
-import klattice.wire.NettyPgWireServer;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.jboss.logging.Logger;
 import picocli.CommandLine;
@@ -24,9 +23,6 @@ public class Main implements Runnable, QuarkusApplication {
 
     @ConfigProperty(name = "quarkus.grpc.server.port")
     int port;
-
-    @Inject
-    NettyPgWireServer pgWireServer;
 
     @Override
     public int run(String... args) {
