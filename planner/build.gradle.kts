@@ -32,7 +32,7 @@ dependencies {
     implementation("io.quarkus:quarkus-grpc")
     implementation("io.quarkus:quarkus-picocli")
 
-    implementation("io.quarkus:quarkus-rest-client-reactive")
+    implementation("io.quarkus:quarkus-rest-client-reactive-jackson")
 
     val calciteVersion = "1.35.0"
     implementation("org.apache.calcite:calcite-core:${calciteVersion}")

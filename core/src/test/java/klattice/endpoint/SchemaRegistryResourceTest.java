@@ -6,6 +6,7 @@ import io.quarkus.test.junit.QuarkusTest;
 import klattice.schema.SchemaEntry;
 import klattice.schema.SchemaRegistryResource;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -50,7 +51,7 @@ public class SchemaRegistryResourceTest {
         assertEquals("AVRO", s1.schemaTypeStr());
         assertEquals("AVRO", s2.schemaTypeStr());
         var objectMapper = new ObjectMapper();
-        assertEquals(objectMapper.readTree(EX_SCHEMA), objectMapper.readTree(s1.schema()));
-        assertEquals(objectMapper.readTree(EX_SCHEMA), objectMapper.readTree(s2.schema()));
+        Assertions.assertEquals(objectMapper.readTree(EX_SCHEMA), objectMapper.readTree(s1.schema()));
+        Assertions.assertEquals(objectMapper.readTree(EX_SCHEMA), objectMapper.readTree(s2.schema()));
     }
 }

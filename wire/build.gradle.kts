@@ -19,7 +19,7 @@ dependencies {
 
     implementation(platform("io.quarkus.platform:quarkus-bom:3.3.3"))
     implementation("io.quarkus:quarkus-netty")
-    implementation("io.quarkus:quarkus-resteasy-reactive")
+    implementation("io.quarkus:quarkus-resteasy-reactive-jackson")
     implementation("io.quarkus:quarkus-grpc")
 
     implementation("com.google.guava:guava:32.1.2-jre")

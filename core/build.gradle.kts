@@ -19,7 +19,9 @@ dependencies {
     implementation("io.quarkus:quarkus-arc")
     implementation("io.quarkus:quarkus-grpc")
     implementation("io.quarkus:quarkus-resteasy-reactive")
-    implementation("io.quarkus:quarkus-rest-client-reactive")
+    implementation("io.quarkus:quarkus-rest-client-reactive-jackson")
+
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
 
     val substraitVersion = "0.17.0"
     implementation("io.substrait:core:${substraitVersion}")
