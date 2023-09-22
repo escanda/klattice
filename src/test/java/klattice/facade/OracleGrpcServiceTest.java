@@ -20,5 +20,6 @@ public class OracleGrpcServiceTest {
                 .indefinitely();
         assertNotNull(batch);
         assertEquals(1, batch.getRowsList().size());
+        assertEquals("1", batch.getRowsList().get(0).getFields(0).toStringUtf8());
     }
 }
