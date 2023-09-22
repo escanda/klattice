@@ -29,7 +29,7 @@ public class ExecGrpcService implements Exec {
     @Blocking
     @Override
     public Uni<Batch> execute(Plan request) {
-        var sqlString = Shared.toSql(sqlIdentifierResolver, request);
+        var sqlString = Shared.toSql(sqlIdentifierResolver, request.getEnviron(), request.getPlan());
         logger.infov("Received request with sql {0}", sqlString);
         var iterableResult = duckDbService.execSql(sqlString.getSql());
         var batchBuilder = Batch.newBuilder();

@@ -10,11 +10,12 @@ import io.substrait.isthmus.expression.ExpressionRexConverter;
 import io.substrait.isthmus.expression.FunctionMappings;
 import io.substrait.isthmus.expression.WindowFunctionConverter;
 import io.substrait.plan.ProtoPlanConverter;
+import io.substrait.proto.Plan;
 import klattice.calcite.DuckDbDialect;
 import klattice.calcite.FunctionShapes;
 import klattice.calcite.SchemaHolder;
 import klattice.exec.SqlIdentifierResolver;
-import klattice.msg.Plan;
+import klattice.msg.Environment;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
 import org.apache.calcite.plan.ViewExpanders;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
@@ -115,15 +116,15 @@ public interface Shared {
         return config;
     }
 
-    static SqlString toSql(SqlIdentifierResolver resolver, Plan request) {
-        var plan = new ProtoPlanConverter(EXTENSION_COLLECTION).from(request.getPlan());
-        var relRoots = SubstraitToCalciteConverter.getRelRoots(plan);
+    static SqlString toSql(SqlIdentifierResolver resolver, Environment environ, Plan plan) {
+        var reifiedPlan = new ProtoPlanConverter(EXTENSION_COLLECTION).from(plan);
+        var relRoots = SubstraitToCalciteConverter.getRelRoots(reifiedPlan);
         var sqlStmts = relRoots.stream().map(relNode -> new RelToSqlConverter(DuckDbDialect.INSTANCE).visitRoot(relNode).asSelect()).toList();
         var sql = sqlStmts.stream().findFirst().orElseThrow();
         var sqlNode = sql.accept(new SqlShuttle() {
             @Override
             public @Nullable SqlNode visit(SqlIdentifier id) {
-                return resolver.resolve(request.getEnviron(), id)
+                return resolver.resolve(environ, id)
                         .map(translatedIdRef -> new SqlIdentifier(translatedIdRef.url(), id.getCollation(), id.getParserPosition()))
                         .orElseGet(() -> (SqlIdentifier) super.visit(id));
             }

@@ -1,10 +1,15 @@
 package klattice.query;
 
 import io.quarkus.arc.log.LoggerName;
-import io.quarkus.grpc.GrpcClient;
 import io.quarkus.test.junit.QuarkusTest;
 import io.substrait.proto.Type;
-import klattice.msg.*;
+import klattice.calcite.SchemaHolder;
+import klattice.exec.SqlIdentifierResolver;
+import klattice.msg.Column;
+import klattice.msg.Environment;
+import klattice.msg.Rel;
+import klattice.msg.Schema;
+import klattice.substrait.Shared;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.tools.RelConversionException;
 import org.apache.calcite.tools.ValidationException;
@@ -13,16 +18,13 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @QuarkusTest
 public class PrepareTest {
     @LoggerName("PrepareTest")
     Logger logger;
-
-    @GrpcClient
-    Query query;
     @Test
     public void smokeTest() throws SqlParseException, RelConversionException, ValidationException {
         var type = Type.newBuilder().setBool(Type.Boolean.newBuilder().setNullability(Type.Nullability.NULLABILITY_NULLABLE).build());
@@ -34,11 +36,17 @@ public class PrepareTest {
                 .build();
         var environ = Environment.newBuilder().addSchemas(Schema.newBuilder().setSchemaId(1).setRelName("PUBLIC").addRels(projection)).build();
         var q = "SELECT 'public' FROM PUBLIC.PUBLIC";
-        var preparedQuery = query.inflate(QueryDescriptor.newBuilder().setQuery(q).setEnviron(environ).build())
-                .await()
-                .indefinitely();
-        logger.info(preparedQuery);
-        assertNotNull(preparedQuery);
-        assertFalse(preparedQuery.getHasError());
+        var plan = new Querier(new SchemaHolder(environ)).plan(q);
+        logger.info(plan);
+        assertNotNull(plan);
+        assertTrue(plan.isInitialized());
+    }
+
+    @Test
+    public void test_BuiltinFunctions() throws ValidationException, SqlParseException, RelConversionException {
+        String q = "select CURRENT_DATABASE(), CURRENT_SCHEMA()";
+        var environ = Environment.newBuilder();
+        var plan = new Querier(new SchemaHolder(environ.build())).plan(q);
+        System.out.println(Shared.toSql(new SqlIdentifierResolver("localhost", 8080), environ.build(), plan));
     }
 }
