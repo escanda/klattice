@@ -22,10 +22,8 @@ public final class CalciteToSubstraitConverter {
     static {
         SimpleExtension.ExtensionCollection defaults;
         try {
-            var scalarFunctions = SimpleExtension.load(
-                    "postgres_scalar_functions.yml",
-                    CalciteToSubstraitConverter.class.getResourceAsStream("/postgres_scalar_functions.yml")
-            );
+            var is = CalciteToSubstraitConverter.class.getResourceAsStream("/postgres_scalar_functions.yml");
+            var scalarFunctions = SimpleExtension.load("postgres_scalar_functions.yml", is);
             defaults = SimpleExtension.loadDefaults()
                     .merge(scalarFunctions);
         } catch (IOException e) {
