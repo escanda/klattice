@@ -32,6 +32,7 @@ public class Main implements Runnable, QuarkusApplication {
     @Override
     public void run() {
         logger.infov("gRPC server up and running in {0}:{1}", host, port);
+        Quarkus.waitForExit();
     }
 
     public static void main(String[] args) {

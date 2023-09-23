@@ -58,7 +58,8 @@ public class InvokeVirtualReplaceRule
                         });
                         var coalesce = schemaHolder.getOp("coalesce")
                                 .orElseThrow(() -> new NoSuchElementException("Cannot find coalesce operator in operator table"));
-                        project = b0.call(coalesce, List.of(rexSubQuery, b0.literal(placeholderByTargetType(rexSubQuery.rel.getRowType()))));
+                        var value = placeholderByTargetType(rexSubQuery.rel.getRowType());
+                        project = b0.call(coalesce, List.of(rexSubQuery, b0.literal(value)));
                         break;
                     }
                 }
