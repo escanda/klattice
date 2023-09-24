@@ -1,0 +1,17 @@
+[package]
+name = "connector"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1.19", features = ["macros", "rt-multi-thread"] }
+prost = "0.12"
+tonic = "0.10.1"
+tonic-reflection = "0.10.1"
+tonic-types = "0.10.1"
+futures = "0.3"
+async-trait = "0.1"
+pgwire = "0.16.0"
+
+[build-dependencies]
+tonic-build = "0.10.1"

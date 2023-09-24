@@ -28,3 +28,4 @@ gradle-app.setting
 bin/
 /node_modules/
 .idea/
+Cargo.lock
