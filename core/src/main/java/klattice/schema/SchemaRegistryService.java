@@ -1,11 +1,13 @@
 package klattice.schema;
 
+import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import java.util.List;
 
 @ApplicationScoped
+@Startup
 public class SchemaRegistryService {
     @RestClient
     SchemaRegistryResource schemaRegistryResource;
