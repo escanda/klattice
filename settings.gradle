@@ -7,6 +7,5 @@ pluginManagement {
 }
 include 'core'
 include 'host'
-include 'wire'
 include 'planner'
 

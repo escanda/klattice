@@ -26,7 +26,6 @@ dependencies {
     testImplementation("io.quarkus:quarkus-junit5")
 
     implementation(project(":core"))
-    implementation(project(":wire"))
 
     implementation(platform("io.quarkus.platform:quarkus-bom:3.3.3"))
 
