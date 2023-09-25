@@ -1,15 +1,18 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use futures::stream;
-use klattice::msg::{Batch, Query};
-use pgwire::messages::response;
-use substrait::r#type::{Boolean, I8, I16};
+use bytes::Bytes;
+use klattice::msg::Query;
+use pgwire::messages::data::DataRow;
+use substrait::r#type::Kind;
 use tokio::net::TcpListener;
+
+use futures::stream;
+use futures::StreamExt;
 
 use pgwire::api::auth::noop::NoopStartupHandler;
 use pgwire::api::query::{PlaceholderExtendedQueryHandler, SimpleQueryHandler};
-use pgwire::api::results::{DataRowEncoder, FieldFormat, FieldInfo, QueryResponse, Response};
+use pgwire::api::results::{FieldFormat, FieldInfo, QueryResponse, Response};
 use pgwire::api::{ClientInfo, MakeHandler, StatelessMakeHandler, Type};
 use pgwire::error::PgWireResult;
 use pgwire::tokio::process_socket;
@@ -62,13 +65,35 @@ impl SimpleQueryHandler for QueryProcessor {
         request.query = String::from(query_str);
 
         return match oracle_client.answer(request).await {
-            Ok(mut response) => {
-                let batch = response.get_mut();
+            Ok(response) => {
+                let batch = response.into_inner();
                 let pg_field_types: Vec<Option<Type>> = batch.field_types.iter()
                     .map(|field_type| field_type.kind.as_ref().map(|kind| match kind {
-                        Boolean => Type::BOOL,
-                        I8 => Type::INT8,
-                        I16 => Type::INT8,
+                        Kind::Bool(_) => Type::BOOL,
+                        Kind::I8(_) => Type::INT2,
+                        Kind::I16(_) => Type::INT2,
+                        Kind::I32(_) => Type::INT4,
+                        Kind::Fp32(_) => Type::FLOAT4,
+                        Kind::Fp64(_) => Type::FLOAT8,
+                        Kind::I64(_) => Type::INT4,
+                        Kind::String(_) => Type::VARCHAR,
+                        Kind::Binary(_) => Type::BIT_ARRAY,
+                        Kind::Timestamp(_) => Type::TIMESTAMP,
+                        Kind::Date(_) => Type::DATE,
+                        Kind::Time(_) => Type::TIME,
+                        Kind::IntervalYear(_) => Type::INTERVAL,
+                        Kind::IntervalDay(_) => Type::INTERVAL,
+                        Kind::TimestampTz(_) => Type::TIMESTAMPTZ,
+                        Kind::Uuid(_) => Type::UUID,
+                        Kind::FixedChar(_) => Type::CHAR,
+                        Kind::Varchar(_) => Type::VARCHAR,
+                        Kind::FixedBinary(_) => Type::BIT,
+                        Kind::Decimal(_) => Type::NUMERIC,
+                        Kind::Struct(_) => Type::UNKNOWN,
+                        Kind::List(_) => Type::ANYARRAY,
+                        Kind::Map(_) => Type::UNKNOWN,
+                        Kind::UserDefined(_) => Type::UNKNOWN,
+                        Kind::UserDefinedTypeReference(_) => Type::UNKNOWN,
                     })
                 ).collect();
                 let field_infos: Vec<FieldInfo> = batch.field_names.iter()
@@ -77,12 +102,12 @@ impl SimpleQueryHandler for QueryProcessor {
                         FieldInfo::new(field_name.into(), None, None, field_type_opt.unwrap(), FieldFormat::Text))
                     .collect();
                 let schema = Arc::new(field_infos);
-                let schema_ref = schema.clone();
-                let mut encoder = DataRowEncoder::new(schema_ref.clone());
-                encoder.encode_field(&1)?;
-                let row = encoder.finish();
-                let data_row_stream = stream::iter(vec![row]);
-
+                let data_row_stream = stream::iter(batch.rows)
+                    .map(|row| Result::Ok(DataRow::new(row.fields.iter()
+                            .map(|field_value| Some(bytes::Bytes::from_iter(field_value.clone())))
+                            .collect::<Vec<Option<Bytes>>>()
+                        ))
+                    );
                 Ok(vec![Response::Query(QueryResponse::new(
                     schema,
                     data_row_stream,

@@ -241,6 +241,7 @@ name = "connector"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "bytes",
  "futures",
  "pgwire",
  "prost",
