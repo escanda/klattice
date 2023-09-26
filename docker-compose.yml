@@ -53,6 +53,7 @@ services:
     build:
       context: .
       dockerfile: Duckdb.Dockerfile
+    hostname: "duckdb"
     environment:
       - DUCKDB_SERVER_PORT=8091
     ports:
@@ -65,18 +66,40 @@ services:
       - PGADMIN_DEFAULT_EMAIL=klattice@klattice.io
       - PGADMIN_DEFAULT_PASSWORD=klattice
     depends_on:
-      - klattice
+      - klattice-connector
     ports:
       - "8081:80"
 
-  klattice:
+  klattice-connector:
+    hostname: "connector"
     build:
       context: .
+      dockerfile: ./connector/Dockerfile
+    environment:
+      - KLATTICE_ENDPOINT=http://klattice:8080
+    depends_on:
+      - klattice
+    ports:
+      - "15433:5433"
+
+  klattice:
+    hostname: "klattice"
+    build:
+      context: ./planner/
       dockerfile: src/main/docker/Dockerfile.jvm
-    command: ["java", "-Dquarkus.http.host=0.0.0.0", "-Djava.util.logging.manager=org.jboss.logmanager.LogManager", "-jar", "/deployments/quarkus-run.jar"]
+    command: [
+      "java",
+      "-Dquarkus.http.host=0.0.0.0",
+      "-Dquarkus.rest-client.duckdb-service-api.url=http://duckdb:8091",
+      "-Dquarkus.rest-client.schema-registry-api.url=http://schema-registry:8091",
+      "-Djava.util.logging.manager=org.jboss.logmanager.LogManager",
+      "-jar",
+      "/deployments/quarkus-run.jar"
+    ]
     depends_on:
       - kafka
       - schema-registry
       - duckdb
     ports:
       - "8080:8080"
+      - "9000:9000"

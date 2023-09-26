@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::env;
 
 use async_trait::async_trait;
 use bytes::Bytes;
@@ -120,31 +121,36 @@ impl SimpleQueryHandler for QueryProcessor {
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let oracle = Box::new(OracleServiceClient::connect("http://[::1]:9000").await?);
-    let processor = Arc::new(StatelessMakeHandler::new(Arc::new(QueryProcessor { oracle })));
-    // We have not implemented extended query in this server, use placeholder instead
-    let placeholder = Arc::new(StatelessMakeHandler::new(Arc::new(
-        PlaceholderExtendedQueryHandler,
-    )));
-    let authenticator = Arc::new(StatelessMakeHandler::new(Arc::new(NoopStartupHandler)));
-
-    let server_addr = "127.0.0.1:5433";
-    let listener = TcpListener::bind(server_addr).await?;
-    println!("Listening to {}", server_addr);
-    loop {
-        let (tcp_stream, _) = listener.accept().await?;
-        let authenticator_ref = authenticator.make();
-        let processor_ref = processor.make();
-        let placeholder_ref = placeholder.make();
-        tokio::spawn(async move {
-            process_socket(
-                tcp_stream,
-                None,
-                authenticator_ref,
-                processor_ref,
-                placeholder_ref,
-            )
-            .await
-        });
+    const ENV_VAR: &str = "KLATTICE_ENDPOINT";
+    
+    match env::var(ENV_VAR) {
+        Ok(client_addr) => {
+            let listener = TcpListener::bind("0.0.0.0:5433").await?;
+            let oracle = Box::new(OracleServiceClient::connect(client_addr.clone()).await?);
+            let processor = Arc::new(StatelessMakeHandler::new(Arc::new(QueryProcessor { oracle })));
+            // We have not implemented extended query in this server, use placeholder instead
+            let placeholder = Arc::new(StatelessMakeHandler::new(Arc::new(
+                PlaceholderExtendedQueryHandler,
+            )));
+            let authenticator = Arc::new(StatelessMakeHandler::new(Arc::new(NoopStartupHandler)));
+            println!("Listening to {}", "[[::]]:5433");
+            loop {
+                let (tcp_stream, _) = listener.accept().await?;
+                let authenticator_ref = authenticator.make();
+                let processor_ref = processor.make();
+                let placeholder_ref = placeholder.make();
+                tokio::spawn(async move {
+                    process_socket(
+                        tcp_stream,
+                        None,
+                        authenticator_ref,
+                        processor_ref,
+                        placeholder_ref,
+                    )
+                    .await
+                });
+            }
+        },
+        Err(e) => panic!("${} is not set ({})", ENV_VAR, e)
     }
 }
