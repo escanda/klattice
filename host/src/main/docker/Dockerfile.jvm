@@ -1,4 +1,4 @@
-FROM azul/zulu-openjdk:20-jre-latest
+FROM azul/zulu-openjdk:21-jre-latest
 
 ENV LANGUAGE='en_US:en'
 
@@ -9,8 +9,10 @@ COPY --chown=185 build/quarkus-app/*.jar /deployments/
 COPY --chown=185 build/quarkus-app/app/ /deployments/app/
 COPY --chown=185 build/quarkus-app/quarkus/ /deployments/quarkus/
 
+RUN apt-get update && apt-get upgrade -y && apt-get install -y python3-pycurl
+
 EXPOSE 8080
+EXPOSE 9000
 USER 185
 ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 ENV JAVA_APP_JAR="/deployments/quarkus-run.jar"
-

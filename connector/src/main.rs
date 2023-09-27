@@ -60,9 +60,11 @@ impl SimpleQueryHandler for QueryProcessor {
     where
         C: ClientInfo + Unpin + Send + Sync,
     {
+        println!("Querying '{}' to server: '{}'", query_str, self.oracle_addr.clone());
+
         let mut oracle_client = match OracleServiceClient::connect(self.oracle_addr.clone()).await {
             Ok(client) => client,
-            Err(err) => panic!("Cannot connect to query oracle because '#{}'. Exiting thread", err)
+            Err(err) => panic!("Cannot connect to query oracle because '{}'. Exiting thread", err)
         };
         let mut request = Query::default();
         request.query = String::from(query_str);
@@ -117,6 +119,7 @@ impl SimpleQueryHandler for QueryProcessor {
                 ))])
             },
             Err(err) => {
+                println!("Cannot execute succesfully query to gRPC endpoint because {}", err);
                 return PgWireResult::Err(pgwire::error::PgWireError::ApiError(Box::new(err)));
             }
         }
