@@ -4,7 +4,6 @@ import io.quarkus.grpc.GrpcClient;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
-import io.smallrye.mutiny.unchecked.Unchecked;
 import jakarta.inject.Inject;
 import klattice.grpc.ExecService;
 import klattice.grpc.OracleService;
@@ -50,12 +49,12 @@ public class OracleGrpcService implements OracleService {
         Environment environ = environ();
         var qd = QueryDescriptor.newBuilder().setQuery(request.getQuery()).setEnviron(environ).build();
         var inflatedQuery = this.query.inflate(qd);
-        return inflatedQuery.flatMap(Unchecked.function(preparedQuery -> {
+        return inflatedQuery.flatMap(preparedQuery -> {
             var serializedPlan = preparedQuery.getPlan();
-            return replan(environ, serializedPlan).flatMap(Unchecked.function(expandedPlan -> {
+            return replan(environ, serializedPlan).flatMap(expandedPlan -> {
                 var finalPlan = expandedPlan.getPlan();
                 return execute(finalPlan);
-            }));
-        }));
+            });
+        });
     }
 }

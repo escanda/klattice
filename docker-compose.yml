@@ -76,8 +76,9 @@ services:
       context: .
       dockerfile: ./connector/Dockerfile
     environment:
-      KLATTICE_ENDPOINT: http://klattice:8080
-      WAIT_HOSTS: klattice:8080
+      KLATTICE_ENDPOINT: http://klattice:9000
+      KLATTICE_PORT: 5433
+      WAIT_HOSTS: klattice:9000
     depends_on:
       - klattice
     ports:

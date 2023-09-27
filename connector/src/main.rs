@@ -60,10 +60,9 @@ impl SimpleQueryHandler for QueryProcessor {
     where
         C: ClientInfo + Unpin + Send + Sync,
     {
-        println!("{}", self.oracle_addr.clone());
         let mut oracle_client = match OracleServiceClient::connect(self.oracle_addr.clone()).await {
             Ok(client) => client,
-            Err(err) => panic!("Cannot connect to query oracle because {}. Exiting thread", err)
+            Err(err) => panic!("Cannot connect to query oracle because '#{}'. Exiting thread", err)
         };
         let mut request = Query::default();
         request.query = String::from(query_str);
@@ -118,7 +117,6 @@ impl SimpleQueryHandler for QueryProcessor {
                 ))])
             },
             Err(err) => {
-                println!("Error querying oracle {}", err);
                 return PgWireResult::Err(pgwire::error::PgWireError::ApiError(Box::new(err)));
             }
         }
@@ -130,38 +128,37 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
     const ENDPOINT_ENV_VAR: &str = "KLATTICE_ENDPOINT";
     const LISTENING_ENV_VAR: &str = "KLATTICE_PORT";
     
-    match env::var(ENDPOINT_ENV_VAR) {
-        Ok(client_addr) => {
-            let listen_port_str = match env::var(LISTENING_ENV_VAR) {
-                Ok(port_str) => port_str,
-                Err(_) => "5433".to_string()
-            };
-            let server_addr = format!("{}:{}", "[::]", listen_port_str);
-            let listener = TcpListener::bind(server_addr).await?;
-            let processor = Arc::new(StatelessMakeHandler::new(Arc::new(QueryProcessor { oracle_addr: client_addr })));
-            // We have not implemented extended query in this server, use placeholder instead
-            let placeholder = Arc::new(StatelessMakeHandler::new(Arc::new(
-                PlaceholderExtendedQueryHandler,
-            )));
-            let authenticator = Arc::new(StatelessMakeHandler::new(Arc::new(NoopStartupHandler)));
-            println!("Listening to {}", "[[::]]:5433");
-            loop {
-                let (tcp_stream, _) = listener.accept().await?;
-                let authenticator_ref = authenticator.make();
-                let processor_ref = processor.make();
-                let placeholder_ref = placeholder.make();
-                tokio::spawn(async move {
-                    process_socket(
-                        tcp_stream,
-                        None,
-                        authenticator_ref,
-                        processor_ref,
-                        placeholder_ref,
-                    )
-                    .await
-                });
-            }
-        },
-        Err(e) => panic!("${} is not set ({})", ENDPOINT_ENV_VAR, e)
+    let client_addr = match env::var(ENDPOINT_ENV_VAR) {
+        Ok(client_addr) => client_addr,
+        Err(_) => "127.0.0.1:8080".to_string(),
+    };
+    let listen_port_str = match env::var(LISTENING_ENV_VAR) {
+        Ok(port_str) => port_str,
+        Err(_) => "5433".to_string()
+    };
+    let server_addr = format!("{}:{}", "[::]", listen_port_str);
+    let listener = TcpListener::bind(server_addr).await?;
+    let processor = Arc::new(StatelessMakeHandler::new(Arc::new(QueryProcessor { oracle_addr: client_addr })));
+    // We have not implemented extended query in this server, use placeholder instead
+    let placeholder = Arc::new(StatelessMakeHandler::new(Arc::new(
+        PlaceholderExtendedQueryHandler,
+    )));
+    let authenticator = Arc::new(StatelessMakeHandler::new(Arc::new(NoopStartupHandler)));
+    println!("Listening to {}:{}", "[[::]]", listen_port_str);
+    loop {
+        let (tcp_stream, _) = listener.accept().await?;
+        let authenticator_ref = authenticator.make();
+        let processor_ref = processor.make();
+        let placeholder_ref = placeholder.make();
+        tokio::spawn(async move {
+            process_socket(
+                tcp_stream,
+                None,
+                authenticator_ref,
+                processor_ref,
+                placeholder_ref,
+            )
+            .await
+        });
     }
 }
