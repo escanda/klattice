@@ -25,6 +25,8 @@ dependencies {
     implementation("io.quarkus:quarkus-smallrye-health")
     implementation("io.quarkus:quarkus-resteasy-reactive-jackson")
 
+    implementation("io.quarkus:quarkus-container-image-jib")
+
     implementation("io.quarkus:quarkus-rest-client-reactive")
 
     implementation("io.quarkus:quarkus-smallrye-reactive-messaging-kafka")

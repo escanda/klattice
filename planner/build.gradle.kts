@@ -38,6 +38,8 @@ dependencies {
     implementation("io.quarkus:quarkus-picocli")
     implementation("io.quarkus:quarkus-smallrye-health")
 
+    implementation("io.quarkus:quarkus-container-image-jib")
+
     implementation("io.quarkus:quarkus-rest-client-reactive-jackson")
 
     val calciteVersion = "1.35.0"
