@@ -19,7 +19,6 @@ use pgwire::error::PgWireResult;
 use pgwire::tokio::process_socket;
 
 use klattice::oracle::oracle_service_client::OracleServiceClient;
-use tonic::transport::Channel;
 
 pub mod substrait {
     tonic::include_proto!("substrait");
@@ -48,7 +47,7 @@ pub mod klattice {
 }
 
 pub struct QueryProcessor {
-    oracle: Box<OracleServiceClient<Channel>>,
+    oracle_addr: String,
 }
 
 #[async_trait]
@@ -61,7 +60,11 @@ impl SimpleQueryHandler for QueryProcessor {
     where
         C: ClientInfo + Unpin + Send + Sync,
     {
-        let mut oracle_client = self.oracle.clone();
+        println!("{}", self.oracle_addr.clone());
+        let mut oracle_client = match OracleServiceClient::connect(self.oracle_addr.clone()).await {
+            Ok(client) => client,
+            Err(err) => panic!("Cannot connect to query oracle because {}. Exiting thread", err)
+        };
         let mut request = Query::default();
         request.query = String::from(query_str);
 
@@ -114,20 +117,28 @@ impl SimpleQueryHandler for QueryProcessor {
                     data_row_stream,
                 ))])
             },
-            Err(err) => PgWireResult::Err(pgwire::error::PgWireError::ApiError(Box::new(err)))
+            Err(err) => {
+                println!("Error querying oracle {}", err);
+                return PgWireResult::Err(pgwire::error::PgWireError::ApiError(Box::new(err)));
+            }
         }
     }
 }
 
 #[tokio::main]
 pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    const ENV_VAR: &str = "KLATTICE_ENDPOINT";
+    const ENDPOINT_ENV_VAR: &str = "KLATTICE_ENDPOINT";
+    const LISTENING_ENV_VAR: &str = "KLATTICE_PORT";
     
-    match env::var(ENV_VAR) {
+    match env::var(ENDPOINT_ENV_VAR) {
         Ok(client_addr) => {
-            let listener = TcpListener::bind("0.0.0.0:5433").await?;
-            let oracle = Box::new(OracleServiceClient::connect(client_addr.clone()).await?);
-            let processor = Arc::new(StatelessMakeHandler::new(Arc::new(QueryProcessor { oracle })));
+            let listen_port_str = match env::var(LISTENING_ENV_VAR) {
+                Ok(port_str) => port_str,
+                Err(_) => "5433".to_string()
+            };
+            let server_addr = format!("{}:{}", "[::]", listen_port_str);
+            let listener = TcpListener::bind(server_addr).await?;
+            let processor = Arc::new(StatelessMakeHandler::new(Arc::new(QueryProcessor { oracle_addr: client_addr })));
             // We have not implemented extended query in this server, use placeholder instead
             let placeholder = Arc::new(StatelessMakeHandler::new(Arc::new(
                 PlaceholderExtendedQueryHandler,
@@ -151,6 +162,6 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 });
             }
         },
-        Err(e) => panic!("${} is not set ({})", ENV_VAR, e)
+        Err(e) => panic!("${} is not set ({})", ENDPOINT_ENV_VAR, e)
     }
 }
