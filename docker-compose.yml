@@ -68,7 +68,7 @@ services:
     depends_on:
       - klattice-connector
     ports:
-      - "8081:80"
+      - "8082:80"
 
   klattice-connector:
     hostname: "connector"
@@ -76,11 +76,36 @@ services:
       context: .
       dockerfile: ./connector/Dockerfile
     environment:
-      - KLATTICE_ENDPOINT=http://klattice:8080
+      KLATTICE_ENDPOINT: http://klattice:8080
+      WAIT_HOSTS: klattice:8080
     depends_on:
       - klattice
     ports:
       - "15433:5433"
+
+
+  klattice-host:
+    hostname: "host"
+    build:
+      context: ./host/
+      dockerfile: src/main/docker/Dockerfile.jvm
+    command: [
+      "java",
+      "-Dquarkus.http.host=0.0.0.0",
+      "-Dklattice.kafka.bootstrap=kafka:9092",
+      "-Dquarkus.rest-client.schema-registry-api.url=http://schema-registry:8085",
+      "-Djava.util.logging.manager=org.jboss.logmanager.LogManager",
+      "-jar",
+      "/deployments/quarkus-run.jar"
+    ]
+    depends_on:
+      - schema-registry
+      - duckdb
+    ports:
+      - "8081:8080"
+      - "9001:9000"
+    healthcheck:
+      test: curl --fail http://localhost:8080/q/health/ready || exit 1
 
   klattice:
     hostname: "klattice"
@@ -90,16 +115,19 @@ services:
     command: [
       "java",
       "-Dquarkus.http.host=0.0.0.0",
+      "-Dklattice.host.url=http://host:8080",
       "-Dquarkus.rest-client.duckdb-service-api.url=http://duckdb:8091",
-      "-Dquarkus.rest-client.schema-registry-api.url=http://schema-registry:8091",
+      "-Dquarkus.rest-client.schema-registry-api.url=http://schema-registry:8085",
+      "-Dquarkus.rest-client.schema-registry-api.url=http://schema-registry:8085",
       "-Djava.util.logging.manager=org.jboss.logmanager.LogManager",
       "-jar",
       "/deployments/quarkus-run.jar"
     ]
     depends_on:
-      - kafka
+      - klattice-host
       - schema-registry
       - duckdb
     ports:
       - "8080:8080"
-      - "9000:9000"
+    healthcheck:
+      test: curl --fail http://localhost:8080/q/health/ready || exit 1

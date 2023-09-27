@@ -36,6 +36,7 @@ dependencies {
     implementation("io.quarkus:quarkus-arc")
     implementation("io.quarkus:quarkus-grpc")
     implementation("io.quarkus:quarkus-picocli")
+    implementation("io.quarkus:quarkus-smallrye-health")
 
     implementation("io.quarkus:quarkus-rest-client-reactive-jackson")
 

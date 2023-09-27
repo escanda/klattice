@@ -16,20 +16,17 @@ import java.util.stream.Stream;
 
 @ApplicationScoped
 public class SqlIdentifierResolver {
-    private final String host;
-    private final int port;
+    private final String url;
 
     @Inject
-    public SqlIdentifierResolver(@ConfigProperty(name = "quarkus.http.host") String host,
-                                 @ConfigProperty(name = "quarkus.http.port") int port) {
-        this.host = host;
-        this.port = port;
+    public SqlIdentifierResolver(@ConfigProperty(name = "klattice.host.url") String url) {
+        this.url = url;
     }
 
     public Optional<TranslatedIdRef> resolve(Environment environ, SqlIdentifier id) {
         var formatted = String.format("%s", String.join(".", id.names));
         var builtinOpt = Arrays.stream(BuiltinTables.values()).filter(builtinTable -> builtinTable.tableName.equalsIgnoreCase(formatted)).findAny();
-        return builtinOpt.map(builtinTables -> new TranslatedIdRef(String.format("http://%s:%d/sys-table/", host, port) + builtinTables.tableName + ".parquet"))
+        return builtinOpt.map(builtinTables -> new TranslatedIdRef(String.format("%s/sys-table/", url) + builtinTables.tableName + ".parquet"))
                 .or(() -> locateRefAtEnviron(environ, id));
     }
 
@@ -44,7 +41,7 @@ public class SqlIdentifierResolver {
 
     private TranslatedIdRef toURL(SchemaAndRelMatch schemaAndRelMatch) {
         var last = schemaAndRelMatch.names.stream().reduce((a, b) -> b).orElse("");
-        return new TranslatedIdRef(String.format("http://%s:%d/topic-table/", host, port) + last + ".parquet");
+        return new TranslatedIdRef(String.format("%s/topic-table/", url) + last + ".parquet");
     }
 
     private static boolean isEq(SqlIdentifier id, SchemaAndRel schemaAndRel) {

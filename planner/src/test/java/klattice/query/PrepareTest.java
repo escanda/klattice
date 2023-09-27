@@ -47,6 +47,6 @@ public class PrepareTest {
         String q = "select VERSION(), CURRENT_DATABASE()";
         var environ = Environment.newBuilder();
         var plan = new Querier(new SchemaHolder(environ.build())).plan(q);
-        System.out.println(Shared.toSql(new SqlIdentifierResolver("localhost", 8080), environ.build(), plan));
+        System.out.println(Shared.toSql(new SqlIdentifierResolver("http://localhost:8080"), environ.build(), plan));
     }
 }
