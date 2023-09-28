@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import static java.util.Objects.requireNonNull;
+
 @Value.Enclosing
 public class InvokeVirtualReplaceRule
         extends RelRule<InvokeVirtualReplaceRule.Config>
@@ -80,6 +82,12 @@ public class InvokeVirtualReplaceRule
             }
             case CHAR, VARCHAR -> {
                 return "[[NOT AVAILABLE]]";
+            }
+            case ROW -> {
+                var fst = rowType.getFieldList().stream().findFirst();
+                assert rowType.getFieldCount() == 1;
+                assert fst.isPresent();
+                return placeholderByTargetType(requireNonNull(fst.get().getType()));
             }
             default -> {
                 return null;

@@ -23,4 +23,14 @@ public class OracleGrpcServiceTest {
         Assertions.assertEquals(1, batch.getRowsList().size());
         Assertions.assertEquals("1", batch.getRowsList().get(0).getFields(0).toStringUtf8());
     }
+
+    @Test
+    public void test_PgFunctionShapeSimpleQuery() {
+        var batch = oracle.answer(Query.newBuilder().setQuery("SELECT version()").build())
+                .await()
+                .indefinitely();
+        assertNotNull(batch);
+        Assertions.assertEquals(1, batch.getRowsList().size());
+        Assertions.assertEquals("1", batch.getRowsList().get(0).getFields(0).toStringUtf8());
+    }
 }
