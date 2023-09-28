@@ -31,6 +31,6 @@ public class OracleGrpcServiceTest {
                 .indefinitely();
         assertNotNull(batch);
         Assertions.assertEquals(1, batch.getRowsList().size());
-        Assertions.assertEquals("1", batch.getRowsList().get(0).getFields(0).toStringUtf8());
+        Assertions.assertEquals("KLattice 1.0.0-SNAPSHOT", batch.getRowsList().get(0).getFields(0).toStringUtf8());
     }
 }
