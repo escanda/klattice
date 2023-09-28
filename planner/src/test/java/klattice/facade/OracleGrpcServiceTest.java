@@ -33,4 +33,14 @@ public class OracleGrpcServiceTest {
         Assertions.assertEquals(1, batch.getRowsList().size());
         Assertions.assertEquals("KLattice 1.0.0-SNAPSHOT", batch.getRowsList().get(0).getFields(0).toStringUtf8());
     }
+
+    @Test
+    public void test_PgFunctionShapeCompositeQuery() {
+        var batch = oracle.answer(Query.newBuilder().setQuery("select current_database() as a, current_schemas(false) as b").build())
+                .await()
+                .indefinitely();
+        assertNotNull(batch);
+        Assertions.assertEquals(1, batch.getRowsList().size());
+        Assertions.assertEquals("KLattice 1.0.0-SNAPSHOT", batch.getRowsList().get(0).getFields(0).toStringUtf8());
+    }
 }

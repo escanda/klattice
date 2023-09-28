@@ -19,7 +19,7 @@ public enum FunctionShapes {
             OperandTypes.NILADIC,
             SqlFunctionCategory.USER_DEFINED_TABLE_FUNCTION
     ), FunctionNames.CURRENT_DATABASE),
-    CURRENT_SCHEMAS(FunctionCategory.MAGIC, SqlBasicFunction.create(
+    CURRENT_SCHEMAS(FunctionCategory.SCHEMAS, SqlBasicFunction.create(
             FunctionNames.CURRENT_SCHEMAS,
             ReturnTypes.TO_ARRAY,
             OperandTypes.NILADIC.or(OperandTypes.BOOLEAN),

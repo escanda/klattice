@@ -1,5 +1,5 @@
 package klattice.calcite;
 
 public enum FunctionCategory {
-    EQUIVALENCE, MAGIC
+    SCHEMAS, MAGIC
 }

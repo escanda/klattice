@@ -19,7 +19,7 @@ import java.time.Duration;
 import static klattice.substrait.CalciteToSubstraitConverter.EXTENSION_COLLECTION;
 
 @QuarkusTest
-public class InvokeVirtualReplaceRuleTest {
+public class MagicValuesReplaceRuleTest {
     @GrpcClient
     QueryService query;
 

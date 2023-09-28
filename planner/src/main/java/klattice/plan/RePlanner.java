@@ -3,7 +3,7 @@ package klattice.plan;
 import com.google.common.collect.ImmutableList;
 import klattice.calcite.DuckDbDialect;
 import klattice.calcite.SchemaHolder;
-import klattice.plan.rule.InvokeVirtualReplaceRule;
+import klattice.plan.rule.MagicValuesReplaceRule;
 import org.apache.calcite.config.CalciteSystemProperty;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.hep.HepPlanner;
@@ -63,7 +63,7 @@ public class RePlanner {
 
     public List<RelNode> optimizeRelNodes(List<RelNode> relRoots) {
         var hepPlanner = new HepPlanner(HepProgram.builder()
-                .addRuleInstance(new InvokeVirtualReplaceRule(InvokeVirtualReplaceRule.Config.DEFAULT, schemaHolder))
+                .addRuleInstance(new MagicValuesReplaceRule(MagicValuesReplaceRule.Config.DEFAULT, schemaHolder))
                 .addRuleCollection(BASE_RULES)
                 .build());
         return relRoots.stream().map(relNode -> {
