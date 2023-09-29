@@ -140,7 +140,7 @@ public class SchemaHolder {
                 .findFirst();
     }
 
-    public RelOptTable resolveTable(String tableName) {
-        return getCatalog().getTable(List.of(tableName));
+    public Optional<RelOptTable> resolveTable(String tableName) {
+        return Optional.ofNullable(getCatalog().getTable(List.of(tableName)));
     }
 }

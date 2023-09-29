@@ -8,7 +8,7 @@ import klattice.calcite.SchemaHolder;
 import klattice.grpc.QueryService;
 import klattice.msg.Environment;
 import klattice.msg.QueryDescriptor;
-import klattice.plan.RePlanner;
+import klattice.plan.Optimizer;
 import klattice.substrait.SubstraitToCalciteConverter;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,13 +23,13 @@ public class MagicValuesReplaceRuleTest {
     @GrpcClient
     QueryService query;
 
-    private RePlanner rePlanner;
+    private Optimizer optimizer;
     private Environment environment;
 
     @BeforeEach
     void setupRePlanner() {
         this.environment = Environment.newBuilder().build();
-        this.rePlanner = new RePlanner(new SchemaHolder(environment));
+        this.optimizer = new Optimizer(new SchemaHolder(environment));
     }
 
     @Test
@@ -43,7 +43,7 @@ public class MagicValuesReplaceRuleTest {
                 .atMost(Duration.ofMinutes(1));
         var relPlan = new ProtoPlanConverter(EXTENSION_COLLECTION).from(inflated.getPlan().getPlan());
         var relRoots = SubstraitToCalciteConverter.getRelRoots(relPlan);
-        var relNodes = rePlanner.optimizeRelNodes(relRoots);
+        var relNodes = optimizer.relnodes(relRoots);
         System.out.println(relNodes);
         var result = new RelToSqlConverter(DuckDbDialect.INSTANCE).visitRoot(relNodes.get(0));
         var selectNode = result.asSelect();

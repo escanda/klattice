@@ -33,7 +33,7 @@ public class SqlIdentifierResolver {
     private Optional<TranslatedIdRef> locateRefAtEnviron(Environment environ, SqlIdentifier id) {
         return environ.getSchemasList().stream()
                 .flatMap(schema -> schema.getRelsList().stream().map(rel -> new SchemaAndRel(schema, rel)))
-                .flatMap(schemaAndRel -> isEq(id, schemaAndRel) ?
+                .flatMap(schemaAndRel -> eqSchema(id, schemaAndRel) ?
                                 Stream.of(new SchemaAndRelMatch(schemaAndRel.schema(), schemaAndRel.rel(), id.names)) : Stream.empty())
                 .map(this::toURL)
                 .findFirst();
@@ -44,7 +44,7 @@ public class SqlIdentifierResolver {
         return new TranslatedIdRef(String.format("%s/topic-table/", url) + last + ".parquet");
     }
 
-    private static boolean isEq(SqlIdentifier id, SchemaAndRel schemaAndRel) {
+    private static boolean eqSchema(SqlIdentifier id, SchemaAndRel schemaAndRel) {
         return schemaAndRel.schema().getRelName().equalsIgnoreCase(id.names.stream().findFirst().orElse(""))
                 && (id.names.size() > 1 && id.names.get(1).equalsIgnoreCase(schemaAndRel.rel().getRelName()));
     }

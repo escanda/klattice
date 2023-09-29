@@ -39,8 +39,8 @@ public class PlannerServiceGrpc implements PlannerService {
         } else {
             var typeFactory = new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
             var schemaFactory = new SchemaHolder(environ);
-            var rePlanner = new RePlanner(schemaFactory);
-            var rewrittenNodes = rePlanner.optimizeRelNodes(relRoots);
+            var optimizer = new Optimizer(schemaFactory);
+            var rewrittenNodes = optimizer.relnodes(relRoots);
             var relPlanBuilder = io.substrait.plan.ImmutablePlan.builder();
             var substraitRelVisitor = createSubstraitRelVisitor(typeFactory);
             var rels = rewrittenNodes.stream().map(substraitRelVisitor::apply).toList();

@@ -3,7 +3,6 @@ package klattice.calcite;
 import com.google.common.collect.ImmutableList;
 import org.apache.calcite.adapter.enumerable.EnumerableRules;
 import org.apache.calcite.config.CalciteSystemProperty;
-import org.apache.calcite.interpreter.Bindables;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.volcano.AbstractConverter;
 import org.apache.calcite.rel.rules.CoreRules;
@@ -16,8 +15,7 @@ import java.util.List;
 
 public interface Rules {
     ImmutableList<RelOptRule> CALC_RULES =
-            ImmutableList.of(Bindables.FROM_NONE_RULE,
-                    EnumerableRules.ENUMERABLE_CALC_RULE,
+            ImmutableList.of(EnumerableRules.ENUMERABLE_CALC_RULE,
                     EnumerableRules.ENUMERABLE_FILTER_TO_CALC_RULE,
                     EnumerableRules.ENUMERABLE_PROJECT_TO_CALC_RULE,
                     CoreRules.FILTER_TO_CALC,

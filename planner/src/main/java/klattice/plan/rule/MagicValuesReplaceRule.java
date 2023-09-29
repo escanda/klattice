@@ -3,22 +3,20 @@ package klattice.plan.rule;
 import jakarta.annotation.Nullable;
 import klattice.calcite.BuiltinTables;
 import klattice.calcite.FunctionCategory;
-import klattice.calcite.FunctionShapes;
 import klattice.calcite.SchemaHolder;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelRule;
 import org.apache.calcite.plan.ViewExpanders;
 import org.apache.calcite.rel.logical.LogicalProject;
-import org.apache.calcite.rel.logical.LogicalValues;
 import org.apache.calcite.rel.rules.TransformationRule;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.calcite.tools.RelBuilder;
 import org.immutables.value.Value;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -40,49 +38,45 @@ public class MagicValuesReplaceRule
         var logicalProject = (LogicalProject) ruleCall.rel(0);
         var b0 = ruleCall.builder();
         var projects = logicalProject.getProjects();
-        var lst = new ArrayList<RexNode>(projects.size());
-
-        for (RexNode project : projects) {
-            if (project.isA(SqlKind.FUNCTION)) {
-                var call = (RexCall) project;
-                var replacedProject = Arrays.stream(FunctionShapes.values())
-                        .filter(functionShape -> functionShape.operator.equals(call.getOperator())
-                                                    && functionShape.category.equals(FunctionCategory.MAGIC))
-                        .findFirst()
-                        .map(functionShape -> {
-                            var tableName = BuiltinTables.MAGIC_VALUES.tableName;
-                            var relOptTable = schemaHolder.resolveTable(tableName);
-                            var relContext = ViewExpanders.simpleContext(schemaHolder.getRelOptCluster());
-                            var rexSubQuery = b0.scalarQuery(b1 -> {
-                                var scan = b1.getScanFactory().createScan(relContext, relOptTable);
-                                b1.push(scan);
-                                var relDataType = project.getType();
-                                RexNode valueField;
-                                if (relDataType.getSqlTypeName().allowsScale()) {
-                                    valueField = b1.cast(b1.field("value"), relDataType.getSqlTypeName(), relDataType.getPrecision(), relDataType.getScale());
-                                } else if (relDataType.getSqlTypeName().allowsPrec()) {
-                                    valueField = b1.cast(b1.field("value"), relDataType.getSqlTypeName(), relDataType.getPrecision());
-                                } else {
-                                    valueField = b1.cast(b1.field("value"), relDataType.getSqlTypeName());
-                                }
-                                b1.push(b1.project(valueField, b1.field("kind"))
-                                        .filter(b1.equals(b1.field("kind"), b1.literal(functionShape.discriminator)))
-                                        .build());
-                                return b1.project(b1.field(0)).build();
-                            });
-                            var coalesce = schemaHolder.getOp("coalesce")
-                                    .orElseThrow(() -> new NoSuchElementException("Cannot find coalesce operator in operator table"));
-                            var value = placeholderByTargetType(project.getType());
-                            return b0.call(coalesce, List.of(rexSubQuery, b0.literal(value)));
-                        })
-                        .orElse(project);
-                lst.add(replacedProject);
-            } else {
-                lst.add(project);
-            }
+        var replacementProjects = projects.stream()
+                .map(project -> {
+                    if (project.isA(SqlKind.FUNCTION)) {
+                        var call = (RexCall) project;
+                        var projOpt = FunctionCategory.MAGIC.shapes.stream()
+                                .filter(functionShape -> functionShape.operator.equals(call.getOperator()))
+                                .findFirst()
+                                .map(functionShape -> {
+                                    var tableName = BuiltinTables.MAGIC_VALUES.tableName;
+                                    var relOptTable = schemaHolder.resolveTable(tableName)
+                                            .orElseThrow(() -> new NoSuchElementException("No table named " + tableName + " in schema"));
+                                    var relContext = ViewExpanders.simpleContext(schemaHolder.getRelOptCluster());
+                                    var rexSubQuery = b0.scalarQuery(b1 -> {
+                                        var scan = b1.getScanFactory().createScan(relContext, relOptTable);
+                                        b1.push(scan);
+                                        var relDataType = project.getType();
+                                        var valueField = getCastedValueForType(b1, relDataType);
+                                        b1.push(b1.project(valueField, b1.field("kind"))
+                                                .filter(b1.equals(b1.field("kind"), b1.literal(functionShape.discriminator)))
+                                                .build());
+                                        return b1.project(b1.field(0)).build();
+                                    });
+                                    var coalesce = schemaHolder.getOp("coalesce")
+                                            .orElseThrow(() -> new NoSuchElementException("Cannot find coalesce operator in operator table"));
+                                    var value = placeholderByTargetType(project.getType());
+                                    var literalRepl = b0.getCluster().getRexBuilder().makeLiteral(value, project.getType(), true, false);
+                                    return b0.call(coalesce, List.of(rexSubQuery, literalRepl));
+                                });
+                        if (projOpt.isPresent()) {
+                            return projOpt.get();
+                        }
+                    }
+                    return project;
+                })
+                .toList();
+        if (!replacementProjects.equals(projects)) {
+            b0.push(logicalProject.getInput());
+            ruleCall.transformTo(b0.project(replacementProjects).build());
         }
-        b0.push(logicalProject.getInput());
-        ruleCall.transformTo(b0.project(lst).build());
     }
 
     private Object placeholderByTargetType(RelDataType rowType) {
@@ -96,11 +90,12 @@ public class MagicValuesReplaceRule
             case CHAR, VARCHAR -> {
                 return "[[NOT AVAILABLE]]";
             }
-            case ROW -> {
-                var fst = rowType.getFieldList().stream().findFirst();
-                assert rowType.getFieldCount() == 1;
-                assert fst.isPresent();
-                return placeholderByTargetType(requireNonNull(fst.get().getType()));
+            case ARRAY -> {
+                if (requireNonNull(rowType.getComponentType()).getSqlTypeName().equals(SqlTypeName.BOOLEAN)) {
+                    return List.of(false);
+                } else {
+                    return List.of(new Object());
+                }
             }
             default -> {
                 return null;
@@ -108,13 +103,18 @@ public class MagicValuesReplaceRule
         }
     }
 
+    private static RexNode getCastedValueForType(RelBuilder relBuilder, RelDataType relDataType) {
+        return relBuilder.getCluster().getRexBuilder().makeCast(relDataType, relBuilder.field("value"));
+    }
+
     @Value.Immutable
     public interface Config extends RelRule.Config {
         Config DEFAULT = ImmutableMagicValuesReplaceRule.Config.builder().build()
                 .withOperandSupplier(b0 ->
                         b0.operand(LogicalProject.class)
-                                .predicate(logicalProject -> logicalProject.getProjects().stream().anyMatch(rexNode -> rexNode.isA(SqlKind.FUNCTION)))
-                                .oneInput(b1 -> b1.operand(LogicalValues.class).anyInputs())
+                                .predicate(logicalProject -> logicalProject.getProjects().stream().anyMatch(rexNode -> rexNode.isA(SqlKind.FUNCTION)
+                                        && FunctionCategory.MAGIC.shapes.stream().anyMatch(functionShapes -> functionShapes.operator.equals(((RexCall) rexNode).getOperator()))))
+                                .anyInputs()
                 )
                 .as(Config.class);
 
