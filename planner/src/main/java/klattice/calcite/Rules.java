@@ -1,4 +1,4 @@
-package klattice.plan.rule;
+package klattice.calcite;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.calcite.adapter.enumerable.EnumerableRules;

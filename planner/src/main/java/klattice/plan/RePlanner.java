@@ -1,9 +1,9 @@
 package klattice.plan;
 
 import klattice.calcite.DuckDbDialect;
+import klattice.calcite.Rules;
 import klattice.calcite.SchemaHolder;
 import klattice.plan.rule.MagicValuesReplaceRule;
-import klattice.plan.rule.Rules;
 import org.apache.calcite.plan.hep.HepPlanner;
 import org.apache.calcite.plan.hep.HepProgram;
 import org.apache.calcite.rel.RelNode;
