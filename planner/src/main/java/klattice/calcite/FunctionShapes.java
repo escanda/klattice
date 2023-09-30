@@ -29,7 +29,7 @@ public enum FunctionShapes {
             FunctionNames.CURRENT_USER,
             ReturnTypes.VARCHAR,
             OperandTypes.NILADIC,
-            SqlFunctionCategory.USER_DEFINED_TABLE_FUNCTION
+            SqlFunctionCategory.SYSTEM
     ), FunctionNames.CURRENT_USER),
     CURRENT_SCHEMA(SqlBasicFunction.create(
             FunctionNames.CURRENT_SCHEMA,

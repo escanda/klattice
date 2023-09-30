@@ -8,7 +8,6 @@ public enum FunctionCategory {
     SCHEMAS(ImmutableList.of()),
     MAGIC(ImmutableList.of(
             FunctionShapes.VERSION,
-            FunctionShapes.CURRENT_USER,
             FunctionShapes.CURRENT_SCHEMA,
             FunctionShapes.CURRENT_SCHEMAS,
             FunctionShapes.CURRENT_DATABASE

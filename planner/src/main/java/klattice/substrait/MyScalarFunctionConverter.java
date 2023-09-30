@@ -30,7 +30,7 @@ public class MyScalarFunctionConverter extends ScalarFunctionConverter {
     protected ImmutableList<FunctionMappings.Sig> getSigs() {
         return super.getSigs()
                 .stream()
-                .filter(sig -> Arrays.stream(FunctionShapes.values()).noneMatch(functionShapes -> functionShapes.operator.equals(sig.operator())))
+                .filter(sig -> Arrays.stream(FunctionShapes.values()).noneMatch(functionShapes -> functionShapes.operator.getName().equals(sig.operator().getName())))
                 .collect(ImmutableList.toImmutableList());
     }
 }

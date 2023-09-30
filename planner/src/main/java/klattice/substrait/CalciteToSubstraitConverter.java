@@ -37,7 +37,9 @@ public final class CalciteToSubstraitConverter {
         var plan = Plan.newBuilder();
         ExtensionCollector functionCollector = new ExtensionCollector();
         var relProtoConverter = new RelProtoConverter(functionCollector);
-        var input = Shared.createSubstraitRelVisitor(relDataTypeFactory).apply(relRoot.rel).accept(relProtoConverter);
+        var input = Shared.createSubstraitRelVisitor(relDataTypeFactory)
+                .apply(relRoot.rel)
+                .accept(relProtoConverter);
         var names = TypeConverter.DEFAULT
                 .toNamedStruct(relRoot.validatedRowType)
                 .names();

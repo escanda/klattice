@@ -5,9 +5,11 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import klattice.duckdb.DuckDbService;
 import klattice.msg.Batch;
+import klattice.msg.Column;
 import klattice.msg.Row;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @ApplicationScoped
 public class Exec {
@@ -18,7 +20,7 @@ public class Exec {
         this.duckDbService = duckDbService;
     }
 
-    public Batch execute(String sql) {
+    public Batch execute(List<Column> columns, String sql) {
         var iterableResult = duckDbService.execSql(sql);
         var batchBuilder = Batch.newBuilder();
         iterableResult.forEach(strings -> {
