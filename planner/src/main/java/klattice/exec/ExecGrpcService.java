@@ -7,7 +7,7 @@ import io.smallrye.mutiny.Uni;
 import jakarta.inject.Inject;
 import klattice.grpc.ExecService;
 import klattice.msg.Batch;
-import klattice.msg.Plan;
+import klattice.msg.ExpandedPlan;
 import org.jboss.logging.Logger;
 
 @GrpcService
@@ -20,10 +20,10 @@ public class ExecGrpcService implements ExecService {
 
     @Blocking
     @Override
-    public Uni<Batch> execute(Plan request) {
-        var sql = exec.toSql(request.getEnviron(), request.getPlan());
-        logger.infov("Received request with sql {0}", sql);
-        var batch = exec.execute(sql);
+    public Uni<Batch> execute(ExpandedPlan request) {
+        var sqlStatement = request.getSqlStatements().getSqlStatementList().stream().findFirst().orElseThrow();
+        logger.infov("Received request with sql {0}", sqlStatement);
+        var batch = exec.execute(sqlStatement);
         return Uni.createFrom().item(batch);
     }
 }

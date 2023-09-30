@@ -26,7 +26,9 @@ public class QueryServiceGrpc implements QueryService {
         PreparedQuery preparedQuery;
         try {
             var schemaFactory = new SchemaHolder(request.getEnviron());
-            var plan = new Querier(schemaFactory).plan(request.getQuery());
+            var querier = new Querier(schemaFactory);
+            var sqlNode = querier.asSqlNode(request.getQuery());
+            var plan = querier.plan(sqlNode);
             preparedQuery = PreparedQuery.newBuilder().setHasError(false).setPlan(Plan.newBuilder().setEnviron(request.getEnviron()).setPlan(plan).build()).build();
         } catch (SqlParseException | RelConversionException | ValidationException e) {
             logger.warnv("Error preparing statement {0} with error {1}", request.getQuery(), e);

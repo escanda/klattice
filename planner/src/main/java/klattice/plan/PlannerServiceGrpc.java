@@ -4,26 +4,35 @@ import io.quarkus.arc.log.LoggerName;
 import io.quarkus.grpc.GrpcService;
 import io.smallrye.common.annotation.Blocking;
 import io.smallrye.mutiny.Uni;
-import io.substrait.plan.ImmutableRoot;
-import io.substrait.plan.PlanProtoConverter;
 import io.substrait.plan.ProtoPlanConverter;
+import jakarta.inject.Inject;
+import klattice.calcite.DuckDbDialect;
 import klattice.calcite.SchemaHolder;
+import klattice.exec.SqlIdentifierResolver;
 import klattice.grpc.PlannerService;
 import klattice.msg.ExpandedPlan;
-import klattice.msg.Plan;
 import klattice.msg.PlanDiagnostics;
+import klattice.msg.SqlStatements;
 import klattice.substrait.SubstraitToCalciteConverter;
-import org.apache.calcite.rel.type.RelDataTypeSystem;
-import org.apache.calcite.sql.type.SqlTypeFactoryImpl;
+import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
+import org.apache.calcite.rel.rel2sql.SqlImplementor;
+import org.apache.calcite.sql.SqlIdentifier;
+import org.apache.calcite.sql.SqlNode;
+import org.apache.calcite.sql.SqlWriterConfig;
+import org.apache.calcite.sql.pretty.SqlPrettyWriter;
+import org.apache.calcite.sql.util.SqlShuttle;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.jboss.logging.Logger;
 
 import static klattice.substrait.CalciteToSubstraitConverter.EXTENSION_COLLECTION;
-import static klattice.substrait.Shared.createSubstraitRelVisitor;
 
 @GrpcService
 public class PlannerServiceGrpc implements PlannerService {
     @LoggerName("PlannerServiceGrpc")
     Logger logger;
+
+    @Inject
+    SqlIdentifierResolver resolver;
 
     @Blocking
     @Override
@@ -37,17 +46,27 @@ public class PlannerServiceGrpc implements PlannerService {
             logger.warn(errorMessage);
             return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(true).setDiagnostics(PlanDiagnostics.newBuilder().setErrorMessage(errorMessage).build()).build());
         } else {
-            var typeFactory = new SqlTypeFactoryImpl(RelDataTypeSystem.DEFAULT);
             var schemaFactory = new SchemaHolder(environ);
             var optimizer = new Optimizer(schemaFactory);
             var rewrittenNodes = optimizer.relnodes(relRoots);
-            var relPlanBuilder = io.substrait.plan.ImmutablePlan.builder();
-            var substraitRelVisitor = createSubstraitRelVisitor(typeFactory);
-            var rels = rewrittenNodes.stream().map(substraitRelVisitor::apply).toList();
-            relPlanBuilder.roots(rels.stream().map(rel -> ImmutableRoot.builder().input(rel).build()).toList());
-            var planProto = new PlanProtoConverter().toProto(relPlanBuilder.build());
-            logger.infov("Original plan was:\n {0} \nNew plan is:\n {1}", request.getPlan(), planProto);
-            return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(false).setPlan(Plan.newBuilder().setEnviron(environ).setPlan(planProto)).build());
+            var relToSqlConverter = new RelToSqlConverter(DuckDbDialect.INSTANCE);
+            var sqlStatements = rewrittenNodes.stream().map(relToSqlConverter::visitRoot).map(SqlImplementor.Result::asSelect).map(sqlSelect -> {
+                var sqlNode = sqlSelect.accept(new SqlShuttle() {
+                    @Override
+                    public @Nullable SqlNode visit(SqlIdentifier id) {
+                        return resolver.resolve(environ, id)
+                                .map(translatedIdRef -> new SqlIdentifier(translatedIdRef.url(), id.getCollation(), id.getParserPosition()))
+                                .orElse(id);
+                    }
+                });
+                assert sqlNode != null;
+                var sb = new StringBuilder(2048);
+                var sqlWriter = new SqlPrettyWriter(SqlWriterConfig.of().withDialect(DuckDbDialect.INSTANCE), sb);
+                sqlNode.unparse(sqlWriter, 0, 0);
+                return sb.toString();
+            }).toList();
+            logger.infov("Original plan was:\n {0} \nConverted into SQL:\n {1}", request.getPlan(), sqlStatements);
+            return Uni.createFrom().item(ExpandedPlan.newBuilder().setHasError(false).setSqlStatements(SqlStatements.newBuilder().addAllSqlStatement(sqlStatements)).build());
         }
     }
 }

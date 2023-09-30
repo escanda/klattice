@@ -9,5 +9,5 @@ package klattice.exec;
 import "messages.proto";
 
 service ExecService {
-  rpc execute (klattice.msg.Plan) returns (klattice.msg.Batch) {};
+  rpc execute (klattice.msg.ExpandedPlan) returns (klattice.msg.Batch) {};
 }

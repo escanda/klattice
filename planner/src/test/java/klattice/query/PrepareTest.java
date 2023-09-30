@@ -25,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class PrepareTest {
     @LoggerName("PrepareTest")
     Logger logger;
+
     @Test
     public void smokeTest() throws SqlParseException, RelConversionException, ValidationException {
         var type = Type.newBuilder().setBool(Type.Boolean.newBuilder().setNullability(Type.Nullability.NULLABILITY_NULLABLE).build());
@@ -36,7 +37,9 @@ public class PrepareTest {
                 .build();
         var environ = Environment.newBuilder().addSchemas(Schema.newBuilder().setSchemaId(1).setRelName("PUBLIC").addRels(projection)).build();
         var q = "SELECT 'public' FROM PUBLIC.PUBLIC";
-        var plan = new Querier(new SchemaHolder(environ)).plan(q);
+        var querier = new Querier(new SchemaHolder(environ));
+        var sqlNode = querier.asSqlNode(q);
+        var plan = querier.plan(sqlNode);
         logger.info(plan);
         assertNotNull(plan);
         assertTrue(plan.isInitialized());
@@ -46,7 +49,10 @@ public class PrepareTest {
     public void test_BuiltinFunctions() throws ValidationException, SqlParseException, RelConversionException {
         String q = "select VERSION(), CURRENT_DATABASE()";
         var environ = Environment.newBuilder();
-        var plan = new Querier(new SchemaHolder(environ.build())).plan(q);
-        System.out.println(Shared.toSql(new SqlIdentifierResolver("http://localhost:8080"), environ.build(), plan));
+        var querier = new Querier(new SchemaHolder(environ.build()));
+        var sqlNode = querier.asSqlNode(q);
+        var plan = querier.plan(sqlNode);
+        var resolver = new SqlIdentifierResolver("http://localhost:8080");
+        System.out.println(Shared.toSql(resolver, environ.build(), plan));
     }
 }

@@ -27,7 +27,7 @@ public class OracleGrpcService implements OracleService {
     @Inject
     SchemaRegistryStoreSource schemaRegistryStoreSource;
 
-    protected Uni<Batch> execute(Plan plan) {
+    protected Uni<Batch> execute(ExpandedPlan plan) {
         return exec.execute(plan);
     }
 
@@ -51,10 +51,7 @@ public class OracleGrpcService implements OracleService {
         var inflatedQuery = this.query.inflate(qd);
         return inflatedQuery.flatMap(preparedQuery -> {
             var serializedPlan = preparedQuery.getPlan();
-            return replan(environ, serializedPlan).flatMap(expandedPlan -> {
-                var finalPlan = expandedPlan.getPlan();
-                return execute(finalPlan);
-            });
+            return replan(environ, serializedPlan).flatMap(this::execute);
         });
     }
 }

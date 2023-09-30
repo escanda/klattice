@@ -33,11 +33,16 @@ message Plan {
     substrait.Plan plan = 2;
 }
 
+message SqlStatements {
+    repeated string sqlStatement = 1;
+}
+
 message ExpandedPlan {
     bool has_error = 1;
+    Environment environ = 2;
     oneof result {
-        Plan plan = 2;
-        PlanDiagnostics diagnostics = 3;
+        SqlStatements sqlStatements = 3;
+        PlanDiagnostics diagnostics = 4;
     }
 }
 

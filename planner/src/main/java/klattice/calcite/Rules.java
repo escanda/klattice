@@ -1,7 +1,6 @@
 package klattice.calcite;
 
 import com.google.common.collect.ImmutableList;
-import org.apache.calcite.adapter.enumerable.EnumerableRules;
 import org.apache.calcite.config.CalciteSystemProperty;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.volcano.AbstractConverter;
@@ -15,9 +14,7 @@ import java.util.List;
 
 public interface Rules {
     ImmutableList<RelOptRule> CALC_RULES =
-            ImmutableList.of(EnumerableRules.ENUMERABLE_CALC_RULE,
-                    EnumerableRules.ENUMERABLE_FILTER_TO_CALC_RULE,
-                    EnumerableRules.ENUMERABLE_PROJECT_TO_CALC_RULE,
+            ImmutableList.of(
                     CoreRules.FILTER_TO_CALC,
                     CoreRules.PROJECT_TO_CALC,
                     CoreRules.CALC_MERGE,
@@ -26,8 +23,10 @@ public interface Rules {
                     // combination of CalcMergeRule, FilterToCalcRule, and
                     // ProjectToCalcRule have the same effect?
                     CoreRules.FILTER_CALC_MERGE,
-                    CoreRules.PROJECT_CALC_MERGE);
-    ImmutableList<RelOptRule> BASE_RULES = ImmutableList.of(CoreRules.AGGREGATE_STAR_TABLE,
+                    CoreRules.PROJECT_CALC_MERGE
+            );
+    ImmutableList<RelOptRule> BASE_RULES = ImmutableList.of(
+            CoreRules.AGGREGATE_STAR_TABLE,
             CoreRules.AGGREGATE_PROJECT_STAR_TABLE,
             CalciteSystemProperty.COMMUTE.value()
                     ? CoreRules.JOIN_ASSOCIATE
@@ -55,7 +54,8 @@ public interface Rules {
             CoreRules.SORT_EXCHANGE_REMOVE_CONSTANT_KEYS);
 
     List<RelOptRule> ABSTRACT_RULES =
-            ImmutableList.of(CoreRules.AGGREGATE_ANY_PULL_UP_CONSTANTS,
+            ImmutableList.of(
+                    CoreRules.AGGREGATE_ANY_PULL_UP_CONSTANTS,
                     CoreRules.UNION_PULL_UP_CONSTANTS,
                     PruneEmptyRules.UNION_INSTANCE,
                     PruneEmptyRules.INTERSECT_INSTANCE,
@@ -74,7 +74,8 @@ public interface Rules {
                     CoreRules.PROJECT_TO_LOGICAL_PROJECT_AND_WINDOW,
                     CoreRules.FILTER_MERGE,
                     DateRangeRules.FILTER_INSTANCE,
-                    CoreRules.INTERSECT_TO_DISTINCT);
+                    CoreRules.INTERSECT_TO_DISTINCT
+            );
 
     List<RelOptRule> ABSTRACT_RELATIONAL_RULES =
             ImmutableList.of(CoreRules.FILTER_INTO_JOIN,

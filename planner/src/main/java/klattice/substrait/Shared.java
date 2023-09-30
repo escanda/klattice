@@ -16,9 +16,12 @@ import klattice.calcite.FunctionShapes;
 import klattice.calcite.SchemaHolder;
 import klattice.exec.SqlIdentifierResolver;
 import klattice.msg.Environment;
+import klattice.msg.SqlStatements;
 import org.apache.calcite.jdbc.JavaTypeFactoryImpl;
+import org.apache.calcite.plan.RelOptTable;
 import org.apache.calcite.plan.ViewExpanders;
 import org.apache.calcite.prepare.CalciteSqlValidator;
+import org.apache.calcite.rel.RelRoot;
 import org.apache.calcite.rel.rel2sql.RelToSqlConverter;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeSystem;
@@ -26,6 +29,7 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexSubQuery;
 import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlNode;
+import org.apache.calcite.sql.SqlSelect;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.util.SqlShuttle;
 import org.apache.calcite.sql.util.SqlString;
@@ -36,6 +40,10 @@ import org.apache.calcite.tools.FrameworkConfig;
 import org.apache.calcite.tools.Frameworks;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -91,7 +99,7 @@ public interface Shared {
 
     static SqlToRelConverter createSqlToRelConverter(SchemaHolder schemaHolder) {
         return new SqlToRelConverter(
-                ViewExpanders.simpleContext(schemaHolder.getRelOptCluster()),
+                viewExpander(schemaHolder),
                 createSqlValidator(schemaHolder),
                 schemaHolder.getCatalog(),
                 schemaHolder.getRelOptCluster(),
@@ -124,5 +132,22 @@ public interface Shared {
             }
         });
         return sqlNode.toSqlString(DuckDbDialect.INSTANCE);
+    }
+
+    static RelOptTable.ViewExpander viewExpander(SchemaHolder schemaHolder) {
+        return ViewExpanders.simpleContext(schemaHolder.getRelOptCluster());
+    }
+
+    static List<RelRoot> parseSql(SqlIdentifierResolver resolver, Environment environ, SqlStatements sqlStatements) throws Exception {
+        var schemaHolder = new SchemaHolder(environ);
+        var sqlNodes = new ArrayList<SqlSelect>(sqlStatements.getSqlStatementCount());
+        for (String sqlStatement : sqlStatements.getSqlStatementList()) {
+            var bis = new ByteArrayInputStream(sqlStatement.getBytes(StandardCharsets.UTF_8));
+            var parser = Shared.sqlParserConfig().parserFactory().getParser(new InputStreamReader(bis));
+            var sqlNode = (SqlSelect) parser.parseSqlStmtEof();
+            sqlNodes.add(sqlNode);
+        }
+        var sqlToRelConverter = new SqlToRelConverter(viewExpander(schemaHolder), schemaHolder.getSqlValidator(), schemaHolder.getCatalog(), schemaHolder.getRelOptCluster(), new ReflectiveConvertletTable(), SqlToRelConverter.CONFIG);
+        return sqlNodes.stream().map(sqlNode -> (RelRoot) sqlToRelConverter.convertSelect(sqlNode, true)).toList();
     }
 }
