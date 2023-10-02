@@ -34,7 +34,7 @@ message Plan {
 }
 
 message CompiledSql {
-    repeated Column columnHeaders = 1;
+    repeated Column columns = 1;
     string sql = 2;
 }
 

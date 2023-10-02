@@ -24,7 +24,7 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
 
     val substraitVersion = "0.17.0"
-    implementation("io.substrait:core:${substraitVersion}")
+    implementation("io.substrait:core:" + substraitVersion)
 }
 
 tasks.test {
