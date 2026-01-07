@@ -1,6 +1,6 @@
 plugins {
     id("java")
-    id("io.quarkus") version "3.3.3"
+    id("io.quarkus") version "3.8.6"
 }
 
 group = "klattice"
@@ -20,7 +20,7 @@ dependencies {
 
     implementation(project(":core"))
 
-    implementation(platform("io.quarkus.platform:quarkus-bom:3.3.3"))
+    implementation(platform("io.quarkus.platform:quarkus-bom:3.8.6"))
     implementation("io.quarkus:quarkus-arc")
     implementation("io.quarkus:quarkus-smallrye-health")
     implementation("io.quarkus:quarkus-resteasy-reactive-jackson")
@@ -35,7 +35,7 @@ dependencies {
 
     implementation("org.apache.commons:commons-csv:1.10.0")
 
-    val parquetVersion = "1.13.1"
+    val parquetVersion = "1.15.1"
     implementation("org.apache.parquet:parquet-avro:${parquetVersion}")
     implementation("org.apache.parquet:parquet-hadoop:${parquetVersion}")
 
