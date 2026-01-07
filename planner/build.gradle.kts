@@ -1,6 +1,6 @@
 plugins {
     id("java")
-    id("io.quarkus") version "3.3.3"
+    id("io.quarkus") version "3.8.6"
 }
 
 repositories {
@@ -27,7 +27,7 @@ dependencies {
 
     implementation(project(":core"))
 
-    implementation(platform("io.quarkus.platform:quarkus-bom:3.3.3"))
+    implementation(platform("io.quarkus.platform:quarkus-bom:3.8.6"))
 
     val immutablesVersion = "2.9.3"
     annotationProcessor("org.immutables:value:${immutablesVersion}")

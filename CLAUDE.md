@@ -38,7 +38,7 @@ KLattice implements a **three-pointcut architecture** for query processing:
 **Purpose**: Query planning, optimization, and orchestration
 
 **Tech Stack**:
-- Quarkus 3.3.3 (framework)
+- Quarkus 3.8.6 (framework)
 - Apache Calcite 1.35.0 (query planning/optimization)
 - Substrait 0.17.0 (plan encoding)
 - Isthmus (Calcite → Substrait conversion)
@@ -72,7 +72,7 @@ KLattice implements a **three-pointcut architecture** for query processing:
 **Purpose**: Core data structures, protobuf definitions, and shared utilities
 
 **Tech Stack**:
-- Quarkus 3.3.3
+- Quarkus 3.8.6
 - Substrait 0.17.0
 - gRPC
 
@@ -96,9 +96,9 @@ KLattice implements a **three-pointcut architecture** for query processing:
 **Purpose**: Data export services for Kafka topics and Schema Registry
 
 **Tech Stack**:
-- Quarkus 3.3.3
+- Quarkus 3.8.6
 - Kafka & Confluent Schema Registry 7.4.0
-- Apache Parquet 1.13.1 & Hadoop 3.3.6
+- Apache Parquet 1.15.1 & Hadoop 3.3.6
 - Apache Avro 1.11.2
 
 **Key Packages**:
